@@ -160,15 +160,16 @@ classDiagram
         +Id : FeedbackId
         +Text : FeedbackText
         +SubmittedAt : Timestamp
-        +AnalysisResult? : FeedbackAnalysisResult
-        +RetryCount : RetryCount
         +AnalysisStatus : AnalysisStatus
+        +RetryCount : RetryCount
+        +AnalysisResult? : FeedbackAnalysisResult
+        +LastFailureDetails? : AnalysisFailureDetails
         +UserFeedback(FeedbackId id, FeedbackText text)
         +MarkAsAnalyzed(FeedbackAnalysisResult result)
+        +MarkAsAnalyzeFailed(AnalysisFailureDetails failureDetails)
         +MarkAnalysisFailed()
         +ResetForRetry()
     }
-
     
     class FeedbackId {
         <<ValueObject>>
@@ -197,6 +198,21 @@ classDiagram
         +FeedbackCategories : IReadOnlyList~FeedbackCategoryType~
         +FeatureCategoryIds : IReadOnlyList~FeatureCategoryId~
         +AnalyzedAt : Timestamp
+    }
+
+    class AnalysisFailureDetails {
+        <<ValueObject>>
+        +Reason : FailureReason
+        +Message? : string
+        +OccurredAt : Timestamp
+        +AttemptNumber : int
+    }
+
+    class FailureReason {
+        <<Enumeration>>
+        LLM_ERROR
+        LLM_UNABLE_TO_PROCESS
+        UNKNOWN
     }
     
     class Sentiment {
@@ -227,6 +243,11 @@ classDiagram
         +Value : Guid
         +FeatureCategoryId(Guid value)
     }
+
+    UserFeedback "1" o-- "0..1" FeedbackAnalysisResult : AnalysisResult
+    UserFeedback "1" o-- "0..1" AnalysisFailureDetails : LastFailureDetails
+    AnalysisFailureDetails *-- FailureReason 
+    AnalysisFailureDetails *-- Timestamp : OccurredAt
 
     UserFeedback *-- FeedbackId
     UserFeedback *-- FeedbackText
