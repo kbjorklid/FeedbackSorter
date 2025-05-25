@@ -120,27 +120,8 @@ In the future, there will be a way to curate the *Feature Category* (for example
 # Domain
 
 ```mermaid
+
 classDiagram
-    class FeatureCategoryId {
-        <<ValueObject>>
-        +Value : Guid
-        +FeatureCategoryId(Guid value)
-    }
-
-    class Sentiment {
-        <<ValueObject>>
-        +Value : SentimentType
-        +Sentiment(SentimentType value)
-    }
-
-    class SentimentType {
-        <<Enumeration>>
-        Positive
-        Negative
-        Neutral
-        Mixed
-    }
-
     class FeedbackCategoryType {
         <<Enumeration>>
         GeneralFeedback
@@ -159,7 +140,6 @@ classDiagram
         <<ValueObject>>
         +Value : DateTime
         +Timestamp(DateTime value)
-        +ToUtcString() string
     }
 
     class RetryCount {
@@ -175,23 +155,12 @@ classDiagram
         +FeatureCategoryName(string value)
     }
 
-    %% Entities
-    class FeatureCategory {
-        <<Entity>>
-        +Id : FeatureCategoryId
-        +Name : FeatureCategoryName
-        +CreatedAt : Timestamp
-        +FeatureCategory(FeatureCategoryId id, FeatureCategoryName name)
-        +UpdateName(FeatureCategoryName newName)
-    }
-
-    %% Aggregate Roots
     class UserFeedback {
         <<AggregateRoot>>
         +Id : FeedbackId
         +Text : FeedbackText
         +SubmittedAt : Timestamp
-        +AnalysisResult : FeedbackAnalysisResult
+        +AnalysisResult? : FeedbackAnalysisResult
         +RetryCount : RetryCount
         +AnalysisStatus : AnalysisStatus
         +UserFeedback(FeedbackId id, FeedbackText text)
@@ -228,11 +197,37 @@ classDiagram
         +FeedbackCategories : IReadOnlyList~FeedbackCategoryType~
         +FeatureCategoryIds : IReadOnlyList~FeatureCategoryId~
         +AnalyzedAt : Timestamp
-        +HasFeatureCategory(FeatureCategoryId categoryId) bool
-        +HasFeedbackCategory(FeedbackCategoryType category) bool
+    }
+    
+    class Sentiment {
+        <<ValueObject>>
+        +Value : SentimentType
+        +Sentiment(SentimentType value)
     }
 
-    %% Relationships
+    class SentimentType {
+        <<Enumeration>>
+        Positive
+        Negative
+        Neutral
+        Mixed
+    }
+
+    class FeatureCategory {
+        <<AggregateRoot>>
+        +Id : FeatureCategoryId
+        +Name : FeatureCategoryName
+        +CreatedAt : Timestamp
+        +FeatureCategory(FeatureCategoryId id, FeatureCategoryName name)
+        +UpdateName(FeatureCategoryName newName)
+    }
+
+    class FeatureCategoryId {
+        <<ValueObject>>
+        +Value : Guid
+        +FeatureCategoryId(Guid value)
+    }
+
     UserFeedback *-- FeedbackId
     UserFeedback *-- FeedbackText
     UserFeedback *-- Timestamp
@@ -251,4 +246,247 @@ classDiagram
     FeedbackAnalysisResult *-- Timestamp
 
     Sentiment *-- SentimentType
-    ```
+```
+
+# Project Architecture
+
+The project architecture is based on the following principles:
+- **Domain-Driven Design (DDD):** Focus on the core business domain and domain logic
+- **Clean Architecture:** Dependency inversion with domain at the center
+- **Hexagonal Architecture (Ports and Adapters):** Clear boundaries between internal and external concerns
+- **CQRS (Command Query Responsibility Segregation):** Separation of command and query operations
+- **Event-Driven Architecture:** Domain events for decoupled communication
+
+## Project Structure
+
+The solution consists of the following projects:
+
+-   **[Presentation](src/FeedbackSorter.Presentation):** This layer contains the user interface and API endpoints.
+-   **[Core](src/FeedbackSorter.Core):** This layer contains the domain logic and business rules. 
+-   **[Application](src/FeedbackSorter.Application):** This layer contains the application logic and use cases. 
+-   **[Infrastructure](src/FeedbackSorter.Infrastructure):** This layer contains the implementation details, such as database access and external services.
+
+## Layer Responsibilities
+
+### `Core` Layer (Domain)
+
+**Purpose:** Contains the domain logic and business rules. This is the most independent layer and represents the heart of the business.
+
+**Contents:**
+- **Entities and Aggregate Roots:** Core business objects with identity and lifecycle
+- **Value Objects:** Immutable objects that describe characteristics
+- **Domain Services:** Business logic that doesn't naturally fit within entities
+- **Domain Events:** Represent significant business occurrences
+- **Domain Exceptions:** Business rule violations and domain-specific errors
+  
+**References:** This layer should not reference any other project.
+
+### `Application` Layer (Use Cases)
+
+**Purpose:** Contains application logic and use cases. Orchestrates domain objects and coordinates with external systems.
+
+**Contents:**
+- **Commands and Queries:** Define user intents and data requests
+- **Command and Query Handlers:** Implement use case logic
+- **Domain Event Handlers:** React to domain events with application logic
+- **Application Services:** Coordinate complex workflows
+- **Port Interfaces:** Define contracts for external dependencies (repositories, external services)
+
+
+**References:** This layer may reference the `Core` project.
+
+### `Infrastructure` Layer (External Concerns)
+
+**Purpose:** Contains implementation details for external systems, databases, and third-party integrations.
+
+**Contents:**
+- **Repository Implementations:** Concrete data access implementations
+- **Adapters:** Implementations of port interfaces for external systems
+- **Database Context and Configuration:** Entity Framework or other ORM setup
+- **External Service Clients:** HTTP clients, message brokers, etc.
+- **Domain Event Dispatcher:** Publishing and handling of domain events
+- **Persistence Models:** Database-specific entities and mappings
+
+**References:** This layer may reference the `Core`, `Application` projects.
+
+### `Presentation` Layer (Interface)
+
+**Purpose:** Contains user interfaces, API endpoints, and presentation logic.
+
+**Contents:**
+- **REST Controllers:** Handle HTTP requests and responses
+- **Request/Response DTOs:** API-specific data contracts
+- **Middleware:** Authentication, logging, error handling
+- **API Configuration:** Swagger, versioning, CORS setup
+- **Authentication/Authorization:** Identity management and security
+
+**References:** This layer may reference the `Application`, `Core`, and `Infrastructure` projects.
+
+## CQRS Implementation
+
+The project implements **CQRS with separate models**:
+
+- **Commands:** Modify state and return simple success/failure results
+- **Queries:** Retrieve data using optimized read models
+- **Read Models:** Denormalized views optimized for specific queries
+- **Write Models:** Rich domain models for business logic
+
+## Request Processing Flow
+
+### Command Processing (Modify Operations)
+
+```mermaid
+classDiagram
+ direction TD
+ namespace Presentation {
+   class ExampleController {
+     <<REST Controller>>
+   }
+ }
+
+ namespace Application {
+   class ExampleCommandHandler {
+     <<Command Handler>>
+   }
+   class ExampleCommand {
+     <<Command>>
+   }
+   class IExampleRepository {
+     <<Port Interface>>
+     + FindByIdAsync(Id : ExampleId) Task~Result~ExampleAggregateRoot~~
+     + SaveAsync(AggregateRoot : ExampleAggregateRoot) Task~Result~ExampleAggregateRoot~~
+     + DeleteAsync(Id : ExampleId) Task~Result~bool~~
+   }
+ }
+
+ namespace Core {
+   class ExampleAggregateRoot {
+     <<AggregateRoot>>
+     + ExampleId Id
+     + DomainEvents List~IDomainEvent~
+   }
+   class ExampleId {
+     <<ValueObject>>
+   }
+   class ExampleDomainService {
+     <<Domain Service>>
+   }
+ }
+
+ namespace Infrastructure {
+   class ExampleRepository {
+     <<Repository Implementation>>
+     + FindByIdAsync(Id : ExampleId) Task~Result~ExampleAggregateRoot~~
+     + SaveAsync(AggregateRoot : ExampleAggregateRoot) Task~Result~ExampleAggregateRoot~~
+     + DeleteAsync(Id : ExampleId) Task~Result~bool~~
+   }
+ }
+
+ ExampleController --> ExampleCommandHandler : sends ExampleCommand
+ ExampleCommandHandler --> IExampleRepository : uses
+ ExampleCommandHandler --> ExampleAggregateRoot : orchestrates
+ ExampleCommandHandler --> ExampleDomainService : delegates complex logic
+ IExampleRepository <|-- ExampleRepository : implements
+ ExampleAggregateRoot *-- ExampleId : contains
+ ExampleAggregateRoot --> ExampleDomainService : may use
+ ExampleController --> ExampleCommand : creates
+ ExampleCommandHandler --> ExampleCommand : reads
+```
+
+### Query Processing (Read Operations)
+
+```mermaid
+classDiagram
+  direction TD
+  namespace Presentation {
+    class ExampleController {
+      <<REST Controller>>
+    }
+  }
+
+  namespace Application {
+    class ExampleQueryHandler {
+      <<Query Handler>>
+    }
+    class ExampleQuery {
+      <<Query>>
+    }
+    class IExampleReadRepository {
+      <<Port Interface>>
+      + GetByIdAsync(Id : ExampleId) Task~ExampleReadModel?~
+      + GetAllAsync(filter : ExampleFilter) Task~IEnumerable~ExampleReadModel~~
+    }
+  }
+
+  namespace Infrastructure {
+    class ExampleReadRepository {
+      <<Read Repository>>
+      + GetByIdAsync(Id : ExampleId) Task~ExampleReadModel?~
+      + GetAllAsync(filter : ExampleFilter) Task~IEnumerable~ExampleReadModel~~
+    }
+  }
+
+  namespace Contracts {
+    class ExampleReadModel {
+      <<Read Model>>
+    }
+  }
+
+  ExampleController --> ExampleQueryHandler : sends ExampleQuery
+  ExampleQueryHandler --> IExampleReadRepository : uses
+  IExampleReadRepository <|-- ExampleReadRepository : implements
+  ExampleQueryHandler --> ExampleReadModel : returns
+  ExampleController --> ExampleQuery : creates
+  ExampleQueryHandler --> ExampleQuery : 
+```
+## Runtime Sequence
+
+### Command Process Sequence
+```mermaid
+sequenceDiagram
+  participant C as Controller
+  participant CH as CommandHandler
+  participant R as Repository
+  participant AR as AggregateRoot
+  participant DS as DomainService
+  participant ED as EventDispatcher
+
+  C->>CH: HandleAsync(Command)
+  CH->>R: FindByIdAsync(Id)
+  R-->>CH: Result<AggregateRoot>
+  
+  alt Success
+    CH->>DS: ValidateBusinessRules(AggregateRoot)
+    DS-->>CH: ValidationResult
+    CH->>AR: ExecuteBusinessLogic()
+    AR->>AR: RaiseDomainEvent()
+    CH->>R: SaveAsync(AggregateRoot)
+    R-->>CH: Result<AggregateRoot>
+    CH->>ED: PublishEvents(DomainEvents)
+    CH-->>C: Result<AggregateRoot>
+  else Failure
+    CH-->>C: Result<e>
+  end
+```
+
+# Code-level considerations
+
+## General
+- This project uses the 'nullable' annotation (example: `string?`) to mark that something may be null.
+-  Always validate inputs at public API boundaries (e.g., Application Service command handlers, Entity/VO constructors exposed to Application layer). Within the internal scope of a method where the compiler guarantees non-nullability, further checks may be redundant. Use ArgumentNullException.ThrowIfNull() or similar.
+- Do not use primary constructors when data validation at construction time is needed. Use 'old-style' constructors in such cases.
+
+## Value Objects
+- Validate data input: prevent creation of invalid value objects
+- Extract related data into value objects. For example, instead of having a 'BeginDate' and 'EndDate' in an entity, create a DateRange value object and add proper validation there.
+- Consider `readonly record struct` for very simple, small value objects. For more complex value objects, or those frequently used as properties in classes, `record class` often provides a better balance of immutability, value-based equality, and ease of use without potential performance pitfalls associated with large structs or frequent boxing.
+
+## Unit Tests
+- Use `NSubstitute` when mocks or stubs are needed.
+- Use xUnit. Use xUnit's assertions (and not a library like fluent assertions)
+
+
+# Other instructions for GenAI/LLM
+- When there is a `dotnet` cli command for doing something, use that instead of modifying code.
+- Use `dotnet add package` command to add dependencies.
+- Before adding a library not mentioned by the user, confirm that user wants to start using that library.
