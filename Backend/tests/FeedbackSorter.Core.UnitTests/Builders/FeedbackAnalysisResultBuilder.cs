@@ -9,7 +9,7 @@ namespace FeedbackSorter.Core.UnitTests.Builders;
 public class FeedbackAnalysisResultBuilder
 {
     private FeedbackTitle _title = new FeedbackTitleBuilder().Build();
-    private Sentiment _sentiment = new SentimentBuilder().Build();
+    private Sentiment _sentiment = Sentiment.Neutral;
     private IReadOnlyList<FeedbackCategoryType> _feedbackCategories = new List<FeedbackCategoryType> { FeedbackCategoryType.GeneralFeedback };
     private IReadOnlyList<FeatureCategoryId> _featureCategoryIds = new List<FeatureCategoryId> { new FeatureCategoryIdBuilder().Build() };
     private Timestamp _analyzedAt = new TimestampBuilder().Build();

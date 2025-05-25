@@ -10,7 +10,7 @@ public class UserFeedback : Entity<FeedbackId>
     public FeedbackText Text { get; }
     public Timestamp SubmittedAt { get; }
     public AnalysisStatus AnalysisStatus { get; private set; }
-    public RetryCount RetryCount { get; private set; }
+    public int RetryCount { get; private set; }
     public FeedbackAnalysisResult? AnalysisResult { get; private set; }
     public AnalysisFailureDetails? LastFailureDetails { get; private set; }
 
@@ -19,7 +19,7 @@ public class UserFeedback : Entity<FeedbackId>
         Text = text;
         SubmittedAt = new Timestamp(DateTime.UtcNow);
         AnalysisStatus = AnalysisStatus.WaitingForAnalysis;
-        RetryCount = new RetryCount(0);
+        RetryCount = 0;
     }
 
     public void StartProcessing()
@@ -49,6 +49,6 @@ public class UserFeedback : Entity<FeedbackId>
         AnalysisStatus = AnalysisStatus.WaitingForAnalysis;
         LastFailureDetails = null;
         AnalysisResult = null;
-        RetryCount = RetryCount.Increment();
+        RetryCount++;
     }
 }

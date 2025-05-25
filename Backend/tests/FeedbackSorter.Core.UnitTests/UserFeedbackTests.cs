@@ -4,7 +4,7 @@ using NSubstitute;
 using System;
 using FeedbackSorter.Core.FeatureCategory;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.Core.UnitTests.Builders; // Add this using directive
+using FeedbackSorter.Core.UnitTests.Builders;
 
 namespace FeedbackSorter.Core.UnitTests.UserFeedbackTests;
 
@@ -26,7 +26,7 @@ public class UserFeedbackTests
         Assert.Equal(feedbackText, userFeedback.Text);
         Assert.True(userFeedback.SubmittedAt.Value.Subtract(initialUtcTime).TotalSeconds < 1); // Check within 1 second
         Assert.Equal(AnalysisStatus.WaitingForAnalysis, userFeedback.AnalysisStatus);
-        Assert.Equal(0, userFeedback.RetryCount.Value);
+        Assert.Equal(0, userFeedback.RetryCount);
         Assert.Null(userFeedback.AnalysisResult);
         Assert.Null(userFeedback.LastFailureDetails);
     }
@@ -98,10 +98,9 @@ public class UserFeedbackTests
         var userFeedback = new UserFeedbackBuilder()
             .WithAnalysisStatus(AnalysisStatus.AnalysisFailed)
             .WithLastFailureDetails(new AnalysisFailureDetailsBuilder().Build())
-            .WithRetryCount(new RetryCountBuilder().WithValue(1).Build()) // Simulate a previous retry
+            .WithRetryCount(1)
             .Build();
         
-        int initialRetryCount = userFeedback.RetryCount.Value;
 
         // Act
         userFeedback.ResetForRetry();
@@ -110,6 +109,6 @@ public class UserFeedbackTests
         Assert.Equal(AnalysisStatus.WaitingForAnalysis, userFeedback.AnalysisStatus);
         Assert.Null(userFeedback.LastFailureDetails);
         Assert.Null(userFeedback.AnalysisResult);
-        Assert.Equal(initialRetryCount + 1, userFeedback.RetryCount.Value);
+        Assert.Equal(2, userFeedback.RetryCount);
     }
 }

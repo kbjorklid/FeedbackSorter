@@ -1,6 +1,7 @@
 using FeedbackSorter.SharedKernel;
 using System;
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.Core.UnitTests.Builders;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;
 
@@ -10,7 +11,7 @@ public class UserFeedbackBuilder
     private FeedbackText _text = new FeedbackTextBuilder().Build();
     private Timestamp _submittedAt = new TimestampBuilder().Build();
     private AnalysisStatus _analysisStatus = AnalysisStatus.WaitingForAnalysis;
-    private RetryCount _retryCount = new RetryCountBuilder().Build();
+    private int _retryCount = 0;
     private FeedbackAnalysisResult? _analysisResult = null;
     private AnalysisFailureDetails? _lastFailureDetails = null;
 
@@ -38,7 +39,7 @@ public class UserFeedbackBuilder
         return this;
     }
 
-    public UserFeedbackBuilder WithRetryCount(RetryCount retryCount)
+    public UserFeedbackBuilder WithRetryCount(int retryCount)
     {
         _retryCount = retryCount;
         return this;
@@ -93,9 +94,9 @@ public class UserFeedbackBuilder
         }
 
         // Handle retry count separately as it's incremented
-        if (_retryCount.Value > 0)
+        if (_retryCount > 0)
         {
-            for (int i = 0; i < _retryCount.Value; i++)
+            for (int i = 0; i < _retryCount; i++)
             {
                 userFeedback.ResetForRetry();
             }
