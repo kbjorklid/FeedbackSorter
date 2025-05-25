@@ -24,89 +24,231 @@
 
 ## Introductions
 
-This is an automatic, LLM-powered, product feedback sorter. Given textual, natural language user feedback, this system will analyze it and do the following things:
-- Put the feedback into one or more of the following categories: 'General feedback', 'Bug report', 'Feature Request'
-- Given the text, analyze what project feature the text is about. Users might write about multiple features, so each feedback given should have zero or more features
-- The system should try to avoid redundancy for feature categories. For example, there probably should not be a feature category 'Login form' and a feature category 'Login page'. 
-- The system should also aim to analyze sentiment and choose one of the following: 'Positive', 'Negative', 'Neutral', 'Mixed'. Mixed means that there is negative and positive sentiment in the single text.
-- The system will also generate a max 50 character title for the feedback which is used in listing views of the feedback.
-- When feedback enters the system, it will be given a timestamp
-- When feedback is given, it is expected to be relevant to a single product. However, the system should work without knowing what the product is.
+
+This is an automatic, *LLM*-powered, *Product Feedback Sorter*. Given textual, natural language *User Feedback*, this system will analyze it and do the following things:
+- Put the *User Feedback* into one or more of the following categories: 'General feedback', 'Bug report', 'Feature Request'
+- Given the text, analyze what project feature the text is about. Users might write about multiple features, so each *User Feedback* given should have zero or more features
+- The system should try to avoid redundancy for *Feature Category*. For example, there probably should not be a *Feature Category* 'Login form' and a *Feature Category* 'Login page'. 
+- The system should also aim to analyze *Sentiment* and choose one of the following: 'Positive', 'Negative', 'Neutral', 'Mixed'. Mixed means that there is negative and positive *Sentiment* in the single text.
+- The system will also generate a max 50 character *Title* for the *User Feedback* which is used in listing views of the *User Feedback*.
+- When *User Feedback* enters the system, it will be given a *Timestamp*
+- When *User Feedback* is given, it is expected to be relevant to a single product. However, the system should work without knowing what the product is.
 
 This is a Portfolio app / tech demo. There will not be authentication or authorization.
 
 ## Application Views
 
 There will be two views in the system:
-- Feedback form where new feedbacks can be entered
-- A browser view where analyzed feedbacks are listed and can be opened.
+- *Feedback Form View* where new *User Feedback* can be entered
+- A *Feedback Browser View* where analyzed *User Feedback* are listed and can be opened.
 
-User should be able to jump between the views easily as this is a portfolio app using navigation bar.
+User should be able to jump between the views easily as this is a portfolio app using *Navigation Bar*.
 
-### Feedback form view
-- Has a large text area for pasting the feedback
+### Feedback Form View
+
+- Has a large text area for pasting the *User Feedback*
 - Has a 'submit' button
 - Has a 'paste' button. When pressed, pastes the clipboard contents to the text area.
 
-The feedback form will be disabled while the feedback is being submitted.
-If there is an error, there will be a toaster notification mentioning the error. Form is not cleared
-If the submission is successful, there will be a toaster notification about this, and the form is cleared.
+The *Feedback Form View* will be disabled while the *User Feedback* is being submitted.
+If there is an error, there will be a *Toaster Notification* mentioning the error. Form is not cleared
+If the submission is successful, there will be a *Toaster Notification* about this, and the form is cleared.
 
-Submission is considered successful when the server acknowledges that it has received the submission. Server will respond as success when it has received the text. It will not wait for the LLM processing. Feedback submission UI will not be notified of the LLM processing results.
+Submission is considered successful when the server acknowledges that it has received the submission. Server will respond as success when it has received the text. It will not wait for the *LLM* processing. *User Feedback* submission UI will not be notified of the *LLM* processing results.
 
-Acceptable feedback length is between 3 and 2000 characters.
-
+Acceptable *User Feedback* length is between 3 and 2000 characters.
 
 ### Feedback Browser
 
 #### Analyzed Feedback List
-- Has a paged list of feedback given.
-- Each list item has the following shown:
-  - Title of the feedback
-  - Timestamp of the feedback (UTC)
-  - Feedback categories associated with the feedback (General feedback, Bug report, Feature Request)
-  - Features related to the feedback
-  - Sentiment of the feedback
-- The list should be
-  - on multiple pages if long (20 feedbacks per page)
-  - sortable (title, timestamp)
-  - filterable (at least by feedback category and feature, using 'AND' logic. If multiples of same type (e.g. multiple feedback categories) are selected, then these should be processed with OR logic. Example: '((Feature OR Bug) AND (Login Form OR Reset Password))'
-- Each item can be opened. A modal window will show the feedback details, including the full feedback. All of the information about this feedback item shown in the list is also shown here.
 
-#### Feedback not successfully analyzed -list
-- There is also a list for feedback whose analysis was failed.
-- If title generation was successful, then title of the feedback will be shown. If not, then the first 30 characters of the feedback (with whitespace normalized) will be shown
-- For each item, there will be a 'retry' button, and a 'retry count' (starts from zero).
+- Has a paged list of *User Feedback* given.
+- Each list item has the following shown:
+  - *Title* of the *User Feedback*
+  - *Timestamp* of the *User Feedback* (UTC)
+  - *Feedback Category* associated with the *User Feedback* (General feedback, Bug report, Feature Request)
+  - *Feature Categories* related to the *User Feedback*
+  - *Sentiment* of the *User Feedback*
 - The list should be
-  - on multiple pages if long (20 feedbacks per page)
-  - sortable (title, timestamp)
-  
+  - on multiple pages if long (20 *User Feedback* per page)
+  - sortable (*Title*, *Timestamp*)
+  - filterable (at least by *Feedback Category* and feature, using 'AND' logic. If multiples of same type (e.g. multiple *Feedback Category*) are selected, then these should be processed with OR logic. Example: '((Feature Request OR Bug report) AND (Login Form OR Reset Password))'
+- Each item can be opened. A modal window will show the *User Feedback* details, including the full *User Feedback*. All of the information about this *User Feedback* item shown in the list is also shown here.
+
+
+#### Feedback not successfully analyzed list
+
+- There is also a list for *User Feedback* whose analysis was failed.
+- If *Title* generation was successful, then *Title* of the *User Feedback* will be shown. If not, then the first 30 characters of the *User Feedback* (with whitespace normalized) will be shown
+- For each item, there will be a 'retry' button, and a *Retry Count* (starts from zero).
+- The list should be
+  - on multiple pages if long (20 *User Feedback* per page)
+  - sortable (*Title*, *Timestamp*)
+
 The paging, sorting and filtering should be done in the backend (so the REST api should support these features)
 
-When user retries sending the feedback, the feedback is re-processed  as if it was submitted at that time. Timestamp is not updated. The feedback is removed from the list upon clicking 'retry' (it'll re-enter the list if the retry is unsuccessful).
+When user retries sending the *User Feedback*, the *User Feedback* is re-processed as if it was submitted at that time. *Timestamp* is not updated. The *User Feedback* is removed from the list upon clicking 'retry' (it'll re-enter the list if the retry is unsuccessful).
 
-The reasons why a feedback might be added to this list:
-- There is a problem calling the LLM (500 error, network error)
-- LLM does not succeed in providing the correct output (validation fails)
-- LLM indicates that it is not able to Analyze the feedback, or it determines that the text entered is not a user feedback, but some other text.
+The reasons why a *User Feedback* might be added to this list:
+- There is a problem calling the *LLM* (500 error, network error...)
+- *LLM* does not succeed in providing the correct output (validation fails)
+- *LLM* indicates that it is not able to Analyze the *User Feedback*, or it determines that the text entered is not a *User Feedback*, but some other text.
+
 
 ## LLM Usage
 
-When asked to analyze feedback, the following information is provided to the LLM:
-- The feedback text
-- The feature categories recognized so far (LLM can choose whether to tag the new feedback with the existing feature categories, or create new ones for this feedback if existing categories do not fit). Initially, there will be no features.
-- The choices from which sentiment should be chosen
-- The choices from which feedback category should be picked
+When asked to analyze *User Feedback*, the following information is provided to the *LLM*:
+- The *User Feedback* text
+- The *Feature Category* recognized so far (*LLM* can choose whether to tag the new *User Feedback* with the existing *Feature Category*, or create new ones for this *User Feedback* if existing categories do not fit). Initially, there will be no features.
+- The choices from which *Sentiment* should be chosen
+- The choices from which *Feedback Category* should be picked
 
-The LLM is asked to provide at least the following information:
-- Is the given text a user feedback of a product (Yes/No)?
-- What would be a max 50 character title for the feedback?
-- Which feature categories (zero or more) would describe this feedback?
-- Which sentiment (exactly one) would describe this feedback?
-- Which feedback categories (one or more) would describe this feedback?
+The *LLM* is asked to provide at least the following information:
+- Is the given text a *User Feedback* of a product (Yes/No)?
+- What would be a max 50 character *Title* for the *User Feedback*?
+- Which *Feature Category* (zero or more) would describe this *User Feedback*?
+- Which *Sentiment* (exactly one) would describe this *User Feedback*?
+- Which *Feedback Category* (one or more) would describe this *User Feedback*?
 
-The LLM is given a system prompt that instructs how to form the desired output. This prompt will be developed at a later stage.
+The *LLM* is given a *System Prompt* that instructs how to form the desired output. This prompt will be developed at a later stage.
 
 ## Future Functionality
 
-In the future, there will be a way to curate the feature categories (for example, combining them and adding meta data so that it is easier for LLM to recognize the category).
+In the future, there will be a way to curate the *Feature Category* (for example, combining them and adding meta data so that it is easier for *LLM* to recognize the category).
+
+
+# Domain
+
+```mermaid
+classDiagram
+    class FeatureCategoryId {
+        <<ValueObject>>
+        +Value : Guid
+        +FeatureCategoryId(Guid value)
+    }
+
+    class Sentiment {
+        <<ValueObject>>
+        +Value : SentimentType
+        +Sentiment(SentimentType value)
+    }
+
+    class SentimentType {
+        <<Enumeration>>
+        Positive
+        Negative
+        Neutral
+        Mixed
+    }
+
+    class FeedbackCategoryType {
+        <<Enumeration>>
+        GeneralFeedback
+        BugReport
+        FeatureRequest
+    }
+
+    class AnalysisStatus {
+        <<Enumeration>>
+        Analyzed
+        WaitingForAnalysis
+        AnalysisFailed
+    }
+
+    class Timestamp {
+        <<ValueObject>>
+        +Value : DateTime
+        +Timestamp(DateTime value)
+        +ToUtcString() string
+    }
+
+    class RetryCount {
+        <<ValueObject>>
+        +Value : int
+        +RetryCount(int value)
+        +Increment() RetryCount
+    }
+
+    class FeatureCategoryName {
+        <<ValueObject>>
+        +Value : string
+        +FeatureCategoryName(string value)
+    }
+
+    %% Entities
+    class FeatureCategory {
+        <<Entity>>
+        +Id : FeatureCategoryId
+        +Name : FeatureCategoryName
+        +CreatedAt : Timestamp
+        +FeatureCategory(FeatureCategoryId id, FeatureCategoryName name)
+        +UpdateName(FeatureCategoryName newName)
+    }
+
+    %% Aggregate Roots
+    class UserFeedback {
+        <<AggregateRoot>>
+        +Id : FeedbackId
+        +Text : FeedbackText
+        +SubmittedAt : Timestamp
+        +AnalysisResult : FeedbackAnalysisResult
+        +RetryCount : RetryCount
+        +AnalysisStatus : AnalysisStatus
+        +UserFeedback(FeedbackId id, FeedbackText text)
+        +MarkAsAnalyzed(FeedbackAnalysisResult result)
+        +MarkAnalysisFailed()
+        +ResetForRetry()
+    }
+
+    
+    class FeedbackId {
+        <<ValueObject>>
+        +Value : Guid
+        +FeedbackId(Guid value)
+    }
+
+    class FeedbackText {
+        <<ValueObject>>
+        +Value : string
+        +FeedbackText(string value)
+        +IsValidLength() bool
+        +GetTruncated(int maxLength) string
+    }
+
+    class FeedbackTitle {
+        <<ValueObject>>
+        +Value : string
+        +FeedbackTitle(string value)
+    }
+
+    class FeedbackAnalysisResult {
+        <<ValueObject>>
+        +Title : FeedbackTitle
+        +Sentiment : Sentiment
+        +FeedbackCategories : IReadOnlyList~FeedbackCategoryType~
+        +FeatureCategoryIds : IReadOnlyList~FeatureCategoryId~
+        +AnalyzedAt : Timestamp
+        +HasFeatureCategory(FeatureCategoryId categoryId) bool
+        +HasFeedbackCategory(FeedbackCategoryType category) bool
+    }
+
+    %% Relationships
+    UserFeedback *-- FeedbackId
+    UserFeedback *-- FeedbackText
+    UserFeedback *-- Timestamp
+    UserFeedback *-- FeedbackAnalysisResult
+    UserFeedback *-- RetryCount
+    UserFeedback *-- AnalysisStatus
+
+    FeatureCategory *-- FeatureCategoryId
+    FeatureCategory *-- FeatureCategoryName
+    FeatureCategory *-- Timestamp
+
+    FeedbackAnalysisResult *-- FeedbackTitle
+    FeedbackAnalysisResult *-- Sentiment
+    FeedbackAnalysisResult o-- FeedbackCategoryType
+    FeedbackAnalysisResult --> FeatureCategoryId : references
+    FeedbackAnalysisResult *-- Timestamp
+
+    Sentiment *-- SentimentType
+    ```
