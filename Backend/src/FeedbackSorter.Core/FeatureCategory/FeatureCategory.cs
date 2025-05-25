@@ -5,14 +5,13 @@ namespace FeedbackSorter.Core.FeatureCategory;
 /// <summary>
 /// Represents a category of features in the system.
 /// </summary>
-public class FeatureCategory : Entity
+public class FeatureCategory : Entity<FeatureCategoryId>
 {
     public FeatureCategoryName Name { get; private set; }
     public Timestamp CreatedAt { get; }
 
-    public FeatureCategory(FeatureCategoryId id, FeatureCategoryName name, ITimeProvider timeProvider)
+    public FeatureCategory(FeatureCategoryId id, FeatureCategoryName name, ITimeProvider timeProvider) : base(id)
     {
-        Id = id.Value;
         Name = name;
         CreatedAt = new Timestamp(timeProvider);
     }

@@ -1,4 +1,4 @@
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
 /// Represents the text content of user feedback.
@@ -11,7 +11,7 @@ public record struct FeedbackText
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Feedback text cannot be null or whitespace.", nameof(value));
-        if (value.Length is >= 3 and <= 2000)
+        if (value.Length is < 3 or > 2000)
             throw new ArgumentException("Feedback text must be between 3 and 2000 characters.", nameof(value));
         Value = value;
     }

@@ -1,11 +1,11 @@
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
 /// Represents user feedback in the system.
 /// </summary>
-public class UserFeedback : Entity
+public class UserFeedback : Entity<FeedbackId>
 {
     public FeedbackText Text { get; }
     public Timestamp SubmittedAt { get; }
@@ -14,9 +14,8 @@ public class UserFeedback : Entity
     public FeedbackAnalysisResult? AnalysisResult { get; private set; }
     public AnalysisFailureDetails? LastFailureDetails { get; private set; }
 
-    public UserFeedback(FeedbackId id, FeedbackText text)
+    public UserFeedback(FeedbackId id, FeedbackText text) : base(id)
     {
-        Id = id.Value;
         Text = text;
         SubmittedAt = new Timestamp(DateTime.UtcNow);
         AnalysisStatus = AnalysisStatus.WaitingForAnalysis;

@@ -1,6 +1,6 @@
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
 /// Represents details about a failure that occurred during feedback analysis.

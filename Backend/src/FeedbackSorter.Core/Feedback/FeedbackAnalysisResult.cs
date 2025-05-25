@@ -1,12 +1,12 @@
 using FeedbackSorter.Core.FeatureCategory;
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
 /// Represents the result of analyzing user feedback.
 /// </summary>
-public record class FeedbackAnalysisResult
+public record FeedbackAnalysisResult
 {
     public FeedbackTitle Title { get; }
     public Sentiment Sentiment { get; }

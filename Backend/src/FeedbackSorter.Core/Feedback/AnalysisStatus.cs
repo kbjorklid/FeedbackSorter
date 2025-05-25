@@ -1,4 +1,4 @@
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
 /// Represents the analysis status of user feedback.

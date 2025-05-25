@@ -1,4 +1,5 @@
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
+
 
 /// <summary>
 /// Represents the unique identifier for a user feedback.

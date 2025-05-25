@@ -1,4 +1,4 @@
-namespace FeedbackSorter.Core.UserFeedback;
+namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
 /// Represents the reason why feedback analysis failed.

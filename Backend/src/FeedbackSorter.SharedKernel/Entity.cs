@@ -3,7 +3,12 @@ namespace FeedbackSorter.SharedKernel;
 /// <summary>
 /// Base class for all entities in the domain.
 /// </summary>
-public abstract class Entity
+public abstract class Entity<TId>
 {
-    public Guid Id { get; protected set; }
+    public TId Id { get; private set; }
+
+    protected Entity(TId id)
+    {
+        Id = id;
+    }
 }
