@@ -1,0 +1,459 @@
+openapi: 3.1.0
+info:
+  title: Product Feedback Sorter API
+  version: v1
+  description: API for submitting and Browse user feedback that is automatically analyzed and categorized by an LLM.
+
+servers:
+  - url: http://localhost:5000 # Replace with your actual server URL
+    description: Development server
+
+components:
+  schemas:
+    UserFeedbackInput:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          minLength: 3
+          maxLength: 2000
+          description: The textual user feedback.
+          example: "The login button is broken, I can't access my account!"
+    
+    FeedbackSubmissionAcknowledgement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier assigned to the submitted feedback.
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        message:
+          type: string
+          description: Confirmation message.
+          example: "Feedback received and queued for analysis."
+        submittedAt:
+          type: string
+          format: date-time
+          description: The UTC timestamp when the feedback was received by the system.
+
+    FeedbackCategory:
+      type: string
+      enum:
+        - General feedback
+        - Bug report
+        - Feature Request
+      description: Predefined classification for user feedback.
+      example: "Bug report"
+
+    Sentiment:
+      type: string
+      enum:
+        - Positive
+        - Negative
+        - Neutral
+        - Mixed
+      description: The emotional tone of the user feedback.
+      example: "Negative"
+
+    FeatureCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the feature category.
+          example: "f1e2d3c4-b5a6-9870-6543-210987fedcba"
+        name:
+          type: string
+          description: Name of the project feature.
+          example: "Login Page"
+        createdAt:
+          type: string
+          format: date-time
+          description: The UTC timestamp when the feature category was created.
+
+    AnalyzedFeedbackItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the feedback.
+        title:
+          type: string
+          maxLength: 50
+          description: Concise summary of the user feedback.
+          example: "Login button broken"
+        text:
+          type: string
+          description: The full text of the user feedback.
+        submittedAt:
+          type: string
+          format: date-time
+          description: UTC timestamp when the feedback was submitted.
+        analyzedAt:
+          type: string
+          format: date-time
+          description: UTC timestamp when the feedback was successfully analyzed.
+        feedbackCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedbackCategory'
+          description: One or more categories assigned to the feedback.
+          example: ["Bug report"]
+        featureCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureCategory'
+          description: Project features the feedback is about.
+        sentiment:
+          $ref: '#/components/schemas/Sentiment'
+        
+    AnalyzedFeedbackList:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 5
+        totalCount:
+          type: integer
+          example: 98
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyzedFeedbackItem'
+
+    FailedFeedbackItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the feedback.
+        displayTitle:
+          type: string
+          description: Generated title if available, otherwise truncated feedback text.
+          example: "Login button broken"
+        submittedAt:
+          type: string
+          format: date-time
+          description: UTC timestamp when the feedback was submitted.
+        retryCount:
+          type: integer
+          format: int32
+          description: Number of times re-analysis has been attempted.
+          example: 0
+        lastFailureReason:
+          type: string
+          enum: [LLM_ERROR, LLM_UNABLE_TO_PROCESS, UNKNOWN]
+          description: Reason for the last analysis failure.
+          example: "LLM_ERROR"
+        lastFailureMessage:
+          type: string
+          nullable: true
+          description: Additional details about the last failure.
+          example: "The LLM service returned a 503 error."
+        lastFailureOccurredAt:
+          type: string
+          format: date-time
+          description: UTC timestamp of the last analysis failure.
+
+    FailedFeedbackList:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 1
+        totalCount:
+          type: integer
+          example: 5
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailedFeedbackItem'
+
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference [RFC3986] that identifies the problem type.
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code ([RFC7231], Section 6) generated by the origin server for this occurrence of the problem.
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem.
+        instance:
+          type: string
+          format: uri
+          description: A URI reference that identifies the specific occurrence of the problem.
+        errors: # For validation errors
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Provides detailed validation errors.
+
+  parameters:
+    PageNumber:
+      name: pageNumber
+      in: query
+      description: Page number to retrieve.
+      required: false
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    PageSize:
+      name: pageSize
+      in: query
+      description: Number of items per page.
+      required: false
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    SortByAnalyzed:
+      name: sortBy
+      in: query
+      description: Field to sort analyzed feedback by.
+      required: false
+      schema:
+        type: string
+        enum: [title, timestamp] # Assuming 'timestamp' refers to submittedAt for analyzed feedback
+        default: timestamp
+    SortByFailed:
+      name: sortBy
+      in: query
+      description: Field to sort failed feedback by.
+      required: false
+      schema:
+        type: string
+        enum: [displayTitle, timestamp] # Assuming 'timestamp' refers to submittedAt for failed feedback
+        default: timestamp
+    SortOrder:
+      name: sortOrder
+      in: query
+      description: Sort order.
+      required: false
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+    FilterFeedbackCategory:
+      name: feedbackCategory
+      in: query
+      description: Filter by one or more feedback categories (OR logic).
+      required: false
+      style: form
+      explode: false # For multiple values like ?feedbackCategory=Bug report,Feature Request
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/FeedbackCategory'
+    FilterFeatureCategoryName: # Assuming filtering by feature category name rather than ID for simplicity from UI
+      name: feature
+      in: query
+      description: Filter by one or more feature category names (OR logic).
+      required: false
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          example: "Login Form"
+          
+paths:
+  /feedback:
+    post:
+      summary: Submit new user feedback
+      description: Accepts new user feedback text for analysis. Responds quickly after receiving the text, analysis is done asynchronously.
+      tags:
+        - Feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserFeedbackInput'
+      responses:
+        '202': # Accepted
+          description: Feedback received and queued for analysis.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackSubmissionAcknowledgement'
+        '400':
+          description: Invalid input (e.g., text too short or too long).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error during submission acknowledgment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /feedback/analyzed:
+    get:
+      summary: Get list of successfully analyzed feedback
+      description: Retrieves a paginated, sortable, and filterable list of feedback items that have been successfully analyzed.
+      tags:
+        - Feedback
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SortByAnalyzed'
+        - $ref: '#/components/parameters/SortOrder'
+        - $ref: '#/components/parameters/FilterFeedbackCategory'
+        - $ref: '#/components/parameters/FilterFeatureCategoryName'
+      responses:
+        '200':
+          description: A list of analyzed feedback items.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzedFeedbackList'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /feedback/analyzed/{id}:
+    get:
+      summary: Get details of a specific analyzed feedback item
+      description: Retrieves all details of a single, successfully analyzed feedback item, including the full original text.
+      tags:
+        - Feedback
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the feedback item.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detailed information about the analyzed feedback.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzedFeedbackItem' # Reusing this, assuming full text is added
+        '404':
+          description: Feedback item not found or not yet analyzed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /feedback/failed:
+    get:
+      summary: Get list of feedback items that failed analysis
+      description: Retrieves a paginated and sortable list of feedback items for which LLM analysis failed.
+      tags:
+        - Feedback
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SortByFailed'
+        - $ref: '#/components/parameters/SortOrder'
+      responses:
+        '200':
+          description: A list of feedback items that failed analysis.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FailedFeedbackList'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /feedback/failed/{id}/retry:
+    post:
+      summary: Retry analysis for a failed feedback item
+      description: Triggers a re-analysis attempt for a feedback item that previously failed. The item is removed from the 'failed' list upon successful queuing for retry. Timestamp is not updated.
+      tags:
+        - Feedback
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the feedback item to retry.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202': # Accepted
+          description: Feedback analysis retry queued successfully.
+        '404':
+          description: Feedback item not found in the failed list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+                
+  /feature-categories:
+    get:
+      summary: Get all existing feature categories
+      description: Retrieves a list of all feature categories that have been identified by the LLM so far. Useful for providing context to the LLM and potentially for future curation UIs.
+      tags:
+        - Feature Categories
+      responses:
+        '200':
+          description: A list of feature categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureCategory'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'

@@ -278,14 +278,69 @@ The project architecture is based on the following principles:
 - **CQRS (Command Query Responsibility Segregation):** Separation of command and query operations
 - **Event-Driven Architecture:** Domain events for decoupled communication
 
-## Project Structure
+## Project Structure: Package by Layer with Feature Folders
 
-The solution consists of the following projects:
+This project employs a **Clean Architecture**, organizing code by layers with **feature folders** within each layer for components like `UserFeedback` and `FeatureCategory`. This promotes separation of concerns and feature cohesion.
 
--   **[Presentation](src/FeedbackSorter.Presentation):** This layer contains the user interface and API endpoints.
--   **[Core](src/FeedbackSorter.Core):** This layer contains the domain logic and business rules. 
--   **[Application](src/FeedbackSorter.Application):** This layer contains the application logic and use cases. 
--   **[Infrastructure](src/FeedbackSorter.Infrastructure):** This layer contains the implementation details, such as database access and external services.
+The solution comprises these C# projects:
+
+1.  `FeedbackSorter.SharedKernel`
+2.  `FeedbackSorter.Core` (Domain Layer)
+3.  `FeedbackSorter.Application` (Application Layer)
+4.  `FeedbackSorter.Infrastructure` (Infrastructure Layer)
+5.  `FeedbackSorter.Presentation` (Presentation Layer)
+
+### Layer Responsibilities and Folder Structure
+
+#### 1. `FeedbackSorter.SharedKernel`
+* **Purpose:** Shared code and types (base classes, generic Value Objects like `Timestamp`, common interfaces) with minimal dependencies, referenced by other layers.
+* **Example Contents:** `Entity.cs`, `ValueObject.cs`, `Timestamp.cs`.
+
+#### 2. `FeedbackSorter.Core` (Domain Layer)
+* **Purpose:** Core business logic, entities, aggregates, Value Objects, domain services, and events. No dependencies on Application, Infrastructure, or Presentation layers.
+* **Root Directory**: `/src/FeedbackSorter.Core`
+* **Dependencies:** `FeedbackSorter.SharedKernel`.
+
+Illustrative directory structure:
+```
+/src/FeedbackSorter.Core/<feature_name>/*.cs
+/src/FeedbackSorter.Core/<feature_2_name>/*.cs
+```
+
+#### 3. `FeedbackSorter.Application` (Application Layer)
+* **Purpose:** Orchestrates use cases via commands and queries. Defines interfaces (ports) for infrastructure dependencies.
+* **Root Directory**: `/src/FeedbackSorter.Application`
+* **Dependencies:** `FeedbackSorter.Core`, `FeedbackSorter.SharedKernel`.
+Illustrative directory structure:
+```
+/src/FeedbackSorter.Application/<feature_name>/<command_name>/<command_name>Command.cs
+/src/FeedbackSorter.Application/<feature_name>/<command_name>/<command_name>CommandHandler.cs
+/src/FeedbackSorter.Application/<feature_name>/command_2_name>/<command_2_name>Command.cs
+/src/FeedbackSorter.Application/<feature_name>/command_2_name>/<command_2_name>CommandHandler.cs
+/src/FeedbackSorter.Application/<feature_2_name>/<query_name>/<query_name>Query.cs
+/src/FeedbackSorter.Application/<feature_2_name>/<query_name>/<query_name>QueryHandler.cs
+```
+Example:
+```
+/src/FeedbackSorter.Application/UserFeedback/SubmitNew/SubmitNewUserFeedbackCommand.cs
+/src/FeedbackSorter.Application/UserFeedback/SubmitNew/SubmitNewUserFeedbackCommandHandler.cs
+```
+
+#### 4. `FeedbackSorter.Infrastructure` (Infrastructure Layer)
+* **Purpose:** Implements external concerns: database access (repositories), external API clients (LLM service), message buses. Implements ports defined in the Application Layer.
+* **Root Directory**: `/src/FeedbackSorter.Infrastructure`
+* **Dependencies:** `FeedbackSorter.Application`, `FeedbackSorter.Core`, `FeedbackSorter.SharedKernel`.
+
+#### 5. `FeedbackSorter.Presentation` (Presentation Layer)
+* **Purpose:** Handles user interaction (e.g., API endpoints). Sends commands/queries to the Application Layer.
+* * **Root Directory**: `/src/FeedbackSorter.Presentation`
+* **Dependencies:** `FeedbackSorter.Application`, `FeedbackSorter.SharedKernel`.
+
+Illustrative directory structure:
+```
+/src/FeedbackSorter.Presentation/<feature_name>/(controller and related DTOs)
+/src/FeedbackSorter.Presentation/Program.cs
+```
 
 ## Layer Responsibilities
 
@@ -300,7 +355,7 @@ The solution consists of the following projects:
 - **Domain Events:** Represent significant business occurrences
 - **Domain Exceptions:** Business rule violations and domain-specific errors
   
-**References:** This layer should not reference any other project.
+**References:** This layer may reference the `SharedKernel` project
 
 ### `Application` Layer (Use Cases)
 
@@ -314,7 +369,7 @@ The solution consists of the following projects:
 - **Port Interfaces:** Define contracts for external dependencies (repositories, external services)
 
 
-**References:** This layer may reference the `Core` project.
+**References:** This layer may reference the `Core` and `SharedKernel` projects.
 
 ### `Infrastructure` Layer (External Concerns)
 
@@ -328,7 +383,7 @@ The solution consists of the following projects:
 - **Domain Event Dispatcher:** Publishing and handling of domain events
 - **Persistence Models:** Database-specific entities and mappings
 
-**References:** This layer may reference the `Core`, `Application` projects.
+**References:** This layer may reference the `Core`, `Application` and `SharedKernel` projects.
 
 ### `Presentation` Layer (Interface)
 
@@ -341,7 +396,7 @@ The solution consists of the following projects:
 - **API Configuration:** Swagger, versioning, CORS setup
 - **Authentication/Authorization:** Identity management and security
 
-**References:** This layer may reference the `Application`, `Core`, and `Infrastructure` projects.
+**References:** This layer may reference the `Application`, `Core`, `Infrastructure`  and `SharedKernel`projects.
 
 ## CQRS Implementation
 
