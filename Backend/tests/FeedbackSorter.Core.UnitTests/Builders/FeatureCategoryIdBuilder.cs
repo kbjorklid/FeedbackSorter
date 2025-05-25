@@ -1,5 +1,5 @@
-using FeedbackSorter.Core.FeatureCategory;
 using System;
+using FeedbackSorter.Core.FeatureCategories;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;
 

@@ -1,6 +1,6 @@
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Core.FeatureCategory;
+namespace FeedbackSorter.Core.FeatureCategories;
 
 /// <summary>
 /// Represents a category of features in the system.

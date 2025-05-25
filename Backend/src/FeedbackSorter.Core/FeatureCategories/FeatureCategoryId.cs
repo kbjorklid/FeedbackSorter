@@ -1,4 +1,4 @@
-namespace FeedbackSorter.Core.FeatureCategory;
+namespace FeedbackSorter.Core.FeatureCategories;
 
 /// <summary>
 /// Represents the unique identifier for a feature category.

@@ -1,4 +1,4 @@
-using FeedbackSorter.Core.FeatureCategory;
+using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Core.Feedback;

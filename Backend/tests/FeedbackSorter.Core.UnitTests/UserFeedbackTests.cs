@@ -1,12 +1,7 @@
-using Xunit;
-using FeedbackSorter.SharedKernel;
-using NSubstitute;
-using System;
-using FeedbackSorter.Core.FeatureCategory;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Core.UnitTests.Builders;
 
-namespace FeedbackSorter.Core.UnitTests.UserFeedbackTests;
+namespace FeedbackSorter.Core.UnitTests;
 
 public class UserFeedbackTests
 {
