@@ -1,0 +1,1 @@
+Always read the DESIGN.md file before doing anything else.

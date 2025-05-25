@@ -342,6 +342,19 @@ Illustrative directory structure:
 /src/FeedbackSorter.Presentation/Program.cs
 ```
 
+### Test projects and directories
+
+The following are the necessary test projects:
+## Proposed Test Project Structure
+
+Based on the existing solution projects:
+
+1.  `/tests/FeedbackSorter.Core.UnitTests`
+2.  `/tests/FeedbackSorter.Application.UnitTests`
+3.  `/tests/FeedbackSorter.Infrastructure.UnitTests`
+4.  `/tests/FeedbackSorter.Presentation.UnitTests`
+
+
 ## Layer Responsibilities
 
 ### `Core` Layer (Domain)
