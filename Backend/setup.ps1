@@ -53,7 +53,7 @@ $testProjects = @(
 Write-Host "Creating test C# projects:"
 foreach ($testProjectName in $testProjects) {
     Write-Host "Creating test project: $testProjectName"
-    dotnet new classlib -n $testProjectName -o "$solutionDir/$testsDir/$testProjectName"
+    dotnet new xunit -n $testProjectName -o "$solutionDir/$testsDir/$testProjectName"
     dotnet sln $solutionDir/$solutionName.sln add "$solutionDir/$testsDir/$testProjectName/$testProjectName.csproj"
 }
 
