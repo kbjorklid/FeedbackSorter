@@ -131,8 +131,9 @@ classDiagram
 
     class AnalysisStatus {
         <<Enumeration>>
-        Analyzed
         WaitingForAnalysis
+        Processing
+        Analyzed
         AnalysisFailed
     }
 
@@ -165,9 +166,9 @@ classDiagram
         +AnalysisResult? : FeedbackAnalysisResult
         +LastFailureDetails? : AnalysisFailureDetails
         +UserFeedback(FeedbackId id, FeedbackText text)
+        +StartProcessing()
         +MarkAsAnalyzed(FeedbackAnalysisResult result)
-        +MarkAsAnalyzeFailed(AnalysisFailureDetails failureDetails)
-        +MarkAnalysisFailed()
+        +MarkAsFailed(AnalysisFailureDetails failureDetails)
         +ResetForRetry()
     }
     
@@ -244,29 +245,28 @@ classDiagram
         +FeatureCategoryId(Guid value)
     }
 
+    UserFeedback "1" *-- "1" FeedbackId : Id
+    UserFeedback "1" *-- "1" FeedbackText : Text
+    UserFeedback "1" *-- "1" Timestamp : SubmittedAt
+    UserFeedback "1" *-- "1" AnalysisStatus : AnalysisStatus
+    UserFeedback "1" *-- "1" RetryCount : RetryCount
     UserFeedback "1" o-- "0..1" FeedbackAnalysisResult : AnalysisResult
     UserFeedback "1" o-- "0..1" AnalysisFailureDetails : LastFailureDetails
-    AnalysisFailureDetails *-- FailureReason 
-    AnalysisFailureDetails *-- Timestamp : OccurredAt
 
-    UserFeedback *-- FeedbackId
-    UserFeedback *-- FeedbackText
-    UserFeedback *-- Timestamp
-    UserFeedback *-- FeedbackAnalysisResult
-    UserFeedback *-- RetryCount
-    UserFeedback *-- AnalysisStatus
+    FeedbackAnalysisResult "1" *-- "1" FeedbackTitle : Title
+    FeedbackAnalysisResult "1" *-- "1" Sentiment : Sentiment
+    FeedbackAnalysisResult "1" *-- "1" Timestamp : AnalyzedAt
+    FeedbackAnalysisResult "1" o-- "1..*" FeedbackCategoryType : FeedbackCategories
+    FeedbackAnalysisResult "1" --> "0..*" FeatureCategoryId : FeatureCategoryIds
 
-    FeatureCategory *-- FeatureCategoryId
-    FeatureCategory *-- FeatureCategoryName
-    FeatureCategory *-- Timestamp
+    AnalysisFailureDetails "1" *-- "1" FailureReason : Reason
+    AnalysisFailureDetails "1" *-- "1" Timestamp : OccurredAt
 
-    FeedbackAnalysisResult *-- FeedbackTitle
-    FeedbackAnalysisResult *-- Sentiment
-    FeedbackAnalysisResult o-- FeedbackCategoryType
-    FeedbackAnalysisResult --> FeatureCategoryId : references
-    FeedbackAnalysisResult *-- Timestamp
-
-    Sentiment *-- SentimentType
+    FeatureCategory "1" *-- "1" FeatureCategoryId : Id
+    FeatureCategory "1" *-- "1" FeatureCategoryName : Name
+    FeatureCategory "1" *-- "1" Timestamp : CreatedAt
+    
+    Sentiment "1" *-- "1" SentimentType : Value
 ```
 
 # Project Architecture
@@ -505,7 +505,6 @@ sequenceDiagram
 ## Unit Tests
 - Use `NSubstitute` when mocks or stubs are needed.
 - Use xUnit. Use xUnit's assertions (and not a library like fluent assertions)
-
 
 # Other instructions for GenAI/LLM
 - When there is a `dotnet` cli command for doing something, use that instead of modifying code.
