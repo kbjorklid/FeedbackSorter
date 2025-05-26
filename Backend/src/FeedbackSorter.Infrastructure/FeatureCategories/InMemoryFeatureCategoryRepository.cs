@@ -1,15 +1,17 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System; // Added for DateTime
 
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory;
 
 namespace FeedbackSorter.Infrastructure.FeatureCategories;
 
-public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository
+public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFeatureCategoryReadRepository
 {
     private readonly List<CoreFeatureCategory> _featureCategories;
 
@@ -44,11 +46,18 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository
             return Task.FromResult(Result<CoreFeatureCategory>.Failure("FeatureCategory not found for update."));
         }
 
-        // In a real scenario, you might update properties individually.
-        // For in-memory, replacing the object or updating its mutable properties is fine.
         _featureCategories.Remove(existingCategory);
         _featureCategories.Add(featureCategory);
         return Task.FromResult(Result<CoreFeatureCategory>.Success(featureCategory));
+    }
+
+    public Task<IEnumerable<FeatureCategoryReadModel>> GetAllAsync()
+    {
+        var featureCategories = _featureCategories
+            .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
+            .ToList();
+
+        return Task.FromResult<IEnumerable<FeatureCategoryReadModel>>(featureCategories);
     }
 }
 
