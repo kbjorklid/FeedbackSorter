@@ -22,14 +22,9 @@ classDiagram
         <<ValueObject>>
         +Value : DateTime
         +Timestamp(DateTime value)
+        +Timestamp(ITimeProvider timeProvider)
     }
 
-    class RetryCount {
-        <<ValueObject>>
-        +Value : int
-        +RetryCount(int value)
-        +Increment() RetryCount
-    }
 
     class FeatureCategoryName {
         <<ValueObject>>
@@ -43,7 +38,7 @@ classDiagram
         +Text : FeedbackText
         +SubmittedAt : Timestamp
         +AnalysisStatus : AnalysisStatus
-        +RetryCount : RetryCount
+        +RetryCount : int
         +AnalysisResult? : FeedbackAnalysisResult
         +LastFailureDetails? : AnalysisFailureDetails
         +UserFeedback(FeedbackId id, FeedbackText text)
@@ -62,15 +57,11 @@ classDiagram
     class FeedbackText {
         <<ValueObject>>
         +Value : string
-        +FeedbackText(string value)
-        +IsValidLength() bool
-        +GetTruncated(int maxLength) string
     }
 
     class FeedbackTitle {
         <<ValueObject>>
         +Value : string
-        +FeedbackTitle(string value)
     }
 
     class FeedbackAnalysisResult {
@@ -92,18 +83,12 @@ classDiagram
 
     class FailureReason {
         <<Enumeration>>
-        LLM_ERROR
-        LLM_UNABLE_TO_PROCESS
-        UNKNOWN
+        LlmError
+        LlmUnableToProcess
+        Unknown
     }
     
     class Sentiment {
-        <<ValueObject>>
-        +Value : SentimentType
-        +Sentiment(SentimentType value)
-    }
-
-    class SentimentType {
         <<Enumeration>>
         Positive
         Negative
@@ -116,21 +101,19 @@ classDiagram
         +Id : FeatureCategoryId
         +Name : FeatureCategoryName
         +CreatedAt : Timestamp
-        +FeatureCategory(FeatureCategoryId id, FeatureCategoryName name)
+        +FeatureCategory(FeatureCategoryId id, FeatureCategoryName name, ITimeProvider timeProvider)
         +UpdateName(FeatureCategoryName newName)
     }
 
     class FeatureCategoryId {
         <<ValueObject>>
         +Value : Guid
-        +FeatureCategoryId(Guid value)
     }
 
     UserFeedback "1" *-- "1" FeedbackId : Id
     UserFeedback "1" *-- "1" FeedbackText : Text
     UserFeedback "1" *-- "1" Timestamp : SubmittedAt
     UserFeedback "1" *-- "1" AnalysisStatus : AnalysisStatus
-    UserFeedback "1" *-- "1" RetryCount : RetryCount
     UserFeedback "1" o-- "0..1" FeedbackAnalysisResult : AnalysisResult
     UserFeedback "1" o-- "0..1" AnalysisFailureDetails : LastFailureDetails
 
@@ -147,5 +130,4 @@ classDiagram
     FeatureCategory "1" *-- "1" FeatureCategoryName : Name
     FeatureCategory "1" *-- "1" Timestamp : CreatedAt
     
-    Sentiment "1" *-- "1" SentimentType : Value
 ```
