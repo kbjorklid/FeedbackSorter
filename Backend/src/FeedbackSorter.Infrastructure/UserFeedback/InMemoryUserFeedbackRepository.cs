@@ -73,7 +73,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         return Task.FromResult(readModels.AsEnumerable());
     }
 
-    public Task<IEnumerable<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedUserFeedbackFilter filter, int pageNumber, int pageSize)
+    public Task<IEnumerable<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
     {
         var query = _userFeedbacks.Values.AsQueryable()
             .Where(uf => uf.AnalysisStatus == AnalysisStatus.AnalysisFailed);
