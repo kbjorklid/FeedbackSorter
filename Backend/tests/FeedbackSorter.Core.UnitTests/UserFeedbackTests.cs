@@ -64,7 +64,7 @@ public class UserFeedbackTests
     public void MarkAsAnalyzed_ThrowsArgumentNullException_WhenResultIsNull()
     {
         // Arrange
-        var userFeedback = new UserFeedbackBuilder().Build();
+        UserFeedback userFeedback = new UserFeedbackBuilder().Build();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => userFeedback.MarkAsAnalyzed(null!));
@@ -90,7 +90,7 @@ public class UserFeedbackTests
     public void ResetForRetry_ResetsStatusAndClearsDetailsAndIncrementsRetryCount()
     {
         // Arrange
-        var userFeedback = new UserFeedbackBuilder()
+        UserFeedback userFeedback = new UserFeedbackBuilder()
             .WithAnalysisStatus(AnalysisStatus.AnalysisFailed)
             .WithLastFailureDetails(new AnalysisFailureDetailsBuilder().Build())
             .WithRetryCount(1)

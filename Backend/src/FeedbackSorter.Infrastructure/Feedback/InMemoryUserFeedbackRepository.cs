@@ -10,7 +10,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
 
     public Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
-        if (_userFeedbacks.TryGetValue(id, out var userFeedback))
+        if (_userFeedbacks.TryGetValue(id, out UserFeedback? userFeedback))
         {
             return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
         }
@@ -39,7 +39,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
 
     public Task<IEnumerable<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
-        var query = _userFeedbacks.Values.AsQueryable();
+        IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
 
         if (filter.FeedbackCategories != null && filter.FeedbackCategories.Any())
         {
@@ -60,14 +60,14 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             .Take(pageSize)
             .ToList();
 
-        var readModels = pagedList.Select(MapToAnalyzedReadModel);
+        IEnumerable<AnalyzedFeedbackReadModel> readModels = pagedList.Select(MapToAnalyzedReadModel);
 
         return Task.FromResult(readModels.AsEnumerable());
     }
 
     public Task<IEnumerable<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
     {
-        var query = _userFeedbacks.Values.AsQueryable()
+        IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable()
             .Where(uf => uf.AnalysisStatus == AnalysisStatus.AnalysisFailed);
 
         query = ApplySorting(query, filter.SortBy, filter.SortAscending);
@@ -77,7 +77,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             .Take(pageSize)
             .ToList();
 
-        var readModels = pagedList.Select(MapToFailedToAnalyzeReadModel);
+        IEnumerable<FailedToAnalyzeFeedbackReadModel> readModels = pagedList.Select(MapToFailedToAnalyzeReadModel);
 
         return Task.FromResult(readModels.AsEnumerable());
     }

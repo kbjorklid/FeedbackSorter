@@ -10,10 +10,10 @@ public class FeatureCategoryTests
     public void Constructor_ShouldInitializePropertiesCorrectly()
     {
         // Arrange
-        var featureCategoryId = new FeatureCategoryIdBuilder().Build();
-        var featureCategoryName = new FeatureCategoryNameBuilder().Build();
-        var timeProvider = Substitute.For<ITimeProvider>();
-        var expectedTimestamp = new TimestampBuilder().Build();
+        FeatureCategories.FeatureCategoryId featureCategoryId = new FeatureCategoryIdBuilder().Build();
+        FeatureCategories.FeatureCategoryName featureCategoryName = new FeatureCategoryNameBuilder().Build();
+        ITimeProvider timeProvider = Substitute.For<ITimeProvider>();
+        Timestamp expectedTimestamp = new TimestampBuilder().Build();
         timeProvider.UtcNow.Returns(expectedTimestamp.Value);
 
         // Act
@@ -29,14 +29,14 @@ public class FeatureCategoryTests
     public void UpdateName_ShouldUpdateNameProperty()
     {
         // Arrange
-        var featureCategoryId = new FeatureCategoryIdBuilder().Build();
-        var initialName = new FeatureCategoryNameBuilder().WithValue("Initial Name").Build();
-        var timeProvider = Substitute.For<ITimeProvider>();
+        FeatureCategories.FeatureCategoryId featureCategoryId = new FeatureCategoryIdBuilder().Build();
+        FeatureCategories.FeatureCategoryName initialName = new FeatureCategoryNameBuilder().WithValue("Initial Name").Build();
+        ITimeProvider timeProvider = Substitute.For<ITimeProvider>();
         timeProvider.UtcNow.Returns(DateTime.UtcNow); // Mock any time
 
         var featureCategory = new FeatureCategories.FeatureCategory(featureCategoryId, initialName, timeProvider);
 
-        var newName = new FeatureCategoryNameBuilder().WithValue("Updated Name").Build();
+        FeatureCategories.FeatureCategoryName newName = new FeatureCategoryNameBuilder().WithValue("Updated Name").Build();
 
         // Act
         featureCategory.UpdateName(newName);

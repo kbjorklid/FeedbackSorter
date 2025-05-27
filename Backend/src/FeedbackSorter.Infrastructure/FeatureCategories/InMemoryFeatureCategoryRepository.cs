@@ -17,7 +17,7 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
 
     public Task<Result<CoreFeatureCategory>> GetByIdAsync(FeatureCategoryId id)
     {
-        var featureCategory = _featureCategories.FirstOrDefault(fc => fc.Id == id);
+        CoreFeatureCategory? featureCategory = _featureCategories.FirstOrDefault(fc => fc.Id == id);
         return Task.FromResult(featureCategory != null
             ? Result<CoreFeatureCategory>.Success(featureCategory)
             : Result<CoreFeatureCategory>.Failure("FeatureCategory not found."));
@@ -35,7 +35,7 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
 
     public Task<Result<CoreFeatureCategory>> UpdateAsync(CoreFeatureCategory featureCategory)
     {
-        var existingCategory = _featureCategories.FirstOrDefault(fc => fc.Id == featureCategory.Id);
+        CoreFeatureCategory? existingCategory = _featureCategories.FirstOrDefault(fc => fc.Id == featureCategory.Id);
         if (existingCategory == null)
         {
             return Task.FromResult(Result<CoreFeatureCategory>.Failure("FeatureCategory not found for update."));

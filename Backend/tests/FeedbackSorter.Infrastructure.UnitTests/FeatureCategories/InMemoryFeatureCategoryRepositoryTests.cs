@@ -21,11 +21,11 @@ public class InMemoryFeatureCategoryRepositoryTests
     {
         // Arrange
         _sharedFeatureCategories.Clear(); // Ensure clean state for this test
-        var featureCategory = new FeatureCategoryBuilder().Build();
+        CoreFeatureCategory featureCategory = new FeatureCategoryBuilder().Build();
         _sharedFeatureCategories.Add(featureCategory); // Use shared list
 
         // Act
-        var result = await _repository.GetByIdAsync(featureCategory.Id);
+        SharedKernel.Result<CoreFeatureCategory> result = await _repository.GetByIdAsync(featureCategory.Id);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -41,7 +41,7 @@ public class InMemoryFeatureCategoryRepositoryTests
         var nonExistentId = new FeatureCategoryId(Guid.NewGuid());
 
         // Act
-        var result = await _repository.GetByIdAsync(nonExistentId);
+        SharedKernel.Result<CoreFeatureCategory> result = await _repository.GetByIdAsync(nonExistentId);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -53,10 +53,10 @@ public class InMemoryFeatureCategoryRepositoryTests
     {
         // Arrange
         _sharedFeatureCategories.Clear(); // Ensure clean state for this test
-        var featureCategory = new FeatureCategoryBuilder().Build();
+        CoreFeatureCategory featureCategory = new FeatureCategoryBuilder().Build();
 
         // Act
-        var result = await _repository.AddAsync(featureCategory);
+        SharedKernel.Result<CoreFeatureCategory> result = await _repository.AddAsync(featureCategory);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -69,11 +69,11 @@ public class InMemoryFeatureCategoryRepositoryTests
     {
         // Arrange
         _sharedFeatureCategories.Clear(); // Ensure clean state for this test
-        var featureCategory = new FeatureCategoryBuilder().Build();
+        CoreFeatureCategory featureCategory = new FeatureCategoryBuilder().Build();
         _sharedFeatureCategories.Add(featureCategory); // Use shared list
 
         // Act
-        var result = await _repository.AddAsync(featureCategory);
+        SharedKernel.Result<CoreFeatureCategory> result = await _repository.AddAsync(featureCategory);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -86,17 +86,17 @@ public class InMemoryFeatureCategoryRepositoryTests
     {
         // Arrange
         _sharedFeatureCategories.Clear(); // Ensure clean state for this test
-        var originalCategory = new FeatureCategoryBuilder().Build();
+        CoreFeatureCategory originalCategory = new FeatureCategoryBuilder().Build();
         _sharedFeatureCategories.Add(originalCategory); // Use shared list
 
         var updatedName = new FeatureCategoryName("Updated Name");
-        var updatedCategory = new FeatureCategoryBuilder()
+        CoreFeatureCategory updatedCategory = new FeatureCategoryBuilder()
             .WithId(originalCategory.Id)
             .WithName(updatedName)
             .Build(); // Use default time provider from builder
 
         // Act
-        var result = await _repository.UpdateAsync(updatedCategory);
+        SharedKernel.Result<CoreFeatureCategory> result = await _repository.UpdateAsync(updatedCategory);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -111,10 +111,10 @@ public class InMemoryFeatureCategoryRepositoryTests
     {
         // Arrange
         _sharedFeatureCategories.Clear(); // Ensure clean state for this test
-        var nonExistentCategory = new FeatureCategoryBuilder().Build();
+        CoreFeatureCategory nonExistentCategory = new FeatureCategoryBuilder().Build();
 
         // Act
-        var result = await _repository.UpdateAsync(nonExistentCategory);
+        SharedKernel.Result<CoreFeatureCategory> result = await _repository.UpdateAsync(nonExistentCategory);
 
         // Assert
         Assert.True(result.IsFailure);
