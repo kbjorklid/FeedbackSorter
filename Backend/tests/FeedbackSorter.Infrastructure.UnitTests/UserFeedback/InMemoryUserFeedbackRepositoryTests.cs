@@ -222,11 +222,11 @@ public class InMemoryUserFeedbackRepositoryTests
     }
 
     [Theory]
-    [InlineData("submittedat", true)]
-    [InlineData("submittedat", false)]
-    [InlineData("title", true)]
-    [InlineData("title", false)]
-    public async Task GetPagedListAsync_ShouldApplySorting(string sortBy, bool sortAscending)
+    [InlineData(UserFeedbackSortBy.SubmittedAt, true)]
+    [InlineData(UserFeedbackSortBy.SubmittedAt, false)]
+    [InlineData(UserFeedbackSortBy.Title, true)]
+    [InlineData(UserFeedbackSortBy.Title, false)]
+    public async Task GetPagedListAsync_ShouldApplySorting(UserFeedbackSortBy sortBy, bool sortAscending)
     {
         // Arrange
         var feedback1 = new UserFeedbackBuilder().WithAnalysisStatus(AnalysisStatus.Analyzed)
@@ -254,7 +254,7 @@ public class InMemoryUserFeedbackRepositoryTests
         var result = (await _repository.GetPagedListAsync(filter, pageNumber, pageSize)).ToList();
 
         // Assert
-        if (sortBy == "submittedat")
+        if (sortBy == UserFeedbackSortBy.SubmittedAt)
         {
             if (sortAscending)
             {
@@ -269,7 +269,7 @@ public class InMemoryUserFeedbackRepositoryTests
                 Assert.Equal(feedback1.Id, result[2].Id);
             }
         }
-        else if (sortBy == "title")
+        else if (sortBy == UserFeedbackSortBy.Title)
         {
             if (sortAscending)
             {
@@ -331,11 +331,11 @@ public class InMemoryUserFeedbackRepositoryTests
     }
 
     [Theory]
-    [InlineData("submittedat", true)]
-    [InlineData("submittedat", false)]
-    [InlineData("title", true)]
-    [InlineData("title", false)]
-    public async Task GetFailedAnalysisPagedListAsync_ShouldApplySorting(string sortBy, bool sortAscending)
+    [InlineData(UserFeedbackSortBy.SubmittedAt, true)]
+    [InlineData(UserFeedbackSortBy.SubmittedAt, false)]
+    [InlineData(UserFeedbackSortBy.Title, true)]
+    [InlineData(UserFeedbackSortBy.Title, false)]
+    public async Task GetFailedAnalysisPagedListAsync_ShouldApplySorting(UserFeedbackSortBy sortBy, bool sortAscending)
     {
         // Arrange
         var feedback1 = new UserFeedbackBuilder().WithAnalysisStatus(AnalysisStatus.AnalysisFailed)
@@ -363,7 +363,7 @@ public class InMemoryUserFeedbackRepositoryTests
         var result = (await _repository.GetFailedAnalysisPagedListAsync(filter, pageNumber, pageSize)).ToList();
 
         // Assert
-        if (sortBy == "submittedat")
+        if (sortBy == UserFeedbackSortBy.SubmittedAt)
         {
             if (sortAscending)
             {
@@ -378,7 +378,7 @@ public class InMemoryUserFeedbackRepositoryTests
                 Assert.Equal(feedback1.Id, result[2].Id);
             }
         }
-        else if (sortBy == "title") // For failed analysis, "title" sorts by truncated text
+        else if (sortBy == UserFeedbackSortBy.Title) // For failed analysis, "title" sorts by truncated text
         {
             if (sortAscending)
             {

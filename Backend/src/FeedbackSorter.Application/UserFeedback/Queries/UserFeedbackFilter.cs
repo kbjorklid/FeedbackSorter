@@ -8,6 +8,6 @@ public record UserFeedbackFilter
     public IEnumerable<FeedbackCategoryType>? FeedbackCategories { get; init; }
     public IEnumerable<FeatureCategoryId>? FeatureCategoryIds { get; init; }
     public AnalysisStatus? AnalysisStatus { get; init; }
-    public string? SortBy { get; init; }
+    public UserFeedbackSortBy? SortBy { get; init; }
     public bool SortAscending { get; init; } = true;
 }

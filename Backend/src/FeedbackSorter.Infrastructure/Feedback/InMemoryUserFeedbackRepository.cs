@@ -51,7 +51,6 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             query = query.Where(uf => uf.AnalysisResult != null && uf.AnalysisResult.FeatureCategoryIds.Any(fci => filter.FeatureCategoryIds.Contains(fci)));
         }
 
-        // Only return successfully analyzed feedback for this method
         query = query.Where(uf => uf.AnalysisStatus == AnalysisStatus.Analyzed);
 
         query = ApplySorting(query, filter.SortBy, filter.SortAscending);
@@ -83,12 +82,12 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         return Task.FromResult(readModels.AsEnumerable());
     }
 
-    private static IQueryable<UserFeedback> ApplySorting(IQueryable<UserFeedback> query, string? sortBy, bool sortAscending)
+    private static IQueryable<UserFeedback> ApplySorting(IQueryable<UserFeedback> query, UserFeedbackSortBy? sortBy, bool sortAscending)
     {
-        return sortBy?.ToLowerInvariant() switch
+        return sortBy switch
         {
-            "title" => sortAscending ? query.OrderBy(uf => uf.AnalysisResult != null ? uf.AnalysisResult.Title.Value : uf.Text.Value.Substring(0, Math.Min(uf.Text.Value.Length, 30))) : query.OrderByDescending(uf => uf.AnalysisResult != null ? uf.AnalysisResult.Title.Value : uf.Text.Value.Substring(0, Math.Min(uf.Text.Value.Length, 30))),
-            "submittedat" => sortAscending ? query.OrderBy(uf => uf.SubmittedAt.Value) : query.OrderByDescending(uf => uf.SubmittedAt.Value),
+            UserFeedbackSortBy.Title => sortAscending ? query.OrderBy(uf => uf.AnalysisResult != null ? uf.AnalysisResult.Title.Value : uf.Text.Value.Substring(0, Math.Min(uf.Text.Value.Length, 30))) : query.OrderByDescending(uf => uf.AnalysisResult != null ? uf.AnalysisResult.Title.Value : uf.Text.Value.Substring(0, Math.Min(uf.Text.Value.Length, 30))),
+            UserFeedbackSortBy.SubmittedAt => sortAscending ? query.OrderBy(uf => uf.SubmittedAt.Value) : query.OrderByDescending(uf => uf.SubmittedAt.Value),
             _ => query.OrderBy(uf => uf.SubmittedAt.Value) // Default sort
         };
     }
