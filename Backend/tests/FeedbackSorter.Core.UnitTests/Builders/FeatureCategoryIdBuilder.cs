@@ -1,4 +1,3 @@
-using System;
 using FeedbackSorter.Core.FeatureCategories;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;

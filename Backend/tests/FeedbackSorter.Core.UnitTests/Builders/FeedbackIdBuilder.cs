@@ -1,4 +1,3 @@
-using System;
 using FeedbackSorter.Core.Feedback;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;

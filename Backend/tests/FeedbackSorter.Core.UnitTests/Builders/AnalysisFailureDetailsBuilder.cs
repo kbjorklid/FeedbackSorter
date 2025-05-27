@@ -1,6 +1,5 @@
-using FeedbackSorter.SharedKernel;
-using System;
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;
 

@@ -1,5 +1,4 @@
 using FeedbackSorter.Core.Feedback;
-using System;
 
 namespace FeedbackSorter.Application.UserFeedback.Queries;
 

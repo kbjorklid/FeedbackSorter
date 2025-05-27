@@ -95,7 +95,7 @@ public class UserFeedbackTests
             .WithLastFailureDetails(new AnalysisFailureDetailsBuilder().Build())
             .WithRetryCount(1)
             .Build();
-        
+
 
         // Act
         userFeedback.ResetForRetry();

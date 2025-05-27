@@ -1,8 +1,6 @@
-using FeedbackSorter.SharedKernel;
-using System.Collections.Generic;
-using System.Linq;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;
 

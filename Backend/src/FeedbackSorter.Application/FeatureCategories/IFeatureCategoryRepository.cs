@@ -1,7 +1,5 @@
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
-using System.Threading.Tasks;
-
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory;
 
 namespace FeedbackSorter.Application.FeatureCategories;

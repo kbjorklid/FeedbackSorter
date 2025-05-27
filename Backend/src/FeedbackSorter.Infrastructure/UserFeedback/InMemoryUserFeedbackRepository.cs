@@ -1,12 +1,7 @@
 using FeedbackSorter.Application.UserFeedback;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CoreUserFeedback = FeedbackSorter.Core.Feedback.UserFeedback;
 
 namespace FeedbackSorter.Infrastructure.UserFeedback;

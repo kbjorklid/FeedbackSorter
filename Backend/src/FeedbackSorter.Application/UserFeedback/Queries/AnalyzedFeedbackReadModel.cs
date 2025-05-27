@@ -1,7 +1,5 @@
-using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Core.FeatureCategories;
-using System;
-using System.Collections.Generic;
+using FeedbackSorter.Core.Feedback;
 
 namespace FeedbackSorter.Application.UserFeedback.Queries;
 

@@ -2,11 +2,6 @@ using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System; // Added for DateTime
-
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory;
 
 namespace FeedbackSorter.Infrastructure.FeatureCategories;

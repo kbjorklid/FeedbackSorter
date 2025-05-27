@@ -1,6 +1,4 @@
 using FeedbackSorter.Application.UserFeedback.Queries;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FeedbackSorter.Application.UserFeedback;
 

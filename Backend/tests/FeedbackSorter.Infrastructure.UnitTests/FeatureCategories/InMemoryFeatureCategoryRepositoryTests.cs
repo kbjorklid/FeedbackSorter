@@ -1,11 +1,6 @@
-using Xunit;
-using System.Threading.Tasks;
-using FeedbackSorter.Infrastructure.FeatureCategories;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.UnitTests.Builders;
-using System.Linq;
-using System;
-using FeedbackSorter.SharedKernel;
+using FeedbackSorter.Infrastructure.FeatureCategories;
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory; // Add alias here
 
 namespace FeedbackSorter.Infrastructure.UnitTests.FeatureCategories;

@@ -1,7 +1,5 @@
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
-using System.Threading.Tasks;
-
 using CoreUserFeedback = FeedbackSorter.Core.Feedback.UserFeedback;
 
 namespace FeedbackSorter.Application.UserFeedback;

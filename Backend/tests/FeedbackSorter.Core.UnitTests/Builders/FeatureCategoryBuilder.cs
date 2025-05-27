@@ -1,7 +1,6 @@
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
 using NSubstitute;
-using System;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;
 

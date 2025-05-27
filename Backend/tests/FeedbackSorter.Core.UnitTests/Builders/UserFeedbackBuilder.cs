@@ -1,7 +1,5 @@
-using FeedbackSorter.SharedKernel;
-using System;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.Core.UnitTests.Builders;
+using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Core.UnitTests.Builders;
 
@@ -101,7 +99,7 @@ public class UserFeedbackBuilder
                 userFeedback.ResetForRetry();
             }
         }
-        
+
         // Ensure analysis result and failure details are set correctly based on final status
         if (_analysisStatus == AnalysisStatus.Analyzed)
         {
