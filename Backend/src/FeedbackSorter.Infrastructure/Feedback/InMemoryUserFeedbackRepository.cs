@@ -2,41 +2,39 @@ using FeedbackSorter.Application.UserFeedback;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
-using CoreUserFeedback = FeedbackSorter.Core.Feedback.UserFeedback;
-
-namespace FeedbackSorter.Infrastructure.UserFeedback;
+namespace FeedbackSorter.Infrastructure.Feedback;
 
 public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeedbackReadRepository
 {
-    private readonly Dictionary<FeedbackId, CoreUserFeedback> _userFeedbacks = new();
+    private readonly Dictionary<FeedbackId, UserFeedback> _userFeedbacks = new();
 
-    public Task<Result<CoreUserFeedback>> GetByIdAsync(FeedbackId id)
+    public Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
         if (_userFeedbacks.TryGetValue(id, out var userFeedback))
         {
-            return Task.FromResult(Result<CoreUserFeedback>.Success(userFeedback));
+            return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
         }
-        return Task.FromResult(Result<CoreUserFeedback>.Failure($"UserFeedback with ID {id.Value} not found."));
+        return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {id.Value} not found."));
     }
 
-    public Task<Result<CoreUserFeedback>> AddAsync(CoreUserFeedback userFeedback)
+    public Task<Result<UserFeedback>> AddAsync(UserFeedback userFeedback)
     {
         if (_userFeedbacks.ContainsKey(userFeedback.Id))
         {
-            return Task.FromResult(Result<CoreUserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} already exists."));
+            return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} already exists."));
         }
         _userFeedbacks.Add(userFeedback.Id, userFeedback);
-        return Task.FromResult(Result<CoreUserFeedback>.Success(userFeedback));
+        return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
-    public Task<Result<CoreUserFeedback>> UpdateAsync(CoreUserFeedback userFeedback)
+    public Task<Result<UserFeedback>> UpdateAsync(UserFeedback userFeedback)
     {
         if (!_userFeedbacks.ContainsKey(userFeedback.Id))
         {
-            return Task.FromResult(Result<CoreUserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} not found for update."));
+            return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} not found for update."));
         }
         _userFeedbacks[userFeedback.Id] = userFeedback;
-        return Task.FromResult(Result<CoreUserFeedback>.Success(userFeedback));
+        return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
     public Task<IEnumerable<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
@@ -85,7 +83,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         return Task.FromResult(readModels.AsEnumerable());
     }
 
-    private static IQueryable<CoreUserFeedback> ApplySorting(IQueryable<CoreUserFeedback> query, string? sortBy, bool sortAscending)
+    private static IQueryable<UserFeedback> ApplySorting(IQueryable<UserFeedback> query, string? sortBy, bool sortAscending)
     {
         return sortBy?.ToLowerInvariant() switch
         {
@@ -95,7 +93,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         };
     }
 
-    private static AnalyzedFeedbackReadModel MapToAnalyzedReadModel(CoreUserFeedback userFeedback)
+    private static AnalyzedFeedbackReadModel MapToAnalyzedReadModel(UserFeedback userFeedback)
     {
         // This method should only be called for successfully analyzed feedback
         if (userFeedback.AnalysisResult == null)
@@ -115,7 +113,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         };
     }
 
-    private static FailedToAnalyzeFeedbackReadModel MapToFailedToAnalyzeReadModel(CoreUserFeedback userFeedback)
+    private static FailedToAnalyzeFeedbackReadModel MapToFailedToAnalyzeReadModel(UserFeedback userFeedback)
     {
         return new FailedToAnalyzeFeedbackReadModel
         {
