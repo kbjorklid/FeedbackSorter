@@ -1,4 +1,6 @@
 using System.Net;
+using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Application.UserFeedback.SubmitNew;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
@@ -11,11 +13,19 @@ namespace FeedbackSorter.Presentation.Controllers;
 public class FeedbackController : ControllerBase
 {
     private readonly SubmitFeedbackCommandHandler _submitFeedbackCommandHandler;
+    private readonly GetAnalyzedFeedbacksQueryHandler _getAnalyzedFeedbacksQueryHandler;
+    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
     private readonly ITimeProvider _timeProvider;
 
-    public FeedbackController(SubmitFeedbackCommandHandler submitFeedbackCommandHandler, ITimeProvider timeProvider)
+    public FeedbackController(
+        SubmitFeedbackCommandHandler submitFeedbackCommandHandler,
+        GetAnalyzedFeedbacksQueryHandler getAnalyzedFeedbacksQueryHandler,
+        IFeatureCategoryReadRepository featureCategoryReadRepository,
+        ITimeProvider timeProvider)
     {
         _submitFeedbackCommandHandler = submitFeedbackCommandHandler;
+        _getAnalyzedFeedbacksQueryHandler = getAnalyzedFeedbacksQueryHandler;
+        _featureCategoryReadRepository = featureCategoryReadRepository;
         _timeProvider = timeProvider;
     }
 
@@ -61,5 +71,43 @@ public class FeedbackController : ControllerBase
                 Instance = HttpContext.Request.Path
             });
         }
+    }
+
+    [HttpGet("analyzed")]
+    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(AnalyzedFeedbackListDto))]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> GetAnalyzedFeedbacks([FromQuery] GetAnalyzedFeedbacksRequestDto request)
+    {
+        GetAnalyzedFeedbacksQuery query = request.ToQuery();
+        PagedResult<AnalyzedFeedbackReadModel> result = await _getAnalyzedFeedbacksQueryHandler.HandleAsync(query, HttpContext.RequestAborted);
+
+        // Fetch all feature categories once
+        IEnumerable<FeedbackSorter.Application.FeatureCategories.Queries.FeatureCategoryReadModel> allFeatureCategories = await _featureCategoryReadRepository.GetAllAsync();
+
+        var response = new AnalyzedFeedbackListDto
+        {
+            PageNumber = result.PageNumber,
+            PageSize = result.PageSize,
+            TotalPages = result.TotalPages,
+            TotalCount = result.TotalCount,
+            Items = result.Items.Select(item => new AnalyzedFeedbackItemDto
+            {
+                Id = item.Id.Value,
+                Title = item.Title,
+                Text = item.FullFeedbackText,
+                SubmittedAt = item.SubmittedAt,
+                FeedbackCategories = item.FeedbackCategories,
+                FeatureCategories = allFeatureCategories
+                    .Where(fc => item.FeatureCategoryIds.Any(id => id.Value == fc.Id.Value))
+                    .Select(fc => new FeatureCategoryDto
+                    {
+                        Id = fc.Id.Value,
+                        Name = fc.Name.Value
+                    }),
+                Sentiment = item.Sentiment
+            })
+        };
+
+        return Ok(response);
     }
 }
