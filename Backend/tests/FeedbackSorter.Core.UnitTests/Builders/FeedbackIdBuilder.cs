@@ -14,6 +14,6 @@ public class FeedbackIdBuilder
 
     public FeedbackId Build()
     {
-        return new FeedbackId(_value);
+        return FeedbackId.FromGuid(_value);
     }
 }

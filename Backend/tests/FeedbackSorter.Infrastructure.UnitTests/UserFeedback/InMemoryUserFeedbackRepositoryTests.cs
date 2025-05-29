@@ -133,7 +133,7 @@ public class InMemoryUserFeedbackRepositoryTests
 
         // Assert
         Assert.Single(result);
-        Assert.Contains(result, f => f.Id == analyzedFeedback.Id);
+        Assert.Contains(result, f => f.Id.Value == analyzedFeedback.Id.Value);
     }
 
     [Fact]
@@ -163,8 +163,8 @@ public class InMemoryUserFeedbackRepositoryTests
 
         // Assert
         Assert.Equal(2, result.Count());
-        Assert.Contains(result, f => f.Id == feedback1.Id);
-        Assert.Contains(result, f => f.Id == feedback3.Id);
+        Assert.Contains(result, f => f.Id.Value == feedback1.Id.Value);
+        Assert.Contains(result, f => f.Id.Value == feedback3.Id.Value);
     }
 
     [Fact]
@@ -197,8 +197,8 @@ public class InMemoryUserFeedbackRepositoryTests
 
         // Assert
         Assert.Equal(2, result.Count());
-        Assert.Contains(result, f => f.Id == feedback1.Id);
-        Assert.Contains(result, f => f.Id == feedback3.Id);
+        Assert.Contains(result, f => f.Id.Value == feedback1.Id.Value);
+        Assert.Contains(result, f => f.Id.Value == feedback3.Id.Value);
     }
 
     [Fact]
@@ -258,30 +258,30 @@ public class InMemoryUserFeedbackRepositoryTests
         {
             if (sortAscending)
             {
-                Assert.Equal(feedback1.Id, result[0].Id);
-                Assert.Equal(feedback2.Id, result[1].Id);
-                Assert.Equal(feedback3.Id, result[2].Id);
+                Assert.Equal(feedback1.Id.Value, result[0].Id.Value);
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value);
+                Assert.Equal(feedback3.Id.Value, result[2].Id.Value);
             }
             else
             {
-                Assert.Equal(feedback3.Id, result[0].Id);
-                Assert.Equal(feedback2.Id, result[1].Id);
-                Assert.Equal(feedback1.Id, result[2].Id);
+                Assert.Equal(feedback3.Id.Value, result[0].Id.Value);
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value);
+                Assert.Equal(feedback1.Id.Value, result[2].Id.Value);
             }
         }
         else if (sortBy == UserFeedbackSortBy.Title)
         {
             if (sortAscending)
             {
-                Assert.Equal(feedback3.Id, result[0].Id); // A Title
-                Assert.Equal(feedback2.Id, result[1].Id); // B Title
-                Assert.Equal(feedback1.Id, result[2].Id); // C Title
+                Assert.Equal(feedback3.Id.Value, result[0].Id.Value); // A Title
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value); // B Title
+                Assert.Equal(feedback1.Id.Value, result[2].Id.Value); // C Title
             }
             else
             {
-                Assert.Equal(feedback1.Id, result[0].Id); // C Title
-                Assert.Equal(feedback2.Id, result[1].Id); // B Title
-                Assert.Equal(feedback3.Id, result[2].Id); // A Title
+                Assert.Equal(feedback1.Id.Value, result[0].Id.Value); // C Title
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value); // B Title
+                Assert.Equal(feedback3.Id.Value, result[2].Id.Value); // A Title
             }
         }
     }
@@ -307,7 +307,7 @@ public class InMemoryUserFeedbackRepositoryTests
 
         // Assert
         Assert.Single(result);
-        Assert.Contains(result, f => f.Id == failedFeedback.Id);
+        Assert.Contains(result, f => f.Id.Value == failedFeedback.Id.Value);
     }
 
     [Fact]
@@ -367,30 +367,30 @@ public class InMemoryUserFeedbackRepositoryTests
         {
             if (sortAscending)
             {
-                Assert.Equal(feedback1.Id, result[0].Id);
-                Assert.Equal(feedback2.Id, result[1].Id);
-                Assert.Equal(feedback3.Id, result[2].Id);
+                Assert.Equal(feedback1.Id.Value, result[0].Id.Value);
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value);
+                Assert.Equal(feedback3.Id.Value, result[2].Id.Value);
             }
             else
             {
-                Assert.Equal(feedback3.Id, result[0].Id);
-                Assert.Equal(feedback2.Id, result[1].Id);
-                Assert.Equal(feedback1.Id, result[2].Id);
+                Assert.Equal(feedback3.Id.Value, result[0].Id.Value);
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value);
+                Assert.Equal(feedback1.Id.Value, result[2].Id.Value);
             }
         }
         else if (sortBy == UserFeedbackSortBy.Title) // For failed analysis, "title" sorts by truncated text
         {
             if (sortAscending)
             {
-                Assert.Equal(feedback3.Id, result[0].Id); // A Text
-                Assert.Equal(feedback2.Id, result[1].Id); // B Text
-                Assert.Equal(feedback1.Id, result[2].Id); // C Text
+                Assert.Equal(feedback3.Id.Value, result[0].Id.Value); // A Text
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value); // B Text
+                Assert.Equal(feedback1.Id.Value, result[2].Id.Value); // C Text
             }
             else
             {
-                Assert.Equal(feedback1.Id, result[0].Id); // C Text
-                Assert.Equal(feedback2.Id, result[1].Id); // B Text
-                Assert.Equal(feedback3.Id, result[2].Id); // A Text
+                Assert.Equal(feedback1.Id.Value, result[0].Id.Value); // C Text
+                Assert.Equal(feedback2.Id.Value, result[1].Id.Value); // B Text
+                Assert.Equal(feedback3.Id.Value, result[2].Id.Value); // A Text
             }
         }
     }

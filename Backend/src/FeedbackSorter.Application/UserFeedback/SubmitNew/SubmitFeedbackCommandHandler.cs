@@ -29,7 +29,7 @@ public class SubmitFeedbackCommandHandler
         ArgumentNullException.ThrowIfNull(command);
 
         // 1. Generate ID and Timestamp
-        var feedbackId = new FeedbackId(Guid.NewGuid());
+        var feedbackId = FeedbackId.New();
         var submittedAt = new Timestamp(_timeProvider);
 
         // 2. Create initial UserFeedback with WaitingForAnalysis status
