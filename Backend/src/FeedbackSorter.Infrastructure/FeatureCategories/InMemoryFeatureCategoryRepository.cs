@@ -54,6 +54,16 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
 
         return Task.FromResult<IEnumerable<FeatureCategoryReadModel>>(featureCategories);
     }
+
+    public Task<IEnumerable<FeatureCategoryReadModel>> GetFeatureCategoriesByNamesAsync(IEnumerable<string> names)
+    {
+        var filteredCategories = _featureCategories
+            .Where(fc => names.Contains(fc.Name.Value))
+            .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
+            .ToList();
+
+        return Task.FromResult<IEnumerable<FeatureCategoryReadModel>>(filteredCategories);
+    }
 }
 
 // Helper class for seeding data, assuming ITimeProvider is needed

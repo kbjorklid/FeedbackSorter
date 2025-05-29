@@ -129,11 +129,15 @@ public class InMemoryUserFeedbackRepositoryTests
         int pageSize = 10;
 
         // Act
-        IEnumerable<AnalyzedFeedbackReadModel> result = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
+        PagedResult<AnalyzedFeedbackReadModel> pagedResult = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
 
         // Assert
-        Assert.Single(result);
-        Assert.Contains(result, f => f.Id.Value == analyzedFeedback.Id.Value);
+        Assert.Single(pagedResult.Items);
+        Assert.Contains(pagedResult.Items, f => f.Id.Value == analyzedFeedback.Id.Value);
+        Assert.Equal(1, pagedResult.TotalCount);
+        Assert.Equal(1, pagedResult.TotalPages);
+        Assert.Equal(pageNumber, pagedResult.PageNumber);
+        Assert.Equal(pageSize, pagedResult.PageSize);
     }
 
     [Fact]
@@ -159,12 +163,16 @@ public class InMemoryUserFeedbackRepositoryTests
         int pageSize = 10;
 
         // Act
-        IEnumerable<AnalyzedFeedbackReadModel> result = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
+        PagedResult<AnalyzedFeedbackReadModel> pagedResult = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
 
         // Assert
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result, f => f.Id.Value == feedback1.Id.Value);
-        Assert.Contains(result, f => f.Id.Value == feedback3.Id.Value);
+        Assert.Equal(2, pagedResult.Items.Count());
+        Assert.Contains(pagedResult.Items, f => f.Id.Value == feedback1.Id.Value);
+        Assert.Contains(pagedResult.Items, f => f.Id.Value == feedback3.Id.Value);
+        Assert.Equal(2, pagedResult.TotalCount);
+        Assert.Equal(1, pagedResult.TotalPages);
+        Assert.Equal(pageNumber, pagedResult.PageNumber);
+        Assert.Equal(pageSize, pagedResult.PageSize);
     }
 
     [Fact]
@@ -193,12 +201,16 @@ public class InMemoryUserFeedbackRepositoryTests
         int pageSize = 10;
 
         // Act
-        IEnumerable<AnalyzedFeedbackReadModel> result = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
+        PagedResult<AnalyzedFeedbackReadModel> pagedResult = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
 
         // Assert
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result, f => f.Id.Value == feedback1.Id.Value);
-        Assert.Contains(result, f => f.Id.Value == feedback3.Id.Value);
+        Assert.Equal(2, pagedResult.Items.Count());
+        Assert.Contains(pagedResult.Items, f => f.Id.Value == feedback1.Id.Value);
+        Assert.Contains(pagedResult.Items, f => f.Id.Value == feedback3.Id.Value);
+        Assert.Equal(2, pagedResult.TotalCount);
+        Assert.Equal(1, pagedResult.TotalPages);
+        Assert.Equal(pageNumber, pagedResult.PageNumber);
+        Assert.Equal(pageSize, pagedResult.PageSize);
     }
 
     [Fact]
@@ -215,10 +227,14 @@ public class InMemoryUserFeedbackRepositoryTests
         int pageSize = 2;
 
         // Act
-        IEnumerable<AnalyzedFeedbackReadModel> result = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
+        PagedResult<AnalyzedFeedbackReadModel> pagedResult = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
 
         // Assert
-        Assert.Equal(2, result.Count());
+        Assert.Equal(2, pagedResult.Items.Count());
+        Assert.Equal(5, pagedResult.TotalCount);
+        Assert.Equal(3, pagedResult.TotalPages); // 5 items, 2 per page = 3 pages
+        Assert.Equal(pageNumber, pagedResult.PageNumber);
+        Assert.Equal(pageSize, pagedResult.PageSize);
     }
 
     [Theory]
@@ -251,9 +267,15 @@ public class InMemoryUserFeedbackRepositoryTests
         int pageSize = 10;
 
         // Act
-        var result = (await _repository.GetPagedListAsync(filter, pageNumber, pageSize)).ToList();
+        PagedResult<AnalyzedFeedbackReadModel> pagedResult = await _repository.GetPagedListAsync(filter, pageNumber, pageSize);
+        var result = pagedResult.Items.ToList();
 
         // Assert
+        Assert.Equal(3, pagedResult.TotalCount);
+        Assert.Equal(1, pagedResult.TotalPages);
+        Assert.Equal(pageNumber, pagedResult.PageNumber);
+        Assert.Equal(pageSize, pagedResult.PageSize);
+
         if (sortBy == UserFeedbackSortBy.SubmittedAt)
         {
             if (sortAscending)

@@ -37,7 +37,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
-    public Task<List<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
+    public Task<PagedResult<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
 
@@ -53,6 +53,10 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
 
         query = query.Where(uf => uf.AnalysisStatus == AnalysisStatus.Analyzed);
 
+        // Calculate total count before sorting and pagination
+        int totalCount = query.Count();
+        int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
         query = ApplySorting(query, filter.SortBy, filter.SortAscending);
 
         var pagedList = query
@@ -61,7 +65,9 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             .Select(MapToAnalyzedReadModel)
             .ToList();
 
-        return Task.FromResult(pagedList);
+        var pagedResult = new PagedResult<AnalyzedFeedbackReadModel>(pagedList, pageNumber, pageSize, totalCount);
+
+        return Task.FromResult(pagedResult);
     }
 
     public Task<List<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
