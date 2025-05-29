@@ -37,7 +37,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
-    public Task<IEnumerable<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
+    public Task<List<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
 
@@ -58,14 +58,13 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         var pagedList = query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .Select(MapToAnalyzedReadModel)
             .ToList();
 
-        IEnumerable<AnalyzedFeedbackReadModel> readModels = pagedList.Select(MapToAnalyzedReadModel);
-
-        return Task.FromResult(readModels.AsEnumerable());
+        return Task.FromResult(pagedList);
     }
 
-    public Task<IEnumerable<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
+    public Task<List<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
     {
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable()
             .Where(uf => uf.AnalysisStatus == AnalysisStatus.AnalysisFailed);
@@ -75,11 +74,10 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         var pagedList = query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .Select(MapToFailedToAnalyzeReadModel)
             .ToList();
 
-        IEnumerable<FailedToAnalyzeFeedbackReadModel> readModels = pagedList.Select(MapToFailedToAnalyzeReadModel);
-
-        return Task.FromResult(readModels.AsEnumerable());
+        return Task.FromResult(pagedList);
     }
 
     private static IQueryable<UserFeedback> ApplySorting(IQueryable<UserFeedback> query, UserFeedbackSortBy? sortBy, bool sortAscending)
