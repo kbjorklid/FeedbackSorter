@@ -1,12 +1,21 @@
+using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.UserFeedback;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
+
 namespace FeedbackSorter.Infrastructure.Feedback;
 
 public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeedbackReadRepository
 {
     private readonly Dictionary<FeedbackId, UserFeedback> _userFeedbacks = new();
+    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
+
+    public InMemoryUserFeedbackRepository(IFeatureCategoryReadRepository featureCategoryReadRepository)
+    {
+        _featureCategoryReadRepository = featureCategoryReadRepository;
+    }
 
     public Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
@@ -37,7 +46,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
-    public Task<PagedResult<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
+    public async Task<PagedResult<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
 
@@ -59,15 +68,18 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
 
         query = ApplySorting(query, filter.SortBy, filter.SortAscending);
 
+        // Fetch all feature categories once for mapping
+        IEnumerable<FeatureCategoryReadModel> allFeatureCategories = await _featureCategoryReadRepository.GetAllAsync();
+
         var pagedList = query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(MapToAnalyzedReadModel)
+            .Select(uf => MapToAnalyzedReadModel(uf, allFeatureCategories))
             .ToList();
 
         var pagedResult = new PagedResult<AnalyzedFeedbackReadModel>(pagedList, pageNumber, pageSize, totalCount);
 
-        return Task.FromResult(pagedResult);
+        return pagedResult;
     }
 
     public Task<List<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
@@ -96,7 +108,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         };
     }
 
-    private static AnalyzedFeedbackReadModel MapToAnalyzedReadModel(UserFeedback userFeedback)
+    private AnalyzedFeedbackReadModel MapToAnalyzedReadModel(UserFeedback userFeedback, IEnumerable<FeatureCategoryReadModel> allFeatureCategories)
     {
         // This method should only be called for successfully analyzed feedback
         if (userFeedback.AnalysisResult == null)
@@ -110,7 +122,8 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             Title = userFeedback.AnalysisResult.Title.Value,
             SubmittedAt = userFeedback.SubmittedAt.Value,
             FeedbackCategories = userFeedback.AnalysisResult.FeedbackCategories,
-            FeatureCategoryIds = userFeedback.AnalysisResult.FeatureCategoryIds,
+            FeatureCategories = allFeatureCategories
+                .Where(fc => userFeedback.AnalysisResult.FeatureCategoryIds.Any(id => id.Value == fc.Id.Value)),
             Sentiment = userFeedback.AnalysisResult.Sentiment,
             FullFeedbackText = userFeedback.Text.Value
         };

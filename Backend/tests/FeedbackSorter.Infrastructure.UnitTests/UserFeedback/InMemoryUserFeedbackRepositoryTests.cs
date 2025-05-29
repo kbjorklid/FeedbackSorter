@@ -1,20 +1,27 @@
+using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Core.UnitTests.Builders;
 using FeedbackSorter.Infrastructure.Feedback;
 using FeedbackSorter.SharedKernel;
-
+using NSubstitute;
 
 namespace FeedbackSorter.Infrastructure.UnitTests.UserFeedback;
 
 public class InMemoryUserFeedbackRepositoryTests
 {
     private readonly InMemoryUserFeedbackRepository _repository;
+    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
 
     public InMemoryUserFeedbackRepositoryTests()
     {
-        _repository = new InMemoryUserFeedbackRepository();
+        _featureCategoryReadRepository = Substitute.For<IFeatureCategoryReadRepository>();
+        _repository = new InMemoryUserFeedbackRepository(_featureCategoryReadRepository);
+
+        // Setup default behavior for GetAllAsync to return an empty list
+        _featureCategoryReadRepository.GetAllAsync().Returns(Task.FromResult(Enumerable.Empty<FeatureCategoryReadModel>()));
     }
 
     [Fact]
@@ -182,6 +189,13 @@ public class InMemoryUserFeedbackRepositoryTests
         FeatureCategoryId featureId1 = new FeatureCategoryIdBuilder().Build();
         FeatureCategoryId featureId2 = new FeatureCategoryIdBuilder().Build();
 
+        // Setup mock to return specific feature categories
+        _featureCategoryReadRepository.GetAllAsync().Returns(Task.FromResult<IEnumerable<FeatureCategoryReadModel>>(new List<FeatureCategoryReadModel>
+        {
+            new FeatureCategoryReadModel(featureId1, new FeatureCategoryName("Feature1")),
+            new FeatureCategoryReadModel(featureId2, new FeatureCategoryName("Feature2"))
+        }));
+
         Core.Feedback.UserFeedback feedback1 = new UserFeedbackBuilder().WithAnalysisStatus(AnalysisStatus.Analyzed)
             .WithAnalysisResult(new FeedbackAnalysisResultBuilder().WithFeatureCategoryIds(new List<FeatureCategoryId> { featureId1 }).Build())
             .Build();
@@ -303,7 +317,7 @@ public class InMemoryUserFeedbackRepositoryTests
             {
                 Assert.Equal(feedback1.Id.Value, result[0].Id.Value); // C Title
                 Assert.Equal(feedback2.Id.Value, result[1].Id.Value); // B Title
-                Assert.Equal(feedback3.Id.Value, result[2].Id.Value); // A Title
+                Assert.Equal(feedback3.Id.Value, result[2].Id.Value); // A Text
             }
         }
     }

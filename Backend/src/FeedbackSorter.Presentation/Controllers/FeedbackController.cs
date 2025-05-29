@@ -1,5 +1,4 @@
 using System.Net;
-using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Application.UserFeedback.SubmitNew;
 using FeedbackSorter.Presentation.UserFeedback;
@@ -14,18 +13,15 @@ public class FeedbackController : ControllerBase
 {
     private readonly SubmitFeedbackCommandHandler _submitFeedbackCommandHandler;
     private readonly GetAnalyzedFeedbacksQueryHandler _getAnalyzedFeedbacksQueryHandler;
-    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
     private readonly ITimeProvider _timeProvider;
 
     public FeedbackController(
         SubmitFeedbackCommandHandler submitFeedbackCommandHandler,
         GetAnalyzedFeedbacksQueryHandler getAnalyzedFeedbacksQueryHandler,
-        IFeatureCategoryReadRepository featureCategoryReadRepository,
         ITimeProvider timeProvider)
     {
         _submitFeedbackCommandHandler = submitFeedbackCommandHandler;
         _getAnalyzedFeedbacksQueryHandler = getAnalyzedFeedbacksQueryHandler;
-        _featureCategoryReadRepository = featureCategoryReadRepository;
         _timeProvider = timeProvider;
     }
 
@@ -81,9 +77,6 @@ public class FeedbackController : ControllerBase
         GetAnalyzedFeedbacksQuery query = request.ToQuery();
         PagedResult<AnalyzedFeedbackReadModel> result = await _getAnalyzedFeedbacksQueryHandler.HandleAsync(query, HttpContext.RequestAborted);
 
-        // Fetch all feature categories once
-        IEnumerable<FeedbackSorter.Application.FeatureCategories.Queries.FeatureCategoryReadModel> allFeatureCategories = await _featureCategoryReadRepository.GetAllAsync();
-
         var response = new AnalyzedFeedbackListDto
         {
             PageNumber = result.PageNumber,
@@ -97,13 +90,11 @@ public class FeedbackController : ControllerBase
                 Text = item.FullFeedbackText,
                 SubmittedAt = item.SubmittedAt,
                 FeedbackCategories = item.FeedbackCategories,
-                FeatureCategories = allFeatureCategories
-                    .Where(fc => item.FeatureCategoryIds.Any(id => id.Value == fc.Id.Value))
-                    .Select(fc => new FeatureCategoryDto
-                    {
-                        Id = fc.Id.Value,
-                        Name = fc.Name.Value
-                    }),
+                FeatureCategories = item.FeatureCategories.Select(fc => new FeatureCategoryDto
+                {
+                    Id = fc.Id.Value,
+                    Name = fc.Name.Value
+                }),
                 Sentiment = item.Sentiment
             })
         };
