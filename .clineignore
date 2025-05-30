@@ -1,0 +1,4 @@
+*.ps1
+/Backend/.idea
+**/bin
+**/obj
