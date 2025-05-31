@@ -39,24 +39,24 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} not found for update."));
         }
         _userFeedbacks[userFeedback.Id] = userFeedback;
-        
+
         Console.WriteLine("updated, " + userFeedback.AnalysisStatus + " " + userFeedback.Id.Value);
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
     public Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
-        
+
         Console.WriteLine($"GetPagedListAsync, contains : {_userFeedbacks.Count}");
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
-        
+
         Console.WriteLine("start" + query.Count());
 
         if (filter.FeedbackCategories != null && filter.FeedbackCategories.Any())
         {
 
             query = query.Where(uf => uf.AnalysisResult != null && uf.AnalysisResult.FeedbackCategories.Any(fc => filter.FeedbackCategories.Contains(fc)));
-       
+
             Console.WriteLine("fbcat" + query.Count());
         }
 
@@ -65,12 +65,12 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             Console.WriteLine("feature cats" + string.Join(", ", filter.FeatureCategoryIds));
             query = query.Where(uf => uf.AnalysisResult != null
                 && uf.AnalysisResult.FeatureCategories.Any(fc => filter.FeatureCategoryIds.Contains(fc.Id)));
-                
+
             Console.WriteLine("feacat" + query.Count());
         }
 
         query = query.Where(uf => uf.AnalysisStatus == AnalysisStatus.Analyzed);
-        
+
         Console.WriteLine("analyzed" + query.Count());
 
         // Calculate total count before sorting and pagination

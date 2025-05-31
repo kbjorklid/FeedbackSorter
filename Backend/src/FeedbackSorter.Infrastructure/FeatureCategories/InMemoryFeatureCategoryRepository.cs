@@ -72,7 +72,7 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
 
     public Task<ISet<CoreFeatureCategory>> GetByNamesAsync(ICollection<string> names)
     {
-        var results = (ISet<CoreFeatureCategory>) _featureCategories
+        var results = (ISet<CoreFeatureCategory>)_featureCategories
             .Where(fc => names.Contains(fc.Name.Value))
             .ToHashSet();
 

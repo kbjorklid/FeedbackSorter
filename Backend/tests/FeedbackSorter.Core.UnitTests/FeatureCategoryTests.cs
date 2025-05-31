@@ -1,6 +1,5 @@
 using FeedbackSorter.Core.UnitTests.Builders;
 using FeedbackSorter.SharedKernel;
-using NSubstitute;
 
 namespace FeedbackSorter.Core.UnitTests;
 
@@ -29,7 +28,7 @@ public class FeatureCategoryTests
     {
         // Arrange
 
-        var featureCategory = new FeatureCategoryBuilder().WithName(new FeatureCategories.FeatureCategoryName("old name"))
+        FeatureCategories.FeatureCategory featureCategory = new FeatureCategoryBuilder().WithName(new FeatureCategories.FeatureCategoryName("old name"))
             .Build();
 
         FeatureCategories.FeatureCategoryName newName = new FeatureCategoryNameBuilder().WithValue("Updated Name").Build();

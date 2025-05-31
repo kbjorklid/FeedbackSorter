@@ -1,7 +1,5 @@
-using System.Text;
 using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.LLM;
-using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
@@ -26,7 +24,8 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
             var bogusFeedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.FeatureRequest };
             var bogusFeatureCategoryNames = new HashSet<string> { "Some Feature Category" };
 
-            var successResult = new LLMAnalysisResult() {
+            var successResult = new LLMAnalysisResult()
+            {
                 Title = bogusTitle,
                 Sentiment = bogusSentiment,
                 FeedbackCategories = bogusFeedbackCategories,
