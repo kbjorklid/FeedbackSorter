@@ -53,4 +53,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.AddSingleton(TimeProviderMock);
         });
     }
+
+    public void ResetMocks()
+    {
+        UserFeedbackReadRepositoryMock.ClearReceivedCalls();
+        UserFeedbackRepositoryMock.ClearReceivedCalls();
+        FeatureCategoryRepositoryMock.ClearReceivedCalls();
+        FeatureCategoryReadRepositoryMock.ClearReceivedCalls();
+        LLMFeedbackAnalyzerMock.ClearReceivedCalls();
+        TimeProviderMock.ClearReceivedCalls();
+    }
 }
