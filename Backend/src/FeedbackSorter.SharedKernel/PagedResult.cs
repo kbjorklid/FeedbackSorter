@@ -16,4 +16,10 @@ public class PagedResult<T>
         TotalCount = totalCount >= 0 ? totalCount : throw new ArgumentOutOfRangeException(nameof(totalCount));
         TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
     }
+
+    public PagedResult<TNew> Map<TNew>(Func<T, TNew> converter)
+    {
+        IEnumerable<TNew> newItems = Items.Select(converter);
+        return new PagedResult<TNew>(newItems, PageNumber, PageSize, TotalCount);
+    }
 }

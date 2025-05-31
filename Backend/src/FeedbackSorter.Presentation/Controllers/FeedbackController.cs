@@ -5,8 +5,9 @@ using FeedbackSorter.Application.UserFeedback.SubmitNew;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace FeedbackSorter.Presentation.Controllers;
+namespace FeedbackSorter.Presentation.Feedback;
 
 [ApiController]
 [Route("feedback")]
@@ -34,15 +35,7 @@ public class FeedbackController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Invalid Input",
-                Detail = "One or more validation errors occurred.",
-                Status = (int)HttpStatusCode.BadRequest,
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-                Instance = HttpContext.Request.Path,
-                Extensions = { { "errors", ModelState } }
-            });
+            return ProblemDetailsBadRequest(ModelState);
         }
 
         var command = new SubmitFeedbackCommand(input.Text);
@@ -51,22 +44,13 @@ public class FeedbackController : ControllerBase
         if (result.IsSuccess)
         {
             var acknowledgement = new FeedbackSubmissionAcknowledgementDto(
-                result.Value.Value, // FeedbackId is a record struct, so access its Value
-                "Feedback received and queued for analysis.",
-                new Timestamp(_timeProvider).Value // Use the time provider for consistency
-            );
+                result.Value.Value,
+                "Feedback received and queued for analysis.");
             return Accepted(acknowledgement);
         }
         else
         {
-            return StatusCode((int)HttpStatusCode.InternalServerError, new ProblemDetails
-            {
-                Title = "Internal Server Error",
-                Detail = result.Error,
-                Status = (int)HttpStatusCode.InternalServerError,
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                Instance = HttpContext.Request.Path
-            });
+            return ProblemDetailsInternalServerError(result.Error);
         }
     }
 
@@ -79,28 +63,56 @@ public class FeedbackController : ControllerBase
         PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> result =
             await _getAnalyzedFeedbacksQueryHandler.HandleAsync(query, HttpContext.RequestAborted);
 
-        var response = new AnalyzedFeedbackListDto
-        {
-            PageNumber = result.PageNumber,
-            PageSize = result.PageSize,
-            TotalPages = result.TotalPages,
-            TotalCount = result.TotalCount,
-            Items = result.Items.Select(item => new AnalyzedFeedbackItemDto
-            {
-                Id = item.Id.Value,
-                Title = item.Title,
-                Text = item.FullFeedbackText,
-                SubmittedAt = item.SubmittedAt,
-                FeedbackCategories = item.FeedbackCategories,
-                FeatureCategories = item.FeatureCategories.Select(fc => new FeatureCategoryDto
-                {
-                    Id = fc.Id.Value,
-                    Name = fc.Name.Value
-                }),
-                Sentiment = item.Sentiment
-            })
-        };
+        PagedResult<AnalyzedFeedbackItemDto> response = result.Map(ToAnalyzedFeedbackItemDto);
 
         return Ok(response);
+    }
+
+    private AnalyzedFeedbackItemDto ToAnalyzedFeedbackItemDto(AnalyzedFeedbackReadModel<FeatureCategoryReadModel> item)
+    {
+        return new AnalyzedFeedbackItemDto
+        {
+            Id = item.Id.Value,
+            Title = item.Title,
+            Text = item.FullFeedbackText,
+            SubmittedAt = item.SubmittedAt,
+            FeedbackCategories = item.FeedbackCategories,
+            FeatureCategories = item.FeatureCategories.Select(ToFeatureCategoryDto),
+            Sentiment = item.Sentiment
+        };
+    }
+
+    private FeatureCategoryDto ToFeatureCategoryDto(FeatureCategoryReadModel fc)
+    {
+        return new FeatureCategoryDto
+        {
+            Id = fc.Id.Value,
+            Name = fc.Name.Value
+        };
+    }
+
+    private IActionResult ProblemDetailsBadRequest(ModelStateDictionary modelState)
+    {
+        return BadRequest(new ProblemDetails
+        {
+            Title = "Invalid Input",
+            Detail = "One or more validation errors occurred.",
+            Status = (int)HttpStatusCode.BadRequest,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+            Instance = HttpContext.Request.Path,
+            Extensions = { { "errors", modelState } }
+        });
+    }
+
+    private IActionResult ProblemDetailsInternalServerError(string errorDetail)
+    {
+        return StatusCode((int)HttpStatusCode.InternalServerError, new ProblemDetails
+        {
+            Title = "Internal Server Error",
+            Detail = errorDetail,
+            Status = (int)HttpStatusCode.InternalServerError,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            Instance = HttpContext.Request.Path
+        });
     }
 }

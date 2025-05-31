@@ -2,6 +2,5 @@ namespace FeedbackSorter.Presentation.UserFeedback;
 
 public record FeedbackSubmissionAcknowledgementDto(
     Guid Id,
-    string Message,
-    DateTimeOffset SubmittedAt
+    string Message
 );

@@ -64,7 +64,6 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         FeedbackSubmissionAcknowledgementDto? acknowledgement = await response.Content.ReadFromJsonAsync<FeedbackSubmissionAcknowledgementDto>();
         Assert.NotNull(acknowledgement);
         Assert.Equal("Feedback received and queued for analysis.", acknowledgement.Message);
-        Assert.Equal(expectedTimestamp, acknowledgement.SubmittedAt);
 
         await _factory.UserFeedbackRepositoryMock.Received(1).AddAsync(Arg.Is<UserFeedback>(uf => uf.Text.Value == feedbackText));
         await _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(

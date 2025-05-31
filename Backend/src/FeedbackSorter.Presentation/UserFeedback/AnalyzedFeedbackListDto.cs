@@ -1,10 +1,11 @@
+using FeedbackSorter.SharedKernel;
+
 namespace FeedbackSorter.Presentation.UserFeedback;
 
-public class AnalyzedFeedbackListDto
+public class AnalyzedFeedbackListDto : PagedResult<AnalyzedFeedbackItemDto>
 {
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
-    public int TotalPages { get; set; }
-    public int TotalCount { get; set; }
-    public IEnumerable<AnalyzedFeedbackItemDto> Items { get; set; } = Enumerable.Empty<AnalyzedFeedbackItemDto>();
+    public AnalyzedFeedbackListDto(IEnumerable<AnalyzedFeedbackItemDto> items, int pageNumber, int pageSize, int totalCount)
+        : base(items, pageNumber, pageSize, totalCount)
+    {
+    }
 }

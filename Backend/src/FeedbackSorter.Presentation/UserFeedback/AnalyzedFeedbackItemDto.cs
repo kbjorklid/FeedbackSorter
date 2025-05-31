@@ -8,8 +8,8 @@ public class AnalyzedFeedbackItemDto
     public string Title { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
     public DateTime SubmittedAt { get; set; }
-    public IEnumerable<FeedbackCategoryType> FeedbackCategories { get; set; } = Enumerable.Empty<FeedbackCategoryType>();
-    public IEnumerable<FeatureCategoryDto> FeatureCategories { get; set; } = Enumerable.Empty<FeatureCategoryDto>();
+    public IEnumerable<FeedbackCategoryType> FeedbackCategories { get; set; } = [];
+    public IEnumerable<FeatureCategoryDto> FeatureCategories { get; set; } = [];
     public Sentiment Sentiment { get; set; }
 }
 
