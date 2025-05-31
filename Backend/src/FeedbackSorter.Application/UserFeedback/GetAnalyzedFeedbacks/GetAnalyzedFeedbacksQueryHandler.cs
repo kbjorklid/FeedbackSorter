@@ -1,9 +1,9 @@
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.FeatureCategories.Queries;
+using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Application.UserFeedback.Queries;
+namespace FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 
 public class GetAnalyzedFeedbacksQueryHandler
 {

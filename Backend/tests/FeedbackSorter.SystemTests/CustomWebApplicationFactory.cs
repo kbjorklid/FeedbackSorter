@@ -15,7 +15,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public IUserFeedbackRepository UserFeedbackRepositoryMock { get; private set; } = null!;
     public IFeatureCategoryRepository FeatureCategoryRepositoryMock { get; private set; } = null!;
     public IFeatureCategoryReadRepository FeatureCategoryReadRepositoryMock { get; private set; } = null!;
-    public ILLMFeedbackAnalyzer LLMFeedbackAnalyzerMock { get; private set; } = null!;
+    public ILlmFeedbackAnalyzer LLMFeedbackAnalyzerMock { get; private set; } = null!;
     public ITimeProvider TimeProviderMock { get; private set; } = null!;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -28,7 +28,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                               descriptor.ServiceType == typeof(IUserFeedbackRepository) ||
                               descriptor.ServiceType == typeof(IFeatureCategoryRepository) ||
                               descriptor.ServiceType == typeof(IFeatureCategoryReadRepository) ||
-                              descriptor.ServiceType == typeof(ILLMFeedbackAnalyzer) ||
+                              descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider))
                 .ToList();
 
@@ -42,7 +42,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             UserFeedbackRepositoryMock = Substitute.For<IUserFeedbackRepository>();
             FeatureCategoryRepositoryMock = Substitute.For<IFeatureCategoryRepository>();
             FeatureCategoryReadRepositoryMock = Substitute.For<IFeatureCategoryReadRepository>();
-            LLMFeedbackAnalyzerMock = Substitute.For<ILLMFeedbackAnalyzer>();
+            LLMFeedbackAnalyzerMock = Substitute.For<ILlmFeedbackAnalyzer>();
             TimeProviderMock = Substitute.For<ITimeProvider>();
 
             services.AddSingleton(UserFeedbackReadRepositoryMock);

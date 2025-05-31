@@ -1,7 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using FeedbackSorter.Application.FeatureCategories.Queries;
-using FeedbackSorter.Application.UserFeedback.Queries;
+using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.LLM;
+using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Presentation.UserFeedback;
@@ -45,7 +46,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
                 Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
                 Arg.Any<IEnumerable<Sentiment>>(),
                 Arg.Any<IEnumerable<FeedbackCategoryType>>())
-            .Returns(Result<LLMAnalysisResult>.Success(new LLMAnalysisResult
+            .Returns(Result<LlmAnalysisResult>.Success(new LlmAnalysisResult
             {
                 Title = new FeedbackTitle("Test Title"),
                 FeatureCategoryNames = new HashSet<string>(),
@@ -179,7 +180,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
                 Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
                 Arg.Any<IEnumerable<Sentiment>>(),
                 Arg.Any<IEnumerable<FeedbackCategoryType>>())
-            .Returns(Result<LLMAnalysisResult>.Success(new LLMAnalysisResult
+            .Returns(Result<LlmAnalysisResult>.Success(new LlmAnalysisResult
             {
                 Title = expectedTitle,
                 FeatureCategoryNames = expectedFeatureCategories,
@@ -250,7 +251,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
                 Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
                 Arg.Any<IEnumerable<Sentiment>>(),
                 Arg.Any<IEnumerable<FeedbackCategoryType>>())
-            .Returns(Result<LLMAnalysisResult>.Failure(errorMessage));
+            .Returns(Result<LlmAnalysisResult>.Failure(errorMessage));
 
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);

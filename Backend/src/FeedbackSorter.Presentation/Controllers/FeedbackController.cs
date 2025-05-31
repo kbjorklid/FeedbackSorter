@@ -1,6 +1,6 @@
 using System.Net;
-using FeedbackSorter.Application.FeatureCategories.Queries;
-using FeedbackSorter.Application.UserFeedback.Queries;
+using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.UserFeedback.SubmitNew;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
@@ -91,7 +91,7 @@ public class FeedbackController : ControllerBase
         };
     }
 
-    private IActionResult ProblemDetailsBadRequest(ModelStateDictionary modelState)
+    private BadRequestObjectResult ProblemDetailsBadRequest(ModelStateDictionary modelState)
     {
         return BadRequest(new ProblemDetails
         {
@@ -104,7 +104,7 @@ public class FeedbackController : ControllerBase
         });
     }
 
-    private IActionResult ProblemDetailsInternalServerError(string errorDetail)
+    private ObjectResult ProblemDetailsInternalServerError(string errorDetail)
     {
         return StatusCode((int)HttpStatusCode.InternalServerError, new ProblemDetails
         {

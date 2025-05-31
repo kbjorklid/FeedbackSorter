@@ -1,4 +1,6 @@
-using FeedbackSorter.Application.UserFeedback.Queries;
+using FeedbackSorter.Application.UserFeedback;
+using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 
 namespace FeedbackSorter.Presentation.UserFeedback;

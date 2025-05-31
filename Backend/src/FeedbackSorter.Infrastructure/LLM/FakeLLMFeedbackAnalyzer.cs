@@ -1,15 +1,15 @@
-using FeedbackSorter.Application.FeatureCategories.Queries;
+using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Infrastructure.LLM;
 
-public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
+public class FakeLLMFeedbackAnalyzer : ILlmFeedbackAnalyzer
 {
     private static int _callCount = 0;
 
-    public Task<Result<LLMAnalysisResult>> AnalyzeFeedback(
+    public Task<Result<LlmAnalysisResult>> AnalyzeFeedback(
         FeedbackText feedbackText,
         IEnumerable<FeatureCategoryReadModel> existingFeatureCategories,
         IEnumerable<Sentiment> sentimentChoices,
@@ -24,7 +24,7 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
             var bogusFeedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.FeatureRequest };
             var bogusFeatureCategoryNames = new HashSet<string> { "Some Feature Category" };
 
-            var successResult = new LLMAnalysisResult()
+            var successResult = new LlmAnalysisResult()
             {
                 Title = bogusTitle,
                 Sentiment = bogusSentiment,
@@ -32,7 +32,7 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
                 FeatureCategoryNames = bogusFeatureCategoryNames,
                 AnalyzedAt = new Timestamp(DateTime.UtcNow)
             };
-            return Task.FromResult(Result<LLMAnalysisResult>.Success(successResult));
+            return Task.FromResult(Result<LlmAnalysisResult>.Success(successResult));
         }
         else // Even calls are failures
         {
@@ -42,7 +42,7 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
                 new Timestamp(DateTime.UtcNow),
                 _callCount
             );
-            return Task.FromResult(Result<LLMAnalysisResult>.Failure(failureDetails.Message ?? "Unknown LLM failure"));
+            return Task.FromResult(Result<LlmAnalysisResult>.Failure(failureDetails.Message ?? "Unknown LLM failure"));
         }
     }
 }

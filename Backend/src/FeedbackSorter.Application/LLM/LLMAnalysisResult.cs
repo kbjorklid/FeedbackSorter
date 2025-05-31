@@ -1,9 +1,9 @@
-
-
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
-public record LLMAnalysisResult
+namespace FeedbackSorter.Application.LLM;
+
+public record LlmAnalysisResult
 {
     public required FeedbackTitle Title { get; init; }
     public required Sentiment Sentiment { get; init; }

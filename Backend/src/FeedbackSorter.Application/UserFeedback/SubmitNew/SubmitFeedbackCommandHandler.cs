@@ -1,5 +1,4 @@
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
@@ -9,7 +8,7 @@ namespace FeedbackSorter.Application.UserFeedback.SubmitNew;
 public class SubmitFeedbackCommandHandler
 {
     private readonly IUserFeedbackRepository _userFeedbackRepository;
-    private readonly ILLMFeedbackAnalyzer _llmFeedbackAnalyzer;
+    private readonly ILlmFeedbackAnalyzer _llmFeedbackAnalyzer;
     private readonly ITimeProvider _timeProvider;
     private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
     private readonly IFeatureCategoryRepository _featureCategoryWriteRepository;
@@ -17,7 +16,7 @@ public class SubmitFeedbackCommandHandler
 
     public SubmitFeedbackCommandHandler(
         IUserFeedbackRepository userFeedbackRepository,
-        ILLMFeedbackAnalyzer llmFeedbackAnalyzer,
+        ILlmFeedbackAnalyzer llmFeedbackAnalyzer,
         ITimeProvider timeProvider,
         IFeatureCategoryReadRepository featureCategoryReadRepository,
         IFeatureCategoryRepository featureCategoryWriteRepository)
@@ -57,7 +56,7 @@ public class SubmitFeedbackCommandHandler
             try
             {
                 // Get existing feature categories
-                IEnumerable<FeatureCategories.Queries.FeatureCategoryReadModel> existingFeatureCategoriesReadModels = await _featureCategoryReadRepository.GetAllAsync();
+                IEnumerable<FeatureCategoryReadModel> existingFeatureCategoriesReadModels = await _featureCategoryReadRepository.GetAllAsync();
                 var existingFeatureCategories = existingFeatureCategoriesReadModels
                     .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
                     .ToList();
@@ -66,7 +65,7 @@ public class SubmitFeedbackCommandHandler
                 Sentiment[] sentimentChoices = Enum.GetValues<Sentiment>();
                 FeedbackCategoryType[] feedbackCategoryChoices = Enum.GetValues<FeedbackCategoryType>();
 
-                Result<LLMAnalysisResult> llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
+                Result<LlmAnalysisResult> llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
                     userFeedbackToAnalyze.Text,
                     existingFeatureCategories,
                     sentimentChoices,
@@ -116,7 +115,7 @@ public class SubmitFeedbackCommandHandler
         return Result<FeedbackId>.Success(feedbackId);
     }
 
-    private async Task<FeedbackAnalysisResult> BuildAnalysisResult(LLMAnalysisResult value)
+    private async Task<FeedbackAnalysisResult> BuildAnalysisResult(LlmAnalysisResult value)
     {
         ISet<FeatureCategory> featureCategories = await GetOrCreateFeatureCategories(value.FeatureCategoryNames);
         return new FeedbackAnalysisResult(

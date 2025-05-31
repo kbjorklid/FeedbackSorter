@@ -20,7 +20,7 @@ public static class InfrastructureServiceRegistration
         var featureCategoryRepo = new InMemoryFeatureCategoryRepository();
         services.AddSingleton<IFeatureCategoryReadRepository>(featureCategoryRepo);
         services.AddSingleton<IFeatureCategoryRepository>(featureCategoryRepo);
-        services.AddSingleton<ILLMFeedbackAnalyzer>(new FakeLLMFeedbackAnalyzer());
+        services.AddSingleton<ILlmFeedbackAnalyzer>(new FakeLLMFeedbackAnalyzer());
         services.AddSingleton<ITimeProvider>(new SystemTimeProvider());
 
 

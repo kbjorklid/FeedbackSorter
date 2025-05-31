@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.Feedback;
 
-namespace FeedbackSorter.Application.UserFeedback.Queries;
+namespace FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 
 public record AnalyzedFeedbackReadModel<TFeatureCategoryRepresentation>
 {
@@ -12,7 +12,7 @@ public record AnalyzedFeedbackReadModel<TFeatureCategoryRepresentation>
     public required Sentiment Sentiment { get; init; }
     public required string FullFeedbackText { get; init; }
 
-    internal AnalyzedFeedbackReadModel<TTargetCategory> ChangeCategoryRepresentation<TTargetCategory>(Func<TFeatureCategoryRepresentation, TTargetCategory> categoryMapFunction)
+    internal AnalyzedFeedbackReadModel<TTargetCategory> Map<TTargetCategory>(Func<TFeatureCategoryRepresentation, TTargetCategory> categoryMapFunction)
     {
         return new AnalyzedFeedbackReadModel<TTargetCategory>
         {

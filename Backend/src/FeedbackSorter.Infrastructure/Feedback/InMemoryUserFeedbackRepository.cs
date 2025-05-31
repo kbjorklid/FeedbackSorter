@@ -1,5 +1,6 @@
-using FeedbackSorter.Application.FeatureCategories.Queries;
+using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.UserFeedback;
+using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;

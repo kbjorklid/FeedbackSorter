@@ -1,4 +1,4 @@
-using FeedbackSorter.Application.UserFeedback.Queries;
+using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.UserFeedback.SubmitNew;
 using Microsoft.Extensions.DependencyInjection;
 

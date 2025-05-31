@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.FeatureCategories;
 
-namespace FeedbackSorter.Application.FeatureCategories.Queries;
+namespace FeedbackSorter.Application.FeatureCategories;
 
 public record FeatureCategoryReadModel
 {
@@ -9,13 +9,12 @@ public record FeatureCategoryReadModel
 
     public FeatureCategoryReadModel(FeatureCategoryId id, FeatureCategoryName name)
     {
+        ArgumentNullException.ThrowIfNull(name);
         Id = id;
         Name = name;
     }
 
-    public FeatureCategoryReadModel(FeatureCategory featureCategory)
+    public FeatureCategoryReadModel(FeatureCategory featureCategory) : this(featureCategory.Id, featureCategory.Name)
     {
-        Id = featureCategory.Id;
-        Name = featureCategory.Name;
     }
 }

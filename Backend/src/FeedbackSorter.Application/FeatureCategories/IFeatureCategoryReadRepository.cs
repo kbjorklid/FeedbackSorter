@@ -1,5 +1,3 @@
-using FeedbackSorter.Application.FeatureCategories.Queries;
-
 namespace FeedbackSorter.Application.FeatureCategories;
 
 public interface IFeatureCategoryReadRepository
