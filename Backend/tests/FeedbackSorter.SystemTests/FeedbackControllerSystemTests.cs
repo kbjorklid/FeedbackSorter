@@ -193,7 +193,11 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
 
         // Allow background task to complete
-        await Task.Delay(1000);
+        await WaitForConditionAsync(() =>
+            _factory.UserFeedbackRepositoryMock.ReceivedCalls().Any(call =>
+                call.GetMethodInfo().Name == nameof(_factory.UserFeedbackRepositoryMock.UpdateAsync)
+            )
+        );
 
         // Assert
         response.EnsureSuccessStatusCode(); // Status Code 200-299
@@ -253,7 +257,10 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
 
         // Allow background task to complete
-        await Task.Delay(1000);
+        await WaitForConditionAsync(() =>
+            _factory.UserFeedbackRepositoryMock.ReceivedCalls().Any(call =>
+                call.GetMethodInfo().Name == nameof(_factory.UserFeedbackRepositoryMock.UpdateAsync))
+        );
 
         // Assert
         response.EnsureSuccessStatusCode(); // Status Code 200-299
@@ -268,5 +275,18 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             ufArg.LastFailureDetails.Message == errorMessage &&
             ufArg.RetryCount == 0
         ));
+    }
+
+    private async Task<bool> WaitForConditionAsync(Func<bool> predicate)
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            if (predicate())
+            {
+                return true;
+            }
+            await Task.Delay(10);
+        }
+        return false;
     }
 }
