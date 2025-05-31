@@ -18,19 +18,30 @@ public class GetAnalyzedFeedbacksQueryHandler
 
     public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> HandleAsync(GetAnalyzedFeedbacksQuery query, CancellationToken cancellationToken)
     {
-        ISet<FeatureCategoryReadModel> featureCategories;
+        ISet<FeatureCategoryReadModel> featureCategories = await GetFeatureCategoriesAsync(query);
+
+        UserFeedbackFilter filter = CreateUserFeedbackFilter(featureCategories, query);
+
+        PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> feedbackResults =
+            await _userFeedbackReadRepository.GetPagedListAsync(filter, query.PageNumber, query.PageSize);
+
+        return feedbackResults;
+    }
+
+    private async Task<ISet<FeatureCategoryReadModel>> GetFeatureCategoriesAsync(GetAnalyzedFeedbacksQuery query)
+    {
         if (query.FeatureCategoryNames == null || query.FeatureCategoryNames.Any() == false)
         {
-            featureCategories = new HashSet<FeatureCategoryReadModel>();
-        }
-        else
-        {
-            featureCategories =
-                (await _featureCategoryReadRepository.GetFeatureCategoriesByNamesAsync(query.FeatureCategoryNames))
-                .ToHashSet();
+            return new HashSet<FeatureCategoryReadModel>();
         }
 
-        var filter = new UserFeedbackFilter
+        return (await _featureCategoryReadRepository.GetFeatureCategoriesByNamesAsync(query.FeatureCategoryNames))
+            .ToHashSet();
+    }
+
+    private static UserFeedbackFilter CreateUserFeedbackFilter(ISet<FeatureCategoryReadModel> featureCategories, GetAnalyzedFeedbacksQuery query)
+    {
+        return new UserFeedbackFilter
         {
             FeedbackCategories = query.FeedbackCategories,
             FeatureCategoryIds = featureCategories.Select(c => c.Id),
@@ -38,10 +49,5 @@ public class GetAnalyzedFeedbacksQueryHandler
             SortAscending = query.SortOrder == SortOrder.Asc,
             AnalysisStatus = AnalysisStatus.Analyzed
         };
-
-        PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> feedbackResults =
-            await _userFeedbackReadRepository.GetPagedListAsync(filter, query.PageNumber, query.PageSize);
-
-        return feedbackResults;
     }
 }
