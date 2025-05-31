@@ -43,9 +43,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         _factory.LLMFeedbackAnalyzerMock
             .AnalyzeFeedback(
                 Arg.Any<FeedbackText>(),
-                Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
-                Arg.Any<IEnumerable<Sentiment>>(),
-                Arg.Any<IEnumerable<FeedbackCategoryType>>())
+                Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
             .Returns(Result<LlmAnalysisResult>.Success(new LlmAnalysisResult
             {
                 Title = new FeedbackTitle("Test Title"),
@@ -69,9 +67,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         await _factory.UserFeedbackRepositoryMock.Received(1).AddAsync(Arg.Is<UserFeedback>(uf => uf.Text.Value == feedbackText));
         await _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
             Arg.Is<FeedbackText>(ft => ft.Value == feedbackText),
-            Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
-            Arg.Any<IEnumerable<Sentiment>>(),
-            Arg.Any<IEnumerable<FeedbackCategoryType>>());
+            Arg.Any<IEnumerable<FeatureCategoryReadModel>>());
     }
 
     [Fact]
@@ -177,9 +173,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         _factory.LLMFeedbackAnalyzerMock
             .AnalyzeFeedback(
                 Arg.Any<FeedbackText>(),
-                Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
-                Arg.Any<IEnumerable<Sentiment>>(),
-                Arg.Any<IEnumerable<FeedbackCategoryType>>())
+                Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
             .Returns(Result<LlmAnalysisResult>.Success(new LlmAnalysisResult
             {
                 Title = expectedTitle,
@@ -248,9 +242,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         _factory.LLMFeedbackAnalyzerMock
             .AnalyzeFeedback(
                 Arg.Any<FeedbackText>(),
-                Arg.Any<IEnumerable<FeatureCategoryReadModel>>(),
-                Arg.Any<IEnumerable<Sentiment>>(),
-                Arg.Any<IEnumerable<FeedbackCategoryType>>())
+                Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
             .Returns(Result<LlmAnalysisResult>.Failure(errorMessage));
 
         // Act

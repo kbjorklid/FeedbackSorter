@@ -8,7 +8,5 @@ public interface ILlmFeedbackAnalyzer
 {
     Task<Result<LlmAnalysisResult>> AnalyzeFeedback(
         FeedbackText feedbackText,
-        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories,
-        IEnumerable<Sentiment> sentimentChoices,
-        IEnumerable<FeedbackCategoryType> feedbackCategoryChoices);
+        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories);
 }

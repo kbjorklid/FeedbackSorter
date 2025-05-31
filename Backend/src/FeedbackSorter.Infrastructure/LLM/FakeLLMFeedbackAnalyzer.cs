@@ -11,9 +11,7 @@ public class FakeLLMFeedbackAnalyzer : ILlmFeedbackAnalyzer
 
     public Task<Result<LlmAnalysisResult>> AnalyzeFeedback(
         FeedbackText feedbackText,
-        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories,
-        IEnumerable<Sentiment> sentimentChoices,
-        IEnumerable<FeedbackCategoryType> feedbackCategoryChoices)
+        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories)
     {
         _callCount++;
 

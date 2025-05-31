@@ -58,15 +58,9 @@ public class SubmitFeedbackCommandHandler
                 .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
                 .ToList();
 
-            // Define sentiment and feedback category choices
-            Sentiment[] sentimentChoices = Enum.GetValues<Sentiment>();
-            FeedbackCategoryType[] feedbackCategoryChoices = Enum.GetValues<FeedbackCategoryType>();
-
             Result<LlmAnalysisResult> llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
                 userFeedbackToAnalyze.Text,
-                existingFeatureCategories,
-                sentimentChoices,
-                feedbackCategoryChoices
+                existingFeatureCategories
             );
 
 
