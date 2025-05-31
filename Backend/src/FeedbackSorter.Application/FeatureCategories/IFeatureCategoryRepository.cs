@@ -7,6 +7,9 @@ namespace FeedbackSorter.Application.FeatureCategories;
 public interface IFeatureCategoryRepository
 {
     Task<Result<CoreFeatureCategory>> GetByIdAsync(FeatureCategoryId id);
+
+    Task<ISet<CoreFeatureCategory>> GetByNamesAsync(ICollection<string> names);
+
     Task<Result<CoreFeatureCategory>> AddAsync(CoreFeatureCategory featureCategory);
     Task<Result<CoreFeatureCategory>> UpdateAsync(CoreFeatureCategory featureCategory);
 }

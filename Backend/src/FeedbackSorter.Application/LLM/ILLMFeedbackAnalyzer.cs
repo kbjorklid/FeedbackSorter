@@ -1,4 +1,4 @@
-using FeedbackSorter.Core.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
@@ -6,9 +6,9 @@ namespace FeedbackSorter.Application.LLM;
 
 public interface ILLMFeedbackAnalyzer
 {
-    Task<Result<FeedbackAnalysisResult>> AnalyzeFeedback(
+    Task<Result<LLMAnalysisResult>> AnalyzeFeedback(
         FeedbackText feedbackText,
-        IEnumerable<FeatureCategory> existingFeatureCategories,
+        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories,
         IEnumerable<Sentiment> sentimentChoices,
         IEnumerable<FeedbackCategoryType> feedbackCategoryChoices);
 }

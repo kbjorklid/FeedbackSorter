@@ -1,15 +1,28 @@
-using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Core.Feedback;
 
 namespace FeedbackSorter.Application.UserFeedback.Queries;
 
-public record AnalyzedFeedbackReadModel
+public record AnalyzedFeedbackReadModel<TFeatureCategoryRepresentation>
 {
     public required FeedbackId Id { get; init; }
     public required string Title { get; init; }
     public required DateTime SubmittedAt { get; init; }
-    public required IEnumerable<FeedbackCategoryType> FeedbackCategories { get; init; }
-    public required IEnumerable<FeatureCategoryReadModel> FeatureCategories { get; init; }
+    public required ISet<FeedbackCategoryType> FeedbackCategories { get; init; }
+    public required ISet<TFeatureCategoryRepresentation> FeatureCategories { get; init; }
     public required Sentiment Sentiment { get; init; }
     public required string FullFeedbackText { get; init; }
+
+    internal AnalyzedFeedbackReadModel<TTargetCategory> ChangeCategoryRepresentation<TTargetCategory>(Func<TFeatureCategoryRepresentation, TTargetCategory> categoryMapFunction)
+    {
+        return new AnalyzedFeedbackReadModel<TTargetCategory>
+        {
+            Id = this.Id,
+            Title = this.Title,
+            SubmittedAt = this.SubmittedAt,
+            FeedbackCategories = this.FeedbackCategories,
+            FeatureCategories = this.FeatureCategories.Select(categoryMapFunction).ToHashSet(),
+            Sentiment = this.Sentiment,
+            FullFeedbackText = this.FullFeedbackText,
+        };
+    }
 }

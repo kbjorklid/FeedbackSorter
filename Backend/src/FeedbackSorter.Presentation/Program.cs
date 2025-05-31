@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 // Add application and infrastructure services
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+builder.Services.AddControllers();
 
 WebApplication app = builder.Build();
 

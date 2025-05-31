@@ -8,8 +8,8 @@ public class FeedbackAnalysisResultBuilder
 {
     private FeedbackTitle _title = new FeedbackTitleBuilder().Build();
     private Sentiment _sentiment = Sentiment.Neutral;
-    private IReadOnlyList<FeedbackCategoryType> _feedbackCategories = new List<FeedbackCategoryType> { FeedbackCategoryType.GeneralFeedback };
-    private IReadOnlyList<FeatureCategoryId> _featureCategoryIds = new List<FeatureCategoryId> { new FeatureCategoryIdBuilder().Build() };
+    private ISet<FeedbackCategoryType> _feedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.GeneralFeedback };
+    private ISet<FeatureCategory> _featureCategoryIds = new HashSet<FeatureCategory> { new FeatureCategoryBuilder().Build() };
     private Timestamp _analyzedAt = new TimestampBuilder().Build();
 
     public FeedbackAnalysisResultBuilder WithTitle(FeedbackTitle title)
@@ -26,13 +26,13 @@ public class FeedbackAnalysisResultBuilder
 
     public FeedbackAnalysisResultBuilder WithFeedbackCategories(IReadOnlyList<FeedbackCategoryType> feedbackCategories)
     {
-        _feedbackCategories = feedbackCategories;
+        _feedbackCategories = feedbackCategories.ToHashSet();
         return this;
     }
 
-    public FeedbackAnalysisResultBuilder WithFeatureCategoryIds(IReadOnlyList<FeatureCategoryId> featureCategoryIds)
+    public FeedbackAnalysisResultBuilder WithFeatureCategories(IReadOnlyList<FeatureCategory> featureCategories)
     {
-        _featureCategoryIds = featureCategoryIds;
+        _featureCategoryIds = featureCategories.ToHashSet();
         return this;
     }
 

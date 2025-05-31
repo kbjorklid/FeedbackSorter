@@ -10,16 +10,16 @@ public record FeedbackAnalysisResult
 {
     public FeedbackTitle Title { get; }
     public Sentiment Sentiment { get; }
-    public IReadOnlyList<FeedbackCategoryType> FeedbackCategories { get; }
-    public IReadOnlyList<FeatureCategoryId> FeatureCategoryIds { get; }
+    public ISet<FeedbackCategoryType> FeedbackCategories { get; }
+    public ISet<FeatureCategory> FeatureCategories { get; }
     public Timestamp AnalyzedAt { get; }
 
-    public FeedbackAnalysisResult(FeedbackTitle title, Sentiment sentiment, IReadOnlyList<FeedbackCategoryType> feedbackCategories, IReadOnlyList<FeatureCategoryId> featureCategoryIds, Timestamp analyzedAt)
+    public FeedbackAnalysisResult(FeedbackTitle title, Sentiment sentiment, ISet<FeedbackCategoryType> feedbackCategories, ISet<FeatureCategory> featureCategories, Timestamp analyzedAt)
     {
         Title = title;
         Sentiment = sentiment;
         FeedbackCategories = feedbackCategories;
-        FeatureCategoryIds = featureCategoryIds;
+        FeatureCategories = featureCategories;
         AnalyzedAt = analyzedAt;
     }
 }

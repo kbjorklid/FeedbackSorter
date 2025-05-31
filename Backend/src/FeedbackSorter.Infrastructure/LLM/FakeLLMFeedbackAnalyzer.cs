@@ -1,3 +1,5 @@
+using System.Text;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
@@ -9,9 +11,9 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
 {
     private static int _callCount = 0;
 
-    public Task<Result<FeedbackAnalysisResult>> AnalyzeFeedback(
+    public Task<Result<LLMAnalysisResult>> AnalyzeFeedback(
         FeedbackText feedbackText,
-        IEnumerable<FeatureCategory> existingFeatureCategories,
+        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories,
         IEnumerable<Sentiment> sentimentChoices,
         IEnumerable<FeedbackCategoryType> feedbackCategoryChoices)
     {
@@ -21,17 +23,17 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
         {
             var bogusTitle = new FeedbackTitle($"Bogus Title {_callCount}");
             Sentiment bogusSentiment = Sentiment.Positive; // Can cycle through sentiments if needed
-            var bogusFeedbackCategories = new List<FeedbackCategoryType> { FeedbackCategoryType.FeatureRequest };
-            var bogusFeatureCategoryIds = new List<FeatureCategoryId> { new FeatureCategoryId(Guid.NewGuid()) };
+            var bogusFeedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.FeatureRequest };
+            var bogusFeatureCategoryNames = new HashSet<string> { "Some Feature Category" };
 
-            var successResult = new FeedbackAnalysisResult(
-                title: bogusTitle,
-                sentiment: bogusSentiment,
-                feedbackCategories: bogusFeedbackCategories,
-                featureCategoryIds: bogusFeatureCategoryIds,
-                analyzedAt: new Timestamp(DateTime.UtcNow)
-            );
-            return Task.FromResult(Result<FeedbackAnalysisResult>.Success(successResult));
+            var successResult = new LLMAnalysisResult() {
+                Title = bogusTitle,
+                Sentiment = bogusSentiment,
+                FeedbackCategories = bogusFeedbackCategories,
+                FeatureCategoryNames = bogusFeatureCategoryNames,
+                AnalyzedAt = new Timestamp(DateTime.UtcNow)
+            };
+            return Task.FromResult(Result<LLMAnalysisResult>.Success(successResult));
         }
         else // Even calls are failures
         {
@@ -41,7 +43,7 @@ public class FakeLLMFeedbackAnalyzer : ILLMFeedbackAnalyzer
                 new Timestamp(DateTime.UtcNow),
                 _callCount
             );
-            return Task.FromResult(Result<FeedbackAnalysisResult>.Failure(failureDetails.Message ?? "Unknown LLM failure"));
+            return Task.FromResult(Result<LLMAnalysisResult>.Failure(failureDetails.Message ?? "Unknown LLM failure"));
         }
     }
 }

@@ -1,4 +1,5 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
@@ -11,17 +12,21 @@ public class SubmitFeedbackCommandHandler
     private readonly ILLMFeedbackAnalyzer _llmFeedbackAnalyzer;
     private readonly ITimeProvider _timeProvider;
     private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
+    private readonly IFeatureCategoryRepository _featureCategoryWriteRepository;
+
 
     public SubmitFeedbackCommandHandler(
         IUserFeedbackRepository userFeedbackRepository,
         ILLMFeedbackAnalyzer llmFeedbackAnalyzer,
         ITimeProvider timeProvider,
-        IFeatureCategoryReadRepository featureCategoryReadRepository)
+        IFeatureCategoryReadRepository featureCategoryReadRepository,
+        IFeatureCategoryRepository featureCategoryWriteRepository)
     {
         _userFeedbackRepository = userFeedbackRepository;
         _llmFeedbackAnalyzer = llmFeedbackAnalyzer;
         _timeProvider = timeProvider;
         _featureCategoryReadRepository = featureCategoryReadRepository;
+        _featureCategoryWriteRepository = featureCategoryWriteRepository;
     }
 
     public async Task<Result<FeedbackId>> HandleAsync(SubmitFeedbackCommand command)
@@ -55,32 +60,36 @@ public class SubmitFeedbackCommandHandler
                 // Get existing feature categories
                 IEnumerable<FeatureCategories.Queries.FeatureCategoryReadModel> existingFeatureCategoriesReadModels = await _featureCategoryReadRepository.GetAllAsync();
                 var existingFeatureCategories = existingFeatureCategoriesReadModels
-                    .Select(fc => new FeatureCategory(fc.Id, fc.Name, _timeProvider))
+                    .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
                     .ToList();
 
                 // Define sentiment and feedback category choices
                 Sentiment[] sentimentChoices = Enum.GetValues<Sentiment>();
                 FeedbackCategoryType[] feedbackCategoryChoices = Enum.GetValues<FeedbackCategoryType>();
 
-                Result<FeedbackAnalysisResult> analysisResult = await _llmFeedbackAnalyzer.AnalyzeFeedback(
+                Result<LLMAnalysisResult> llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
                     userFeedbackToAnalyze.Text,
                     existingFeatureCategories,
                     sentimentChoices,
                     feedbackCategoryChoices
                 );
 
-                if (analysisResult.IsSuccess)
+
+                if (llmAnalysis.IsSuccess)
                 {
-                    userFeedbackToAnalyze.MarkAsAnalyzed(analysisResult.Value);
+                    Console.WriteLine("LLM analysis succeeded");
+                    FeedbackAnalysisResult analysisResult = await BuildAnalysisResult(llmAnalysis.Value);
+                    userFeedbackToAnalyze.MarkAsAnalyzed(analysisResult);
+                    Console.WriteLine("result---" + userFeedbackToAnalyze.AnalysisResult);
                     _ = await _userFeedbackRepository.UpdateAsync(userFeedbackToAnalyze);
                 }
                 else
                 {
                     // LLM analysis failed
-                    FailureReason failureReason = MapLLMErrorToFailureReason(analysisResult.Error);
+                    FailureReason failureReason = MapLLMErrorToFailureReason(llmAnalysis.Error);
                     var failureDetails = new AnalysisFailureDetails(
                         failureReason,
-                        analysisResult.Error,
+                        llmAnalysis.Error,
                         new Timestamp(_timeProvider),
                         userFeedbackToAnalyze.RetryCount + 1 // Increment retry count for this failure
                     );
@@ -91,6 +100,7 @@ public class SubmitFeedbackCommandHandler
             }
             catch (Exception ex)
             {
+                Console.WriteLine("ex " + ex);
                 // Catch any unexpected exceptions during async processing
                 var failureDetails = new AnalysisFailureDetails(
                     FailureReason.Unknown,
@@ -105,6 +115,37 @@ public class SubmitFeedbackCommandHandler
         });
 
         return Result<FeedbackId>.Success(feedbackId);
+    }
+
+    private async Task<FeedbackAnalysisResult> BuildAnalysisResult(LLMAnalysisResult value)
+    {
+        ISet<FeatureCategory> featureCategories = await GetOrCreateFeatureCategories(value.FeatureCategoryNames);
+        return new FeedbackAnalysisResult(
+            value.Title,
+            value.Sentiment,
+            value.FeedbackCategories,
+            featureCategories,
+            new Timestamp(_timeProvider)
+        );
+    }
+
+    private async Task<ISet<FeatureCategory>> GetOrCreateFeatureCategories(ISet<string> featureCategoryNames)
+    {
+        ISet<FeatureCategory> existing = await _featureCategoryWriteRepository.GetByNamesAsync(featureCategoryNames);
+        ISet<string> namesOfMissingCategories = featureCategoryNames
+            .Except(existing.Select(fc => fc.Name.Value))
+            .ToHashSet();
+        HashSet<FeatureCategory> addedCategories = [];
+        foreach (string name in namesOfMissingCategories)
+        {
+            Result<FeatureCategory> result =
+                await _featureCategoryWriteRepository.AddAsync(new FeatureCategory(new FeatureCategoryName(name), _timeProvider));
+            if (result.IsSuccess)
+            {
+                addedCategories.Add(result.Value);
+            }
+        }
+        return existing.Union(addedCategories).ToHashSet();
     }
 
     private FailureReason MapLLMErrorToFailureReason(string errorMessage)

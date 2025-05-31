@@ -10,10 +10,15 @@ public class FeatureCategory : Entity<FeatureCategoryId>
     public FeatureCategoryName Name { get; private set; }
     public Timestamp CreatedAt { get; }
 
-    public FeatureCategory(FeatureCategoryId id, FeatureCategoryName name, ITimeProvider timeProvider) : base(id)
+    public FeatureCategory(FeatureCategoryId id, FeatureCategoryName name, Timestamp createdAt) : base(id)
     {
         Name = name;
-        CreatedAt = new Timestamp(timeProvider);
+        CreatedAt = createdAt;
+    }
+
+    public FeatureCategory(FeatureCategoryName name, ITimeProvider timeProvider) :
+            this(new FeatureCategoryId(), name, new Timestamp(timeProvider.UtcNow))
+    {
     }
 
     public void UpdateName(FeatureCategoryName newName)

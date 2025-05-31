@@ -12,4 +12,10 @@ public record FeatureCategoryReadModel
         Id = id;
         Name = name;
     }
+
+    public FeatureCategoryReadModel(FeatureCategory featureCategory)
+    {
+        Id = featureCategory.Id;
+        Name = featureCategory.Name;
+    }
 }

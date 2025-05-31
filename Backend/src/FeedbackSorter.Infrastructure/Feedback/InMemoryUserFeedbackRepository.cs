@@ -1,4 +1,3 @@
-using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.UserFeedback;
 using FeedbackSorter.Application.UserFeedback.Queries;
@@ -10,12 +9,7 @@ namespace FeedbackSorter.Infrastructure.Feedback;
 public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeedbackReadRepository
 {
     private readonly Dictionary<FeedbackId, UserFeedback> _userFeedbacks = new();
-    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
 
-    public InMemoryUserFeedbackRepository(IFeatureCategoryReadRepository featureCategoryReadRepository)
-    {
-        _featureCategoryReadRepository = featureCategoryReadRepository;
-    }
 
     public Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
@@ -33,6 +27,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} already exists."));
         }
         _userFeedbacks.Add(userFeedback.Id, userFeedback);
+        Console.WriteLine($"Added user feedback with ID: {userFeedback.Id.Value}");
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
@@ -40,27 +35,43 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
     {
         if (!_userFeedbacks.ContainsKey(userFeedback.Id))
         {
+            Console.WriteLine("no result, cannot update");
             return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} not found for update."));
         }
         _userFeedbacks[userFeedback.Id] = userFeedback;
+        
+        Console.WriteLine("updated, " + userFeedback.AnalysisStatus + " " + userFeedback.Id.Value);
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
-    public async Task<PagedResult<AnalyzedFeedbackReadModel>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
+    public Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
+        
+        Console.WriteLine($"GetPagedListAsync, contains : {_userFeedbacks.Count}");
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
+        
+        Console.WriteLine("start" + query.Count());
 
         if (filter.FeedbackCategories != null && filter.FeedbackCategories.Any())
         {
+
             query = query.Where(uf => uf.AnalysisResult != null && uf.AnalysisResult.FeedbackCategories.Any(fc => filter.FeedbackCategories.Contains(fc)));
+       
+            Console.WriteLine("fbcat" + query.Count());
         }
 
         if (filter.FeatureCategoryIds != null && filter.FeatureCategoryIds.Any())
         {
-            query = query.Where(uf => uf.AnalysisResult != null && uf.AnalysisResult.FeatureCategoryIds.Any(fci => filter.FeatureCategoryIds.Contains(fci)));
+            Console.WriteLine("feature cats" + string.Join(", ", filter.FeatureCategoryIds));
+            query = query.Where(uf => uf.AnalysisResult != null
+                && uf.AnalysisResult.FeatureCategories.Any(fc => filter.FeatureCategoryIds.Contains(fc.Id)));
+                
+            Console.WriteLine("feacat" + query.Count());
         }
 
         query = query.Where(uf => uf.AnalysisStatus == AnalysisStatus.Analyzed);
+        
+        Console.WriteLine("analyzed" + query.Count());
 
         // Calculate total count before sorting and pagination
         int totalCount = query.Count();
@@ -68,18 +79,16 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
 
         query = ApplySorting(query, filter.SortBy, filter.SortAscending);
 
-        // Fetch all feature categories once for mapping
-        IEnumerable<FeatureCategoryReadModel> allFeatureCategories = await _featureCategoryReadRepository.GetAllAsync();
-
         var pagedList = query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(uf => MapToAnalyzedReadModel(uf, allFeatureCategories))
+            .Select(uf => MapToAnalyzedReadModel(uf))
             .ToList();
 
-        var pagedResult = new PagedResult<AnalyzedFeedbackReadModel>(pagedList, pageNumber, pageSize, totalCount);
+        var pagedResult = new PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>(
+            pagedList, pageNumber, pageSize, totalCount);
 
-        return pagedResult;
+        return Task.FromResult(pagedResult);
     }
 
     public Task<List<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
@@ -108,7 +117,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         };
     }
 
-    private AnalyzedFeedbackReadModel MapToAnalyzedReadModel(UserFeedback userFeedback, IEnumerable<FeatureCategoryReadModel> allFeatureCategories)
+    private AnalyzedFeedbackReadModel<FeatureCategoryReadModel> MapToAnalyzedReadModel(UserFeedback userFeedback)
     {
         // This method should only be called for successfully analyzed feedback
         if (userFeedback.AnalysisResult == null)
@@ -116,14 +125,15 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
             throw new InvalidOperationException("Cannot map unanalyzed feedback to AnalyzedFeedbackReadModel.");
         }
 
-        return new AnalyzedFeedbackReadModel
+        return new AnalyzedFeedbackReadModel<FeatureCategoryReadModel>
         {
             Id = userFeedback.Id,
             Title = userFeedback.AnalysisResult.Title.Value,
             SubmittedAt = userFeedback.SubmittedAt.Value,
             FeedbackCategories = userFeedback.AnalysisResult.FeedbackCategories,
-            FeatureCategories = allFeatureCategories
-                .Where(fc => userFeedback.AnalysisResult.FeatureCategoryIds.Any(id => id.Value == fc.Id.Value)),
+            FeatureCategories = userFeedback.AnalysisResult.FeatureCategories
+                .Select(fc => new FeatureCategoryReadModel(fc))
+                .ToHashSet(),
             Sentiment = userFeedback.AnalysisResult.Sentiment,
             FullFeedbackText = userFeedback.Text.Value
         };

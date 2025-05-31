@@ -15,6 +15,11 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
         _featureCategories = featureCategories;
     }
 
+    public InMemoryFeatureCategoryRepository()
+    {
+        _featureCategories = [];
+    }
+
     public Task<Result<CoreFeatureCategory>> GetByIdAsync(FeatureCategoryId id)
     {
         CoreFeatureCategory? featureCategory = _featureCategories.FirstOrDefault(fc => fc.Id == id);
@@ -63,6 +68,15 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
             .ToList();
 
         return Task.FromResult<IEnumerable<FeatureCategoryReadModel>>(filteredCategories);
+    }
+
+    public Task<ISet<CoreFeatureCategory>> GetByNamesAsync(ICollection<string> names)
+    {
+        var results = (ISet<CoreFeatureCategory>) _featureCategories
+            .Where(fc => names.Contains(fc.Name.Value))
+            .ToHashSet();
+
+        return Task.FromResult(results);
     }
 }
 

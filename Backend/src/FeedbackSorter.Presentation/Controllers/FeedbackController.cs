@@ -1,4 +1,5 @@
 using System.Net;
+using FeedbackSorter.Application.FeatureCategories.Queries;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Application.UserFeedback.SubmitNew;
 using FeedbackSorter.Presentation.UserFeedback;
@@ -75,7 +76,8 @@ public class FeedbackController : ControllerBase
     public async Task<IActionResult> GetAnalyzedFeedbacks([FromQuery] GetAnalyzedFeedbacksRequestDto request)
     {
         GetAnalyzedFeedbacksQuery query = request.ToQuery();
-        PagedResult<AnalyzedFeedbackReadModel> result = await _getAnalyzedFeedbacksQueryHandler.HandleAsync(query, HttpContext.RequestAborted);
+        PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> result =
+            await _getAnalyzedFeedbacksQueryHandler.HandleAsync(query, HttpContext.RequestAborted);
 
         var response = new AnalyzedFeedbackListDto
         {

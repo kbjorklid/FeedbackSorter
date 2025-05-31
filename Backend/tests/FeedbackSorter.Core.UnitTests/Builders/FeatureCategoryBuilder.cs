@@ -8,7 +8,7 @@ public class FeatureCategoryBuilder
 {
     private FeatureCategoryId _id = new(Guid.NewGuid());
     private FeatureCategoryName _name = new("Default Feature Category");
-    private ITimeProvider _timeProvider = Substitute.For<ITimeProvider>();
+    private Timestamp _timestamp = new(DateTime.UtcNow);
 
     public FeatureCategoryBuilder WithId(FeatureCategoryId id)
     {
@@ -22,14 +22,13 @@ public class FeatureCategoryBuilder
         return this;
     }
 
-    public FeatureCategoryBuilder WithTimeProvider(ITimeProvider timeProvider)
+    public FeatureCategoryBuilder WithTimestamp(Timestamp timestamp)
     {
-        _timeProvider = timeProvider;
+        _timestamp = timestamp;
         return this;
     }
-
     public FeatureCategory Build()
     {
-        return new FeatureCategory(_id, _name, _timeProvider);
+        return new FeatureCategory(_id, _name, _timestamp);
     }
 }
