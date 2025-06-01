@@ -20,7 +20,7 @@ public static class InfrastructureServiceRegistration
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection"))); // Get connection string from config
 
         services.AddScoped<IUserFeedbackRepository, EfUserFeedbackRepository>();
-        services.AddScoped<IUserFeedbackReadRepository, EfUserFeedbackRepository>();
+        services.AddScoped<IUserFeedbackReadRepository, EfUserFeedbackReadRepository>();
         services.AddScoped<IFeatureCategoryRepository, EfFeatureCategoryRepository>();
         services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryRepository>();
 
