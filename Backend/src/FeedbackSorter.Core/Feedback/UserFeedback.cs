@@ -22,6 +22,59 @@ public class UserFeedback : Entity<FeedbackId>
         RetryCount = 0;
     }
 
+    public UserFeedback(
+         FeedbackId id,
+         FeedbackText text,
+         Timestamp submittedAt,
+         AnalysisStatus analysisStatus,
+         int retryCount,
+         FeedbackAnalysisResult? analysisResult,
+         AnalysisFailureDetails? lastFailureDetails) : base(id)
+    {
+
+        Text = text;
+        SubmittedAt = submittedAt;
+        AnalysisStatus = analysisStatus;
+        RetryCount = retryCount;
+        AnalysisResult = analysisResult;
+        LastFailureDetails = lastFailureDetails;
+
+        EnsureInvariantsUpheld();
+    }
+
+    private void EnsureInvariantsUpheld()
+    {
+        if (RetryCount < 0)
+        {
+            throw new InvalidOperationException("RetryCount cannot be negative.");
+        }
+
+        if (AnalysisStatus == AnalysisStatus.Analyzed && AnalysisResult == null)
+        {
+            throw new InvalidOperationException("AnalysisResult cannot be null when AnalysisStatus is Analyzed.");
+        }
+
+        if (AnalysisStatus != AnalysisStatus.Analyzed && AnalysisResult != null)
+        {
+            throw new InvalidOperationException("AnalysisResult must be null when AnalysisStatus is not Analyzed.");
+        }
+
+        if (AnalysisStatus == AnalysisStatus.AnalysisFailed && LastFailureDetails == null)
+        {
+            throw new InvalidOperationException("LastFailureDetails cannot be null when AnalysisStatus is AnalysisFailed.");
+        }
+
+        if (AnalysisStatus != AnalysisStatus.AnalysisFailed && LastFailureDetails != null)
+        {
+            throw new InvalidOperationException("LastFailureDetails must be null when AnalysisStatus is not AnalysisFailed.");
+        }
+
+        if ((AnalysisStatus == AnalysisStatus.Processing || AnalysisStatus == AnalysisStatus.WaitingForAnalysis) && (AnalysisResult != null || LastFailureDetails != null))
+        {
+            throw new InvalidOperationException("AnalysisResult and LastFailureDetails cannot be set when AnalysisStatus is Processing or WaitingForAnalysis.");
+        }
+    }
+
     public void StartProcessing()
     {
         AnalysisStatus = AnalysisStatus.Processing;
