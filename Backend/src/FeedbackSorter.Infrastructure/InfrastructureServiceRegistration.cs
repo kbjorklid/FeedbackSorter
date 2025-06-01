@@ -22,7 +22,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IUserFeedbackRepository, EfUserFeedbackRepository>();
         services.AddScoped<IUserFeedbackReadRepository, EfUserFeedbackReadRepository>();
         services.AddScoped<IFeatureCategoryRepository, EfFeatureCategoryRepository>();
-        services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryRepository>();
+        services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryReadRepository>();
 
 
         services.AddSingleton<ILlmFeedbackAnalyzer>(new FakeLLMFeedbackAnalyzer());

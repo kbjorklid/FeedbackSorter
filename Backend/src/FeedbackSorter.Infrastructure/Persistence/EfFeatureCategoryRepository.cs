@@ -8,7 +8,7 @@ using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategor
 
 namespace FeedbackSorter.Infrastructure.Persistence;
 
-public class EfFeatureCategoryRepository : IFeatureCategoryRepository, IFeatureCategoryReadRepository
+public class EfFeatureCategoryRepository : IFeatureCategoryRepository
 {
     private readonly FeedbackSorterDbContext _dbContext;
 
@@ -64,24 +64,5 @@ public class EfFeatureCategoryRepository : IFeatureCategoryRepository, IFeatureC
 
         await _dbContext.SaveChangesAsync();
         return Result<CoreFeatureCategory>.Success(featureCategory);
-    }
-
-    public async Task<IEnumerable<FeatureCategoryReadModel>> GetAllAsync()
-    {
-        List<FeatureCategoryDb> featureCategoryDbs = await _dbContext.FeatureCategories
-            .AsNoTracking()
-            .ToListAsync();
-
-        return featureCategoryDbs.Select(FeatureCategoryMapper.ToReadModel);
-    }
-
-    public async Task<IEnumerable<FeatureCategoryReadModel>> GetFeatureCategoriesByNamesAsync(IEnumerable<string> names)
-    {
-        List<FeatureCategoryDb> featureCategoryDbs = await _dbContext.FeatureCategories
-            .AsNoTracking()
-            .Where(fc => names.Contains(fc.Name))
-            .ToListAsync();
-
-        return featureCategoryDbs.Select(FeatureCategoryMapper.ToReadModel);
     }
 }
