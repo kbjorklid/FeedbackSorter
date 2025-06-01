@@ -4,13 +4,19 @@ using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.UserFeedback.Queries;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
+using Microsoft.Extensions.Logging;
 
 namespace FeedbackSorter.Infrastructure.Feedback;
 
 public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeedbackReadRepository
 {
     private readonly Dictionary<FeedbackId, UserFeedback> _userFeedbacks = new();
+    private readonly ILogger<InMemoryUserFeedbackRepository> _logger;
 
+    public InMemoryUserFeedbackRepository(ILogger<InMemoryUserFeedbackRepository> logger)
+    {
+        _logger = logger;
+    }
 
     public Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
@@ -18,6 +24,7 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
         {
             return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
         }
+        _logger.LogWarning("UserFeedback with ID {FeedbackId} not found.", id.Value);
         return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {id.Value} not found."));
     }
 
@@ -25,10 +32,11 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
     {
         if (_userFeedbacks.ContainsKey(userFeedback.Id))
         {
+            _logger.LogWarning("UserFeedback with ID {FeedbackId} already exists.", userFeedback.Id.Value);
             return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} already exists."));
         }
         _userFeedbacks.Add(userFeedback.Id, userFeedback);
-        Console.WriteLine($"Added user feedback with ID: {userFeedback.Id.Value}");
+        _logger.LogInformation("Added user feedback with ID: {FeedbackId}", userFeedback.Id.Value);
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
@@ -36,43 +44,43 @@ public class InMemoryUserFeedbackRepository : IUserFeedbackRepository, IUserFeed
     {
         if (!_userFeedbacks.ContainsKey(userFeedback.Id))
         {
-            Console.WriteLine("no result, cannot update");
+            _logger.LogWarning("No result, cannot update. UserFeedback with ID {FeedbackId} not found for update.", userFeedback.Id.Value);
             return Task.FromResult(Result<UserFeedback>.Failure($"UserFeedback with ID {userFeedback.Id.Value} not found for update."));
         }
         _userFeedbacks[userFeedback.Id] = userFeedback;
 
-        Console.WriteLine("updated, " + userFeedback.AnalysisStatus + " " + userFeedback.Id.Value);
+        _logger.LogInformation("Updated user feedback with ID: {FeedbackId}, AnalysisStatus: {AnalysisStatus}", userFeedback.Id.Value, userFeedback.AnalysisStatus);
         return Task.FromResult(Result<UserFeedback>.Success(userFeedback));
     }
 
     public Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
     {
 
-        Console.WriteLine($"GetPagedListAsync, contains : {_userFeedbacks.Count}");
+        _logger.LogDebug("GetPagedListAsync, contains: {Count}", _userFeedbacks.Count);
         IQueryable<UserFeedback> query = _userFeedbacks.Values.AsQueryable();
 
-        Console.WriteLine("start" + query.Count());
+        _logger.LogDebug("Start query count: {Count}", query.Count());
 
         if (filter.FeedbackCategories != null && filter.FeedbackCategories.Any())
         {
 
             query = query.Where(uf => uf.AnalysisResult != null && uf.AnalysisResult.FeedbackCategories.Any(fc => filter.FeedbackCategories.Contains(fc)));
 
-            Console.WriteLine("fbcat" + query.Count());
+            _logger.LogDebug("Feedback categories filter applied, count: {Count}", query.Count());
         }
 
         if (filter.FeatureCategoryIds != null && filter.FeatureCategoryIds.Any())
         {
-            Console.WriteLine("feature cats" + string.Join(", ", filter.FeatureCategoryIds));
+            _logger.LogDebug("Feature categories filter applied: {FeatureCategoryIds}", string.Join(", ", filter.FeatureCategoryIds));
             query = query.Where(uf => uf.AnalysisResult != null
                 && uf.AnalysisResult.FeatureCategories.Any(fc => filter.FeatureCategoryIds.Contains(fc.Id)));
 
-            Console.WriteLine("feacat" + query.Count());
+            _logger.LogDebug("Feature categories filter applied, count: {Count}", query.Count());
         }
 
         query = query.Where(uf => uf.AnalysisStatus == AnalysisStatus.Analyzed);
 
-        Console.WriteLine("analyzed" + query.Count());
+        _logger.LogDebug("Analyzed status filter applied, count: {Count}", query.Count());
 
         // Calculate total count before sorting and pagination
         int totalCount = query.Count();

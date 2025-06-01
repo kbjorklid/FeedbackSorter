@@ -6,16 +6,20 @@ using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Core.UnitTests.Builders;
 using FeedbackSorter.Infrastructure.Feedback;
 using FeedbackSorter.SharedKernel;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace FeedbackSorter.Infrastructure.UnitTests.UserFeedback;
 
 public class InMemoryUserFeedbackRepositoryTests
 {
     private readonly InMemoryUserFeedbackRepository _repository;
+    private readonly ILogger<InMemoryUserFeedbackRepository> _logger;
 
     public InMemoryUserFeedbackRepositoryTests()
     {
-        _repository = new InMemoryUserFeedbackRepository();
+        _logger = Substitute.For<ILogger<InMemoryUserFeedbackRepository>>();
+        _repository = new InMemoryUserFeedbackRepository(_logger);
     }
 
     [Fact]

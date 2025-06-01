@@ -3,6 +3,7 @@ using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
+using Microsoft.Extensions.Logging;
 namespace FeedbackSorter.Application.UserFeedback.SubmitNew;
 
 public class SubmitFeedbackCommandHandler
@@ -12,6 +13,7 @@ public class SubmitFeedbackCommandHandler
     private readonly ITimeProvider _timeProvider;
     private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
     private readonly IFeatureCategoryRepository _featureCategoryWriteRepository;
+    private readonly ILogger<SubmitFeedbackCommandHandler> _logger;
 
 
     public SubmitFeedbackCommandHandler(
@@ -19,13 +21,15 @@ public class SubmitFeedbackCommandHandler
         ILlmFeedbackAnalyzer llmFeedbackAnalyzer,
         ITimeProvider timeProvider,
         IFeatureCategoryReadRepository featureCategoryReadRepository,
-        IFeatureCategoryRepository featureCategoryWriteRepository)
+        IFeatureCategoryRepository featureCategoryWriteRepository,
+        ILogger<SubmitFeedbackCommandHandler> logger)
     {
         _userFeedbackRepository = userFeedbackRepository;
         _llmFeedbackAnalyzer = llmFeedbackAnalyzer;
         _timeProvider = timeProvider;
         _featureCategoryReadRepository = featureCategoryReadRepository;
         _featureCategoryWriteRepository = featureCategoryWriteRepository;
+        _logger = logger;
     }
 
     public async Task<Result<FeedbackId>> HandleAsync(SubmitFeedbackCommand command)
@@ -40,6 +44,7 @@ public class SubmitFeedbackCommandHandler
         Result<Core.Feedback.UserFeedback> addResult = await _userFeedbackRepository.AddAsync(initialUserFeedback);
         if (addResult.IsFailure)
         {
+            _logger.LogError("Failed to add initial UserFeedback to repository: {Error}", addResult.Error);
             return Result<FeedbackId>.Failure($"Failed to add initial UserFeedback to repository: {addResult.Error}");
         }
 
@@ -66,10 +71,10 @@ public class SubmitFeedbackCommandHandler
 
             if (llmAnalysis.IsSuccess)
             {
-                Console.WriteLine("LLM analysis succeeded");
+                _logger.LogInformation("LLM analysis succeeded for feedback {FeedbackId}", userFeedbackToAnalyze.Id.Value);
                 FeedbackAnalysisResult analysisResult = await BuildAnalysisResult(llmAnalysis.Value);
                 userFeedbackToAnalyze.MarkAsAnalyzed(analysisResult);
-                Console.WriteLine("result---" + userFeedbackToAnalyze.AnalysisResult);
+                _logger.LogDebug("Analysis result for feedback {FeedbackId}: {AnalysisResult}", userFeedbackToAnalyze.Id.Value, userFeedbackToAnalyze.AnalysisResult);
                 _ = await _userFeedbackRepository.UpdateAsync(userFeedbackToAnalyze);
             }
             else
@@ -85,11 +90,12 @@ public class SubmitFeedbackCommandHandler
 
                 userFeedbackToAnalyze.MarkAsFailed(failureDetails);
                 _ = await _userFeedbackRepository.UpdateAsync(userFeedbackToAnalyze);
+                _logger.LogError("LLM analysis failed for feedback {FeedbackId}: {Error}", userFeedbackToAnalyze.Id.Value, llmAnalysis.Error);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("ex " + ex);
+            _logger.LogError(ex, "An unexpected error occurred during LLM analysis for feedback {FeedbackId}", userFeedbackToAnalyze.Id.Value);
             // Catch any unexpected exceptions during async processing
             var failureDetails = new AnalysisFailureDetails(
                 FailureReason.Unknown,
@@ -129,6 +135,10 @@ public class SubmitFeedbackCommandHandler
             if (result.IsSuccess)
             {
                 addedCategories.Add(result.Value);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to add new feature category '{FeatureCategoryName}': {Error}", name, result.Error);
             }
         }
         return existing.Union(addedCategories).ToHashSet();

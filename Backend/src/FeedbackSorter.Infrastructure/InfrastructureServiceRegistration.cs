@@ -13,9 +13,9 @@ public static class InfrastructureServiceRegistration
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        var feedbackRepo = new InMemoryUserFeedbackRepository();
-        services.AddSingleton<IUserFeedbackReadRepository>(feedbackRepo);
-        services.AddSingleton<IUserFeedbackRepository>(feedbackRepo);
+        services.AddSingleton<InMemoryUserFeedbackRepository>();
+        services.AddSingleton<IUserFeedbackReadRepository>(provider => provider.GetRequiredService<InMemoryUserFeedbackRepository>());
+        services.AddSingleton<IUserFeedbackRepository>(provider => provider.GetRequiredService<InMemoryUserFeedbackRepository>());
 
         var featureCategoryRepo = new InMemoryFeatureCategoryRepository();
         services.AddSingleton<IFeatureCategoryReadRepository>(featureCategoryRepo);
