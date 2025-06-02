@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.LLM;
-using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Presentation.UserFeedback;

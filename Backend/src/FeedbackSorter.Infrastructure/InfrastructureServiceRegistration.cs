@@ -1,6 +1,6 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.LLM;
-using FeedbackSorter.Application.UserFeedback;
 using FeedbackSorter.Infrastructure.FeatureCategories;
 using FeedbackSorter.Infrastructure.LLM;
 using FeedbackSorter.Infrastructure.Persistence;

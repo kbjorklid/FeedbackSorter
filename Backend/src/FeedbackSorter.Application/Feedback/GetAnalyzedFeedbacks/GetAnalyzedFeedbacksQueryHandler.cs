@@ -3,7 +3,7 @@ using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
+namespace FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 
 public class GetAnalyzedFeedbacksQueryHandler
 {

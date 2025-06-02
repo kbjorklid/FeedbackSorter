@@ -1,9 +1,9 @@
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.UserFeedback.Queries;
+using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Queries;
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Application.UserFeedback;
+namespace FeedbackSorter.Application.Feedback;
 
 public interface IUserFeedbackReadRepository
 {

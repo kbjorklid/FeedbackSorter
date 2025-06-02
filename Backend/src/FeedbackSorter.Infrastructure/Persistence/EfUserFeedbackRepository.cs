@@ -1,4 +1,4 @@
-using FeedbackSorter.Application.UserFeedback;
+using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using FeedbackSorter.SharedKernel;

@@ -4,7 +4,8 @@ using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
-namespace FeedbackSorter.Application.UserFeedback.SubmitNew;
+
+namespace FeedbackSorter.Application.Feedback.SubmitNew;
 
 public class SubmitFeedbackCommandHandler
 {
