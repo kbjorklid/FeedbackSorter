@@ -3,7 +3,6 @@ using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using FeedbackSorter.SharedKernel;
 using Microsoft.EntityFrameworkCore;
-using CoreUserFeedback = FeedbackSorter.Core.Feedback.UserFeedback;
 
 namespace FeedbackSorter.Infrastructure.Persistence;
 
@@ -16,7 +15,7 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
         _dbContext = dbContext;
     }
 
-    public async Task<Result<CoreUserFeedback>> GetByIdAsync(FeedbackId id)
+    public async Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
         UserFeedbackDb? userFeedbackDb = await _dbContext.UserFeedbacks
             .Include(uf => uf.AnalysisResultFeatureCategories)
@@ -25,21 +24,21 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
 
         if (userFeedbackDb == null)
         {
-            return Result<CoreUserFeedback>.Failure($"UserFeedback with Id {id.Value} not found.");
+            return Result<UserFeedback>.Failure($"UserFeedback with Id {id.Value} not found.");
         }
 
-        return Result<CoreUserFeedback>.Success(UserFeedbackMapper.ToDomainEntity(userFeedbackDb));
+        return Result<UserFeedback>.Success(UserFeedbackMapper.ToDomainEntity(userFeedbackDb));
     }
 
-    public async Task<Result<CoreUserFeedback>> AddAsync(CoreUserFeedback userFeedback)
+    public async Task<Result<UserFeedback>> AddAsync(UserFeedback userFeedback)
     {
         UserFeedbackDb userFeedbackDb = UserFeedbackMapper.ToDbEntity(userFeedback);
         await _dbContext.UserFeedbacks.AddAsync(userFeedbackDb);
         await _dbContext.SaveChangesAsync();
-        return Result<CoreUserFeedback>.Success(userFeedback);
+        return Result<UserFeedback>.Success(userFeedback);
     }
 
-    public async Task<Result<CoreUserFeedback>> UpdateAsync(CoreUserFeedback userFeedback)
+    public async Task<Result<UserFeedback>> UpdateAsync(UserFeedback userFeedback)
     {
         UserFeedbackDb? existingUserFeedbackDb = await _dbContext.UserFeedbacks
             .Include(uf => uf.AnalysisResultFeatureCategories)
@@ -48,7 +47,7 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
 
         if (existingUserFeedbackDb == null)
         {
-            return Result<CoreUserFeedback>.Failure($"UserFeedback with Id {userFeedback.Id.Value} not found for update.");
+            return Result<UserFeedback>.Failure($"UserFeedback with Id {userFeedback.Id.Value} not found for update.");
         }
 
         UserFeedbackDb newUserFeedbackDb = UserFeedbackMapper.ToDbEntity(userFeedback);
@@ -106,6 +105,6 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
         }
 
         await _dbContext.SaveChangesAsync();
-        return Result<CoreUserFeedback>.Success(userFeedback);
+        return Result<UserFeedback>.Success(userFeedback);
     }
 }

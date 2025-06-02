@@ -6,26 +6,20 @@ using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Application.Feedback.MarkAnalyzed;
 
-public class MarkFeedbackAnalyzedCommandHandler
+public class MarkFeedbackAnalyzedCommandHandler(IUserFeedbackRepository userFeedbackRepository, IFeatureCategoryRepository featureCategoryRepository)
 {
-    private readonly IUserFeedbackRepository _userFeedbackRepository;
-    private readonly IFeatureCategoryRepository _featureCategoryRepository;
-
-    public MarkFeedbackAnalyzedCommandHandler(IUserFeedbackRepository userFeedbackRepository, IFeatureCategoryRepository featureCategoryRepository)
-    {
-        _userFeedbackRepository = userFeedbackRepository;
-        _featureCategoryRepository = featureCategoryRepository;
-    }
+    private readonly IUserFeedbackRepository _userFeedbackRepository = userFeedbackRepository;
+    private readonly IFeatureCategoryRepository _featureCategoryRepository = featureCategoryRepository;
 
     public async Task<Result> Handle(MarkFeedbackAnalyzedCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        Result<Core.Feedback.UserFeedback> feedbackResult = await _userFeedbackRepository.GetByIdAsync(command.UserFeedbackId);
+        Result<UserFeedback> feedbackResult = await _userFeedbackRepository.GetByIdAsync(command.UserFeedbackId);
         if (feedbackResult.IsFailure)
             return Result.Failure(feedbackResult.Error);
 
-        Core.Feedback.UserFeedback userFeedback = feedbackResult.Value;
+        UserFeedback userFeedback = feedbackResult.Value;
 
         Result<ISet<FeatureCategory>> featureCategoriesResult = await GetOrCreateFeatureCategoriesAsync(command.LlmAnalysisResult);
         if (featureCategoriesResult.IsFailure)
@@ -41,7 +35,7 @@ public class MarkFeedbackAnalyzedCommandHandler
 
         userFeedback.MarkAsAnalyzed(feedbackAnalysisResult);
 
-        Result<Core.Feedback.UserFeedback> saveResult = await _userFeedbackRepository.UpdateAsync(userFeedback);
+        Result<UserFeedback> saveResult = await _userFeedbackRepository.UpdateAsync(userFeedback);
 
         return saveResult.IsSuccess ? Result.Success() : Result.Failure(saveResult.Error);
     }

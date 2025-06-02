@@ -38,11 +38,11 @@ public class SubmitFeedbackCommandHandler
         ArgumentNullException.ThrowIfNull(command);
         var feedbackId = FeedbackId.New();
 
-        var initialUserFeedback = new FeedbackSorter.Core.Feedback.UserFeedback(
+        var initialUserFeedback = new UserFeedback(
             feedbackId,
             new FeedbackText(command.Text)
         );
-        Result<Core.Feedback.UserFeedback> addResult = await _userFeedbackRepository.AddAsync(initialUserFeedback);
+        Result<UserFeedback> addResult = await _userFeedbackRepository.AddAsync(initialUserFeedback);
         if (addResult.IsFailure)
         {
             _logger.LogError("Failed to add initial UserFeedback to repository: {Error}", addResult.Error);
@@ -54,11 +54,10 @@ public class SubmitFeedbackCommandHandler
         return Result<FeedbackId>.Success(feedbackId);
     }
 
-    private async Task AnalyzeAndSaveFeedbackAsync(Core.Feedback.UserFeedback userFeedbackToAnalyze)
+    private async Task AnalyzeAndSaveFeedbackAsync(UserFeedback userFeedbackToAnalyze)
     {
         try
         {
-            // Get existing feature categories
             IEnumerable<FeatureCategoryReadModel> existingFeatureCategoriesReadModels = await _featureCategoryReadRepository.GetAllAsync();
             var existingFeatureCategories = existingFeatureCategoriesReadModels
                 .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
