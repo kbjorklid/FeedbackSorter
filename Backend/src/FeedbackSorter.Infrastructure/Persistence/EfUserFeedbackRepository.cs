@@ -3,25 +3,31 @@ using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using FeedbackSorter.SharedKernel;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FeedbackSorter.Infrastructure.Persistence;
 
 public class EfUserFeedbackRepository : IUserFeedbackRepository
 {
     private readonly FeedbackSorterDbContext _dbContext;
+    private readonly ILogger<EfUserFeedbackRepository> _logger;
 
-    public EfUserFeedbackRepository(FeedbackSorterDbContext dbContext)
+    public EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger<EfUserFeedbackRepository> logger)
     {
         _dbContext = dbContext;
+        _logger = logger;
     }
 
     public async Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
+        _logger.LogDebug("Entering {MethodName} with id: {Id}", nameof(GetByIdAsync), id);
+
         UserFeedbackDb? userFeedbackDb = await _dbContext.UserFeedbacks
             .Include(uf => uf.AnalysisResultFeatureCategories)
             .Include(uf => uf.SelectedFeedbackCategories)
             .FirstOrDefaultAsync(uf => uf.Id == id.Value);
 
+        _logger.LogDebug("11");
         if (userFeedbackDb == null)
         {
             return Result<UserFeedback>.Failure($"UserFeedback with Id {id.Value} not found.");

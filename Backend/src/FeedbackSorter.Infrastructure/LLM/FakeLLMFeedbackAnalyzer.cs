@@ -2,10 +2,11 @@ using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
+using Microsoft.Extensions.Logging;
 
 namespace FeedbackSorter.Infrastructure.LLM;
 
-public class FakeLLMFeedbackAnalyzer : ILlmFeedbackAnalyzer
+public class FakeLLMFeedbackAnalyzer(ILogger<FakeLLMFeedbackAnalyzer> logger) : ILlmFeedbackAnalyzer
 {
     private static int _callCount = 0;
 
@@ -13,6 +14,7 @@ public class FakeLLMFeedbackAnalyzer : ILlmFeedbackAnalyzer
         FeedbackText feedbackText,
         IEnumerable<FeatureCategoryReadModel> existingFeatureCategories)
     {
+        logger.LogDebug("Entering {MethodName} with feedbackText: {FeedbackText}", nameof(AnalyzeFeedback), feedbackText);
         _callCount++;
 
         if (_callCount % 2 != 0) // Odd calls are successful

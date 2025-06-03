@@ -1,6 +1,5 @@
 using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
-
 namespace FeedbackSorter.Application.LLM;
 
 public interface ILlmFeedbackAnalyzer

@@ -15,7 +15,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<SubmitFeedbackCommandHandler>();
         services.AddScoped<MarkFeedbackAnalyzedCommandHandler>();
         services.AddScoped<MarkFeedbackAnalysisFailedCommandHandler>();
-        services.AddScoped<AnalyzeFeedbackCommandHandler>();
+        services.AddScoped<IAnalyzeFeedbackCommandHandler, AnalyzeFeedbackCommandHandler>();
 
         return services;
     }
