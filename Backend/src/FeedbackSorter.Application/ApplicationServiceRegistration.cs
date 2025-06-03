@@ -1,4 +1,5 @@
 using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.MarkAnalysisFailed;
 using FeedbackSorter.Application.Feedback.MarkAnalyzed;
 using FeedbackSorter.Application.Feedback.SubmitNew;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +13,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<GetAnalyzedFeedbacksQueryHandler>();
         services.AddScoped<SubmitFeedbackCommandHandler>();
         services.AddScoped<MarkFeedbackAnalyzedCommandHandler>();
-
+        services.AddScoped<MarkFeedbackAnalysisFailedCommandHandler>();
 
         return services;
     }
