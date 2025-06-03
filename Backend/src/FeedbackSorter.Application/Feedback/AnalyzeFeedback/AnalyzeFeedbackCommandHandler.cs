@@ -12,7 +12,7 @@ public class AnalyzeFeedbackCommandHandler(
     IFeatureCategoryReadRepository featureCategoryReadRepository,
     ILlmFeedbackAnalyzer llmFeedbackAnalyzer,
     MarkFeedbackAnalyzedCommandHandler markFeedbackAnalyzedCommandHandler,
-    MarkFeedbackAnalysisFailedCommandHandler markFeedbackAnalysisFailedCommandHandler)
+    MarkFeedbackAnalysisFailedCommandHandler markFeedbackAnalysisFailedCommandHandler) : IAnalyzeFeedbackCommandHandler
 {
     private readonly IUserFeedbackRepository _userFeedbackRepository = userFeedbackRepository;
     private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository = featureCategoryReadRepository;
