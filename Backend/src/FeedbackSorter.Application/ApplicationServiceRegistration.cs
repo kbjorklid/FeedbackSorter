@@ -1,3 +1,4 @@
+using FeedbackSorter.Application.Feedback.AnalyzeFeedback;
 using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.MarkAnalysisFailed;
 using FeedbackSorter.Application.Feedback.MarkAnalyzed;
@@ -14,6 +15,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<SubmitFeedbackCommandHandler>();
         services.AddScoped<MarkFeedbackAnalyzedCommandHandler>();
         services.AddScoped<MarkFeedbackAnalysisFailedCommandHandler>();
+        services.AddScoped<AnalyzeFeedbackCommandHandler>();
 
         return services;
     }

@@ -59,13 +59,10 @@ public class SubmitFeedbackCommandHandler
         try
         {
             IEnumerable<FeatureCategoryReadModel> existingFeatureCategoriesReadModels = await _featureCategoryReadRepository.GetAllAsync();
-            var existingFeatureCategories = existingFeatureCategoriesReadModels
-                .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
-                .ToList();
 
             LlmAnalysisResult llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
                 userFeedbackToAnalyze.Text,
-                existingFeatureCategories
+                existingFeatureCategoriesReadModels
             );
 
 
