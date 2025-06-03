@@ -44,14 +44,15 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .AnalyzeFeedback(
                 Arg.Any<FeedbackText>(),
                 Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
-            .Returns(Result<LlmAnalysisResult>.Success(new LlmAnalysisResult
-            {
-                Title = new FeedbackTitle("Test Title"),
-                FeatureCategoryNames = new HashSet<string>(),
-                Sentiment = Sentiment.Positive,
-                FeedbackCategories = new HashSet<FeedbackCategoryType>() { FeedbackCategoryType.GeneralFeedback },
-                AnalyzedAt = new Timestamp(expectedTimestamp.DateTime)
-            }));
+            .Returns(LlmAnalysisResult.ForSuccess(
+                new Timestamp(expectedTimestamp.DateTime),
+                new LlmAnalysisSuccess
+                {
+                    Title = new FeedbackTitle("Test Title"),
+                    FeatureCategoryNames = new HashSet<string>(),
+                    Sentiment = Sentiment.Positive,
+                    FeedbackCategories = new HashSet<FeedbackCategoryType>() { FeedbackCategoryType.GeneralFeedback }
+                }));
 
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
@@ -174,14 +175,15 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .AnalyzeFeedback(
                 Arg.Any<FeedbackText>(),
                 Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
-            .Returns(Result<LlmAnalysisResult>.Success(new LlmAnalysisResult
-            {
-                Title = expectedTitle,
-                FeatureCategoryNames = expectedFeatureCategories,
-                Sentiment = expectedSentiment,
-                FeedbackCategories = expectedFeedbackCategories,
-                AnalyzedAt = new Timestamp(expectedTimestamp.DateTime)
-            }));
+            .Returns(LlmAnalysisResult.ForSuccess(
+                new Timestamp(expectedTimestamp.DateTime),
+                new LlmAnalysisSuccess
+                {
+                    Title = expectedTitle,
+                    FeatureCategoryNames = expectedFeatureCategories,
+                    Sentiment = expectedSentiment,
+                    FeedbackCategories = expectedFeedbackCategories
+                }));
 
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
@@ -243,7 +245,13 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .AnalyzeFeedback(
                 Arg.Any<FeedbackText>(),
                 Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
-            .Returns(Result<LlmAnalysisResult>.Failure(errorMessage));
+            .Returns(LlmAnalysisResult.ForFailure(
+                new Timestamp(expectedTimestamp.DateTime),
+                new LlmAnalysisFailure
+                {
+                    Error = errorMessage,
+                    Reason = FailureReason.LlmError
+                }));
 
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);

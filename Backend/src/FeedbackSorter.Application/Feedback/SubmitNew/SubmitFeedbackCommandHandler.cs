@@ -63,7 +63,7 @@ public class SubmitFeedbackCommandHandler
                 .Select(fc => new FeatureCategoryReadModel(fc.Id, fc.Name))
                 .ToList();
 
-            Result<LlmAnalysisResult> llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
+            LlmAnalysisResult llmAnalysis = await _llmFeedbackAnalyzer.AnalyzeFeedback(
                 userFeedbackToAnalyze.Text,
                 existingFeatureCategories
             );
@@ -72,7 +72,7 @@ public class SubmitFeedbackCommandHandler
             if (llmAnalysis.IsSuccess)
             {
                 _logger.LogInformation("LLM analysis succeeded for feedback {FeedbackId}", userFeedbackToAnalyze.Id.Value);
-                FeedbackAnalysisResult analysisResult = await BuildAnalysisResult(llmAnalysis.Value);
+                FeedbackAnalysisResult analysisResult = await BuildAnalysisResult(llmAnalysis);
                 userFeedbackToAnalyze.MarkAsAnalyzed(analysisResult);
                 _logger.LogDebug("Analysis result for feedback {FeedbackId}: {AnalysisResult}", userFeedbackToAnalyze.Id.Value, userFeedbackToAnalyze.AnalysisResult);
                 _ = await _userFeedbackRepository.UpdateAsync(userFeedbackToAnalyze);
@@ -80,17 +80,17 @@ public class SubmitFeedbackCommandHandler
             else
             {
                 // LLM analysis failed
-                FailureReason failureReason = MapLLMErrorToFailureReason(llmAnalysis.Error);
+                LlmAnalysisFailure failure = llmAnalysis.Failure!;
                 var failureDetails = new AnalysisFailureDetails(
-                    failureReason,
-                    llmAnalysis.Error,
-                    new Timestamp(_timeProvider),
+                    failure.Reason,
+                    failure.Error,
+                    llmAnalysis.AnalyzedAt,
                     userFeedbackToAnalyze.RetryCount + 1 // Increment retry count for this failure
                 );
 
                 userFeedbackToAnalyze.MarkAsFailed(failureDetails);
                 _ = await _userFeedbackRepository.UpdateAsync(userFeedbackToAnalyze);
-                _logger.LogError("LLM analysis failed for feedback {FeedbackId}: {Error}", userFeedbackToAnalyze.Id.Value, llmAnalysis.Error);
+                _logger.LogError("LLM analysis failed for feedback {FeedbackId}: {Error}", userFeedbackToAnalyze.Id.Value, llmAnalysis.Failure!.Error);
             }
         }
         catch (Exception ex)
@@ -109,15 +109,16 @@ public class SubmitFeedbackCommandHandler
         }
     }
 
-    private async Task<FeedbackAnalysisResult> BuildAnalysisResult(LlmAnalysisResult value)
+    private async Task<FeedbackAnalysisResult> BuildAnalysisResult(LlmAnalysisResult analysisResult)
     {
+        LlmAnalysisSuccess value = analysisResult.Success!;
         ISet<FeatureCategory> featureCategories = await GetOrCreateFeatureCategories(value.FeatureCategoryNames);
         return new FeedbackAnalysisResult(
             value.Title,
             value.Sentiment,
             value.FeedbackCategories,
             featureCategories,
-            new Timestamp(_timeProvider)
+            analysisResult.AnalyzedAt
         );
     }
 
@@ -142,18 +143,5 @@ public class SubmitFeedbackCommandHandler
             }
         }
         return existing.Union(addedCategories).ToHashSet();
-    }
-
-    private FailureReason MapLLMErrorToFailureReason(string errorMessage)
-    {
-        if (errorMessage.Contains("LLM service returned", StringComparison.OrdinalIgnoreCase) || errorMessage.Contains("network error", StringComparison.OrdinalIgnoreCase))
-        {
-            return FailureReason.LlmError;
-        }
-        if (errorMessage.Contains("LLM does not succeed", StringComparison.OrdinalIgnoreCase) || errorMessage.Contains("not able to analyze", StringComparison.OrdinalIgnoreCase))
-        {
-            return FailureReason.LlmUnableToProcess;
-        }
-        return FailureReason.Unknown;
     }
 }

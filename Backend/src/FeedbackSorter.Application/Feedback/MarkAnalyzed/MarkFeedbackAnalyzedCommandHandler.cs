@@ -1,5 +1,4 @@
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
@@ -14,21 +13,25 @@ public class MarkFeedbackAnalyzedCommandHandler(IUserFeedbackRepository userFeed
     public async Task<Result> Handle(MarkFeedbackAnalyzedCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.LlmAnalysisResult.IsSuccess == false)
+            throw new InvalidOperationException("Asked to mark feedback as analyzed, but result indicates failure.");
 
         Result<UserFeedback> feedbackResult = await _userFeedbackRepository.GetByIdAsync(command.UserFeedbackId);
         if (feedbackResult.IsFailure)
             return Result.Failure(feedbackResult.Error);
-
         UserFeedback userFeedback = feedbackResult.Value;
 
-        Result<ISet<FeatureCategory>> featureCategoriesResult = await GetOrCreateFeatureCategoriesAsync(command.LlmAnalysisResult);
+        ISet<string> featureCategoryNames = command.LlmAnalysisResult.Success!.FeatureCategoryNames;
+
+        Result<ISet<FeatureCategory>> featureCategoriesResult = await GetOrCreateFeatureCategoriesAsync(featureCategoryNames);
         if (featureCategoriesResult.IsFailure)
             return Result.Failure(featureCategoriesResult.Error);
 
+        LLM.LlmAnalysisSuccess results = command.LlmAnalysisResult.Success!;
         var feedbackAnalysisResult = new FeedbackAnalysisResult(
-            command.LlmAnalysisResult.Title,
-            command.LlmAnalysisResult.Sentiment,
-            command.LlmAnalysisResult.FeedbackCategories,
+            results.Title,
+            results.Sentiment,
+            results.FeedbackCategories,
             featureCategoriesResult.Value,
             command.LlmAnalysisResult.AnalyzedAt
         );
@@ -40,16 +43,16 @@ public class MarkFeedbackAnalyzedCommandHandler(IUserFeedbackRepository userFeed
         return saveResult.IsSuccess ? Result.Success() : Result.Failure(saveResult.Error);
     }
 
-    private async Task<Result<ISet<FeatureCategory>>> GetOrCreateFeatureCategoriesAsync(LlmAnalysisResult llmAnalysisResult)
+    private async Task<Result<ISet<FeatureCategory>>> GetOrCreateFeatureCategoriesAsync(ISet<string> featureCategoryNames)
     {
-        ISet<FeatureCategory> existingFeatureCategories = await _featureCategoryRepository.GetByNamesAsync(llmAnalysisResult.FeatureCategoryNames);
+        ISet<FeatureCategory> existingFeatureCategories = await _featureCategoryRepository.GetByNamesAsync(featureCategoryNames);
         var featureCategories = new HashSet<FeatureCategory>(existingFeatureCategories);
 
-        foreach (string featureCategoryName in llmAnalysisResult.FeatureCategoryNames)
+        foreach (string featureCategoryName in featureCategoryNames)
         {
             if (!existingFeatureCategories.Any(fc => fc.Name.Value == featureCategoryName))
             {
-                var newFeatureCategory = new FeatureCategory(new FeatureCategoryId(Guid.NewGuid()), new FeatureCategoryName(featureCategoryName), llmAnalysisResult.AnalyzedAt);
+                var newFeatureCategory = new FeatureCategory(new FeatureCategoryId(Guid.NewGuid()), new FeatureCategoryName(featureCategoryName), new Timestamp());
                 Result<FeatureCategory> addResult = await _featureCategoryRepository.AddAsync(newFeatureCategory);
                 if (addResult.IsSuccess)
                 {
