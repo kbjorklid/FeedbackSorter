@@ -15,14 +15,12 @@ public class MarkFeedbackAnalysisFailedCommandHandler(
 
     public async Task<Result<UserFeedback>> Handle(MarkFeedbackAnalysisFailedCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Entering {MethodName} with request: {Request}", nameof(Handle), request);
         ArgumentNullException.ThrowIfNull(request);
 
         Result<UserFeedback> userFeedbackResult = await _userFeedbackRepository.GetByIdAsync(request.FeedbackId);
 
         if (userFeedbackResult.IsFailure)
         {
-            _logger.LogDebug("Exiting {MethodName} with failure: Feedback with ID {FeedbackId} not found.", nameof(Handle), request.FeedbackId.Value);
             return Result<UserFeedback>.Failure($"Feedback with ID {request.FeedbackId.Value} not found.");
         }
 
@@ -38,7 +36,6 @@ public class MarkFeedbackAnalysisFailedCommandHandler(
         userFeedback.MarkAsFailed(failureDetails);
 
         Result<UserFeedback> updateResult = await _userFeedbackRepository.UpdateAsync(userFeedback);
-        _logger.LogDebug("Exiting {MethodName} with result: {Result}", nameof(Handle), updateResult);
         return updateResult;
     }
 }

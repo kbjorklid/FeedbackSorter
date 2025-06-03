@@ -27,7 +27,6 @@ public class SubmitFeedbackCommandHandler
 
     public async Task<Result<FeedbackId>> HandleAsync(SubmitFeedbackCommand command)
     {
-        _logger.LogDebug("Entering {MethodName} with command: {Command}", nameof(HandleAsync), command);
         ArgumentNullException.ThrowIfNull(command);
         var feedbackId = FeedbackId.New();
 
@@ -56,7 +55,6 @@ public class SubmitFeedbackCommandHandler
             }
         });
 
-        _logger.LogDebug("Exiting {MethodName} with success: {FeedbackId}", nameof(HandleAsync), feedbackId.Value);
         return Result<FeedbackId>.Success(feedbackId);
     }
 }
