@@ -1,7 +1,7 @@
 using System.Net;
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.UserFeedback.SubmitNew;
+using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.SubmitNew;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Mvc;

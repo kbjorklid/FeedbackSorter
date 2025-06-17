@@ -1,7 +1,7 @@
 using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 
-namespace FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
+namespace FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 
 public record GetAnalyzedFeedbacksQuery(
     int PageNumber,

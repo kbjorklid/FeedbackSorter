@@ -1,26 +1,31 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.LLM;
-using FeedbackSorter.Application.UserFeedback;
 using FeedbackSorter.Infrastructure.FeatureCategories;
-using FeedbackSorter.Infrastructure.Feedback;
 using FeedbackSorter.Infrastructure.LLM;
+using FeedbackSorter.Infrastructure.Persistence;
 using FeedbackSorter.SharedKernel;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FeedbackSorter.Infrastructure;
 
 public static class InfrastructureServiceRegistration
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<InMemoryUserFeedbackRepository>();
-        services.AddSingleton<IUserFeedbackReadRepository>(provider => provider.GetRequiredService<InMemoryUserFeedbackRepository>());
-        services.AddSingleton<IUserFeedbackRepository>(provider => provider.GetRequiredService<InMemoryUserFeedbackRepository>());
 
-        var featureCategoryRepo = new InMemoryFeatureCategoryRepository();
-        services.AddSingleton<IFeatureCategoryReadRepository>(featureCategoryRepo);
-        services.AddSingleton<IFeatureCategoryRepository>(featureCategoryRepo);
-        services.AddSingleton<ILlmFeedbackAnalyzer>(new FakeLLMFeedbackAnalyzer());
+        services.AddDbContext<FeedbackSorterDbContext>(options =>
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"))); // Get connection string from config
+
+        services.AddScoped<IUserFeedbackRepository, EfUserFeedbackRepository>();
+        services.AddScoped<IUserFeedbackReadRepository, EfUserFeedbackReadRepository>();
+        services.AddScoped<IFeatureCategoryRepository, EfFeatureCategoryRepository>();
+        services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryReadRepository>();
+
+
+        services.AddSingleton<ILlmFeedbackAnalyzer, FakeLLMFeedbackAnalyzer>();
         services.AddSingleton<ITimeProvider>(new SystemTimeProvider());
 
 

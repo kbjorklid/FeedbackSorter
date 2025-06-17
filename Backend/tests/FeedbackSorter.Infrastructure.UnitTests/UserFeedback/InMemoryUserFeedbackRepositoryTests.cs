@@ -1,7 +1,7 @@
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.UserFeedback;
-using FeedbackSorter.Application.UserFeedback.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.UserFeedback.Queries;
+using FeedbackSorter.Application.Feedback;
+using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Queries;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Core.UnitTests.Builders;
 using FeedbackSorter.Infrastructure.Feedback;

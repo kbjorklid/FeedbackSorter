@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.Feedback;
 
-namespace FeedbackSorter.Application.UserFeedback.Queries;
+namespace FeedbackSorter.Application.Feedback.Queries;
 
 public record FailedToAnalyzeFeedbackReadModel
 {
