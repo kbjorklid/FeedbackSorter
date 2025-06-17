@@ -16,44 +16,39 @@ public class AnalyzeFeedbackCommandHandler(
     MarkFeedbackAnalysisFailedCommandHandler markFeedbackAnalysisFailedCommandHandler,
     ILogger<AnalyzeFeedbackCommandHandler> logger) : IAnalyzeFeedbackCommandHandler
 {
-    private readonly IUserFeedbackRepository _userFeedbackRepository = userFeedbackRepository;
-    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository = featureCategoryReadRepository;
-    private readonly ILlmFeedbackAnalyzer _llmFeedbackAnalyzer = llmFeedbackAnalyzer;
-    private readonly MarkFeedbackAnalyzedCommandHandler _markFeedbackAnalyzedCommandHandler = markFeedbackAnalyzedCommandHandler;
-    private readonly MarkFeedbackAnalysisFailedCommandHandler _markFeedbackAnalysisFailedCommandHandler = markFeedbackAnalysisFailedCommandHandler;
     private readonly ILogger<AnalyzeFeedbackCommandHandler> _logger = logger;
 
     public async Task<Result> Handle(AnalyzeFeedbackCommand command, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
-        Result<UserFeedback> feedbackResult = await _userFeedbackRepository.GetByIdAsync(command.FeedbackId);
+        Result<UserFeedback> feedbackResult = await userFeedbackRepository.GetByIdAsync(command.FeedbackId);
         if (feedbackResult.IsFailure)
         {
             return Result.Failure(feedbackResult.Error);
         }
         UserFeedback userFeedback = feedbackResult.Value;
         userFeedback.StartProcessing();
-        Result<UserFeedback> updateResult = await _userFeedbackRepository.UpdateAsync(userFeedback);
+        Result<UserFeedback> updateResult = await userFeedbackRepository.UpdateAsync(userFeedback);
         if (updateResult.IsFailure)
         {
             return Result.Failure(updateResult.Error);
         }
-        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories = await _featureCategoryReadRepository.GetAllAsync();
+        IEnumerable<FeatureCategoryReadModel> existingFeatureCategories = await featureCategoryReadRepository.GetAllAsync();
 
-        LlmAnalysisResult llmAnalysisResult = await _llmFeedbackAnalyzer.AnalyzeFeedback(
+        LlmAnalysisResult llmAnalysisResult = await llmFeedbackAnalyzer.AnalyzeFeedback(
             userFeedback.Text,
             existingFeatureCategories);
 
         if (llmAnalysisResult.IsSuccess)
         {
             MarkFeedbackAnalyzedCommand markAnalyzedCommand = new(command.FeedbackId, llmAnalysisResult);
-            Result result = await _markFeedbackAnalyzedCommandHandler.Handle(markAnalyzedCommand);
+            Result result = await markFeedbackAnalyzedCommandHandler.Handle(markAnalyzedCommand);
             return result;
         }
         else
         {
             MarkFeedbackAnalysisFailedCommand markFailedCommand = new(command.FeedbackId, llmAnalysisResult);
-            Result result = await _markFeedbackAnalysisFailedCommandHandler.Handle(markFailedCommand, cancellationToken);
+            Result result = await markFeedbackAnalysisFailedCommandHandler.Handle(markFailedCommand, cancellationToken);
             return result;
         }
     }

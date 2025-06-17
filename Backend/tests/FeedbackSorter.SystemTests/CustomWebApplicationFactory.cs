@@ -22,7 +22,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public IFeatureCategoryReadRepository FeatureCategoryReadRepositoryMock { get; private set; } = null!;
     public ILlmFeedbackAnalyzer LLMFeedbackAnalyzerMock { get; private set; } = null!;
     public ITimeProvider TimeProviderMock { get; private set; } = null!;
-    public IAnalyzeFeedbackCommandHandler AnalyzeFeedbackCommandHandlerMock { get; private set; } = null!;
     public ILogger<AnalyzeFeedbackCommandHandler> AnalyzeFeedbackCommandHandlerLoggerMock { get; private set; } = null!;
     public ILogger<MarkFeedbackAnalyzedCommandHandler> MarkFeedbackAnalyzedCommandHandlerLoggerMock { get; private set; } = null!;
     public ILogger<MarkFeedbackAnalysisFailedCommandHandler> MarkFeedbackAnalysisFailedCommandHandlerLoggerMock { get; private set; } = null!;
@@ -41,11 +40,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                               descriptor.ServiceType == typeof(IFeatureCategoryReadRepository) ||
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider) ||
-                              descriptor.ServiceType == typeof(IAnalyzeFeedbackCommandHandler) || // Changed to interface
-                              descriptor.ServiceType == typeof(AnalyzeFeedbackCommandHandler) || // Remove concrete registration
-                              descriptor.ServiceType == typeof(MarkFeedbackAnalyzedCommandHandler) ||
-                              descriptor.ServiceType == typeof(MarkFeedbackAnalysisFailedCommandHandler) ||
-                              descriptor.ServiceType == typeof(GetAnalyzedFeedbacksQueryHandler) ||
                               descriptor.ServiceType == typeof(ILogger<AnalyzeFeedbackCommandHandler>) ||
                               descriptor.ServiceType == typeof(ILogger<MarkFeedbackAnalyzedCommandHandler>) ||
                               descriptor.ServiceType == typeof(ILogger<MarkFeedbackAnalysisFailedCommandHandler>) ||
@@ -69,28 +63,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             MarkFeedbackAnalysisFailedCommandHandlerLoggerMock = Substitute.For<ILogger<MarkFeedbackAnalysisFailedCommandHandler>>();
             GetAnalyzedFeedbacksQueryHandlerLoggerMock = Substitute.For<ILogger<GetAnalyzedFeedbacksQueryHandler>>();
 
-
-            // Mock concrete command handlers that AnalyzeFeedbackCommandHandler depends on
-            MarkFeedbackAnalyzedCommandHandler markFeedbackAnalyzedCommandHandlerMock = Substitute.For<MarkFeedbackAnalyzedCommandHandler>(UserFeedbackRepositoryMock, FeatureCategoryRepositoryMock, MarkFeedbackAnalyzedCommandHandlerLoggerMock);
-            MarkFeedbackAnalysisFailedCommandHandler markFeedbackAnalysisFailedCommandHandlerMock = Substitute.For<MarkFeedbackAnalysisFailedCommandHandler>(UserFeedbackRepositoryMock, TimeProviderMock, MarkFeedbackAnalysisFailedCommandHandlerLoggerMock);
-
-            // Mock the AnalyzeFeedbackCommandHandler interface
-            AnalyzeFeedbackCommandHandlerMock = Substitute.For<IAnalyzeFeedbackCommandHandler>();
-
             services.AddSingleton(UserFeedbackReadRepositoryMock);
             services.AddSingleton(UserFeedbackRepositoryMock);
             services.AddSingleton(FeatureCategoryRepositoryMock);
             services.AddSingleton(FeatureCategoryReadRepositoryMock);
             services.AddSingleton(LLMFeedbackAnalyzerMock);
             services.AddSingleton(TimeProviderMock);
-            services.AddSingleton(markFeedbackAnalyzedCommandHandlerMock); // Register mocked concrete
-            services.AddSingleton(markFeedbackAnalysisFailedCommandHandlerMock); // Register mocked concrete
-            services.AddSingleton(AnalyzeFeedbackCommandHandlerMock); // Register mocked interface
             services.AddSingleton(AnalyzeFeedbackCommandHandlerLoggerMock);
             services.AddSingleton(MarkFeedbackAnalyzedCommandHandlerLoggerMock);
             services.AddSingleton(MarkFeedbackAnalysisFailedCommandHandlerLoggerMock);
             services.AddSingleton(GetAnalyzedFeedbacksQueryHandlerLoggerMock);
-            services.AddSingleton(Substitute.For<GetAnalyzedFeedbacksQueryHandler>(UserFeedbackReadRepositoryMock, FeatureCategoryReadRepositoryMock, GetAnalyzedFeedbacksQueryHandlerLoggerMock));
         });
     }
 
@@ -102,7 +84,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         FeatureCategoryReadRepositoryMock.ClearReceivedCalls();
         LLMFeedbackAnalyzerMock.ClearReceivedCalls();
         TimeProviderMock.ClearReceivedCalls();
-        AnalyzeFeedbackCommandHandlerMock.ClearReceivedCalls();
+        TimeProviderMock.UtcNow.Returns(new DateTime(2024, 1, 1, 10, 0, 0, DateTimeKind.Utc));
         AnalyzeFeedbackCommandHandlerLoggerMock.ClearReceivedCalls();
         MarkFeedbackAnalyzedCommandHandlerLoggerMock.ClearReceivedCalls();
         MarkFeedbackAnalysisFailedCommandHandlerLoggerMock.ClearReceivedCalls();

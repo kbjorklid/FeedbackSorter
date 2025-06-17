@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.Feedback.AnalyzeFeedback;
 using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Presentation.UserFeedback;
@@ -36,13 +36,28 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .AddAsync(Arg.Any<UserFeedback>())
             .Returns(Result<UserFeedback>.Success(new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText))));
 
-        _factory.TimeProviderMock
-            .UtcNow
-            .Returns(expectedTimestamp.UtcDateTime);
+        UserFeedback feedback = new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText));
 
-        _factory.AnalyzeFeedbackCommandHandlerMock
-            .Handle(Arg.Any<AnalyzeFeedbackCommand>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(Result.Success()));
+        Result<UserFeedback> success = Result<UserFeedback>.Success(feedback);
+        _factory.UserFeedbackRepositoryMock.GetByIdAsync(expectedFeedbackId)
+            .Returns(success);
+        
+        _factory.UserFeedbackRepositoryMock.UpdateAsync(Arg.Any<UserFeedback>())
+            .Returns(success);
+        
+        Task<LlmAnalysisResult> mockedResult = Task.FromResult(LlmAnalysisResult.ForSuccess(
+                new Timestamp(_factory.TimeProviderMock),
+                new LlmAnalysisSuccess
+                {
+                    Title = new FeedbackTitle("Mocked Title"),
+                    Sentiment = Sentiment.Positive,
+                    FeedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.FeatureRequest },
+                    FeatureCategoryNames = new HashSet<string> { "Mocked Feature" }
+                }));
+
+        _factory.LLMFeedbackAnalyzerMock
+            .AnalyzeFeedback(Arg.Any<FeedbackText>(), Arg.Any<IEnumerable<FeatureCategoryReadModel>>())
+            .Returns(mockedResult);
 
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
@@ -56,9 +71,9 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         Assert.Equal("Feedback received and queued for analysis.", acknowledgement.Message);
 
         await _factory.UserFeedbackRepositoryMock.Received(1).AddAsync(Arg.Is<UserFeedback>(uf => uf.Text.Value == feedbackText));
-        await _factory.AnalyzeFeedbackCommandHandlerMock.Received(1).Handle(
-            Arg.Is<AnalyzeFeedbackCommand>(cmd => cmd.FeedbackId.Value == expectedFeedbackId.Value),
-            Arg.Any<CancellationToken>());
+        await _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
+            Arg.Is<FeedbackText>(text => text.Value == feedbackText),
+            Arg.Any<IEnumerable<FeatureCategoryReadModel>>());
     }
 
     [Fact]
@@ -126,92 +141,6 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
 
         await _factory.UserFeedbackReadRepositoryMock.Received(1).GetPagedListAsync(
             Arg.Any<UserFeedbackFilter>(), 1, 20);
-    }
-
-    [Fact]
-    public async Task SubmitFeedback_ValidInput_AnalyzesAndUpdatesFeedbackSuccessfully()
-    {
-        // Arrange
-        string feedbackText = "This is a test feedback for successful analysis.";
-        var inputDto = new UserFeedbackInputDto(feedbackText);
-        var expectedFeedbackId = FeedbackId.FromGuid(Guid.NewGuid());
-        var expectedTimestamp = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero);
-        var expectedTitle = new FeedbackTitle("Successful Analysis Title");
-        Sentiment expectedSentiment = Sentiment.Positive;
-        var expectedFeedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.FeatureRequest };
-        var expectedFeatureCategories = new HashSet<string> { "New Feature A", "New Feature B" };
-
-        _factory.UserFeedbackRepositoryMock
-            .AddAsync(Arg.Any<UserFeedback>())
-            .Returns(Result<UserFeedback>.Success(new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText))));
-
-        _factory.TimeProviderMock
-            .UtcNow
-            .Returns(expectedTimestamp.UtcDateTime);
-
-        _factory.AnalyzeFeedbackCommandHandlerMock
-            .Handle(Arg.Any<AnalyzeFeedbackCommand>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(Result.Success()));
-
-        // Act
-        HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
-
-        // Allow background task to complete
-        await WaitForConditionAsync(() =>
-            _factory.AnalyzeFeedbackCommandHandlerMock.ReceivedCalls().Any(call =>
-                call.GetMethodInfo().Name == nameof(_factory.AnalyzeFeedbackCommandHandlerMock.Handle)
-            )
-        );
-
-        // Assert
-        response.EnsureSuccessStatusCode(); // Status Code 200-299
-        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-
-        // Verify that AnalyzeFeedbackCommandHandler was called
-        await _factory.AnalyzeFeedbackCommandHandlerMock.Received(1).Handle(
-            Arg.Is<AnalyzeFeedbackCommand>(cmd => cmd.FeedbackId.Value == expectedFeedbackId.Value),
-            Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task SubmitFeedback_LLMFails_MarksAsFailedAndUpdatesFeedback()
-    {
-        // Arrange
-        string feedbackText = "This feedback will fail analysis.";
-        var inputDto = new UserFeedbackInputDto(feedbackText);
-        var expectedFeedbackId = FeedbackId.FromGuid(Guid.NewGuid());
-        var expectedTimestamp = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero);
-        string errorMessage = "LLM service returned an error: Rate limit exceeded.";
-
-        _factory.UserFeedbackRepositoryMock
-            .AddAsync(Arg.Any<UserFeedback>())
-            .Returns(Result<UserFeedback>.Success(new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText))));
-
-        _factory.TimeProviderMock
-            .UtcNow
-            .Returns(expectedTimestamp.UtcDateTime);
-
-        _factory.AnalyzeFeedbackCommandHandlerMock
-            .Handle(Arg.Any<AnalyzeFeedbackCommand>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(Result.Failure(errorMessage)));
-
-        // Act
-        HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
-
-        // Allow background task to complete
-        await WaitForConditionAsync(() =>
-            _factory.AnalyzeFeedbackCommandHandlerMock.ReceivedCalls().Any(call =>
-                call.GetMethodInfo().Name == nameof(_factory.AnalyzeFeedbackCommandHandlerMock.Handle))
-        );
-
-        // Assert
-        response.EnsureSuccessStatusCode(); // Status Code 200-299
-        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-
-        // Verify that AnalyzeFeedbackCommandHandler was called with the correct feedback ID
-        await _factory.AnalyzeFeedbackCommandHandlerMock.Received(1).Handle(
-            Arg.Is<AnalyzeFeedbackCommand>(cmd => cmd.FeedbackId.Value == expectedFeedbackId.Value),
-            Arg.Any<CancellationToken>());
     }
 
     private async Task<bool> WaitForConditionAsync(Func<bool> predicate)
