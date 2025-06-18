@@ -29,8 +29,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         // Arrange
         string feedbackText = "This is a test feedback.";
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
-        var expectedFeedbackId = FeedbackId.FromGuid(Guid.NewGuid());
-        var expectedTimestamp = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var expectedFeedbackId = FeedbackId.New();
 
         _factory.UserFeedbackRepositoryMock
             .AddAsync(Arg.Any<UserFeedback>())
