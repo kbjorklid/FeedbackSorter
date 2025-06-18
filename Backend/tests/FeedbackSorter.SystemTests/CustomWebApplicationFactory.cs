@@ -1,5 +1,3 @@
-using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.AnalyzeFeedback;
 using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.MarkAnalysisFailed;
@@ -30,7 +28,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             // Remove existing infrastructure registrations
             var infrastructureServiceDescriptors = services.Where(
-                descriptor => 
+                descriptor =>
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider) ||
                               descriptor.ServiceType == typeof(ILogger<AnalyzeFeedbackCommandHandler>) ||

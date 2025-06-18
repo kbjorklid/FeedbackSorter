@@ -2,14 +2,11 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.LLM;
-using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using NSubstitute;
-using NSubstitute.Core;
 using NSubstitute.Exceptions;
 
 namespace FeedbackSorter.SystemTests;
@@ -33,7 +30,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         string feedbackText = "This is a test feedback.";
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
         var expectedFeedbackId = FeedbackId.New();
-        
+
         Task<LlmAnalysisResult> mockedResult = Task.FromResult(LlmAnalysisResult.ForSuccess(
                 new Timestamp(_factory.TimeProviderMock),
                 new LlmAnalysisSuccess
@@ -145,15 +142,15 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         }
         return false;
     }
-    
+
     private static async Task WaitForReceivedCall(
-        Action receivedCallCheck, 
-        TimeSpan? timeout = null, 
+        Action receivedCallCheck,
+        TimeSpan? timeout = null,
         TimeSpan? pollingInterval = null)
     {
         TimeSpan timeoutValue = timeout ?? TimeSpan.FromSeconds(2);
         TimeSpan pollingIntervalValue = pollingInterval ?? TimeSpan.FromMilliseconds(50);
-        
+
         var stopwatch = Stopwatch.StartNew();
         while (stopwatch.Elapsed < timeoutValue)
         {
