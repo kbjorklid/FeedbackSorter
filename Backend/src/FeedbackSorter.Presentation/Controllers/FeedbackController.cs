@@ -55,7 +55,7 @@ public class FeedbackController : ControllerBase
     }
 
     [HttpGet("analyzed")]
-    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(AnalyzedFeedbackListDto))]
+    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(PagedResult<AnalyzedFeedbackItemDto>))]
     [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> GetAnalyzedFeedbacks([FromQuery] GetAnalyzedFeedbacksRequestDto request)
     {
