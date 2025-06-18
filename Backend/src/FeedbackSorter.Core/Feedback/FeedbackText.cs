@@ -1,3 +1,5 @@
+using FeedbackSorter.SharedKernel;
+
 namespace FeedbackSorter.Core.Feedback;
 
 /// <summary>
@@ -10,9 +12,16 @@ public record struct FeedbackText
     public FeedbackText(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Feedback text cannot be null or whitespace.", nameof(value));
+        {
+            throw DomainValidationException.ForArgument(
+                "Feedback text cannot be null or whitespace.", nameof(value));
+        }
         if (value.Length is < 3 or > 2000)
-            throw new ArgumentException("Feedback text must be between 3 and 2000 characters.", nameof(value));
+        {
+            throw DomainValidationException.ForArgument(
+                "Feedback text must be between 3 and 2000 characters.", nameof(value));
+        }
+
         Value = value;
     }
 }

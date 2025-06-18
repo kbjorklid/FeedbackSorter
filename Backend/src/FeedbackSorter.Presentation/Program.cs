@@ -1,6 +1,7 @@
 using FeedbackSorter.Application;
 using FeedbackSorter.Infrastructure;
 using FeedbackSorter.Infrastructure.Persistence;
+using FeedbackSorter.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<DomainValidationExceptionMiddleware>();
 
 app.MapControllers();
 
