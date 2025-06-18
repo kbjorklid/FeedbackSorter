@@ -3,9 +3,9 @@ using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.Queries;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.Core.UnitTests.Builders;
 using FeedbackSorter.Infrastructure.Feedback;
 using FeedbackSorter.SharedKernel;
+using FeedbackSorter.Tests.Utilities.Builders;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 

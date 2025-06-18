@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.FeatureCategories;
-using FeedbackSorter.Core.UnitTests.Builders;
 using FeedbackSorter.Infrastructure.FeatureCategories;
+using FeedbackSorter.Tests.Utilities.Builders;
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory; // Add alias here
 
 namespace FeedbackSorter.Infrastructure.UnitTests.FeatureCategories;

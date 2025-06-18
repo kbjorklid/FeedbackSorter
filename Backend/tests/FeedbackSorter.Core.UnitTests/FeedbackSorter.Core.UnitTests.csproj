@@ -28,6 +28,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\FeedbackSorter.Core\FeedbackSorter.Core.csproj" />
     <ProjectReference Include="..\..\src\FeedbackSorter.SharedKernel\FeedbackSorter.SharedKernel.csproj" />
+    <ProjectReference Include="..\FeedbackSorter.Tests.Utilities\FeedbackSorter.Tests.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Builders\" />
   </ItemGroup>
 
 </Project>

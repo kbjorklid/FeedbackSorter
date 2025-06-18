@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\src\FeedbackSorter.Application\FeedbackSorter.Application.csproj" />
     <ProjectReference Include="..\..\src\FeedbackSorter.SharedKernel\FeedbackSorter.SharedKernel.csproj" />
     <ProjectReference Include="..\FeedbackSorter.Core.UnitTests\FeedbackSorter.Core.UnitTests.csproj" />
+    <ProjectReference Include="..\FeedbackSorter.Tests.Utilities\FeedbackSorter.Tests.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
