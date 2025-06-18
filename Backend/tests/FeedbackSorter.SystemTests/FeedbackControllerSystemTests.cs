@@ -36,15 +36,15 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .AddAsync(Arg.Any<UserFeedback>())
             .Returns(Result<UserFeedback>.Success(new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText))));
 
-        UserFeedback feedback = new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText));
+        var feedback = new UserFeedback(expectedFeedbackId, new FeedbackText(feedbackText));
 
-        Result<UserFeedback> success = Result<UserFeedback>.Success(feedback);
+        var success = Result<UserFeedback>.Success(feedback);
         _factory.UserFeedbackRepositoryMock.GetByIdAsync(expectedFeedbackId)
             .Returns(success);
-        
+
         _factory.UserFeedbackRepositoryMock.UpdateAsync(Arg.Any<UserFeedback>())
             .Returns(success);
-        
+
         Task<LlmAnalysisResult> mockedResult = Task.FromResult(LlmAnalysisResult.ForSuccess(
                 new Timestamp(_factory.TimeProviderMock),
                 new LlmAnalysisSuccess
