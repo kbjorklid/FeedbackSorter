@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.FeatureCategories;
 
-namespace FeedbackSorter.Core.UnitTests.Builders;
+namespace FeedbackSorter.Tests.Utilities.Builders;
 
 public class FeatureCategoryNameBuilder
 {

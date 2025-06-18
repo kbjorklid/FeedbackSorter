@@ -1,5 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FeedbackSorter.Application\FeedbackSorter.Application.csproj" />
+    <ProjectReference Include="..\..\src\FeedbackSorter.Core\FeedbackSorter.Core.csproj" />
+    <ProjectReference Include="..\..\src\FeedbackSorter.SharedKernel\FeedbackSorter.SharedKernel.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

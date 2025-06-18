@@ -1,6 +1,6 @@
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Core.UnitTests.Builders;
+namespace FeedbackSorter.Tests.Utilities.Builders;
 
 public class TimestampBuilder
 {

@@ -2,7 +2,7 @@ using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Core.UnitTests.Builders;
+namespace FeedbackSorter.Tests.Utilities.Builders;
 
 public class FeedbackAnalysisResultBuilder
 {
