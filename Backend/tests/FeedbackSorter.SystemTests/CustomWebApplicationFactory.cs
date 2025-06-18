@@ -16,10 +16,6 @@ namespace FeedbackSorter.SystemTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public IUserFeedbackReadRepository UserFeedbackReadRepositoryMock { get; private set; } = null!;
-    public IUserFeedbackRepository UserFeedbackRepositoryMock { get; private set; } = null!;
-    public IFeatureCategoryRepository FeatureCategoryRepositoryMock { get; private set; } = null!;
-    public IFeatureCategoryReadRepository FeatureCategoryReadRepositoryMock { get; private set; } = null!;
     public ILlmFeedbackAnalyzer LLMFeedbackAnalyzerMock { get; private set; } = null!;
     public ITimeProvider TimeProviderMock { get; private set; } = null!;
     public ILogger<AnalyzeFeedbackCommandHandler> AnalyzeFeedbackCommandHandlerLoggerMock { get; private set; } = null!;
@@ -34,10 +30,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             // Remove existing infrastructure registrations
             var infrastructureServiceDescriptors = services.Where(
-                descriptor => descriptor.ServiceType == typeof(IUserFeedbackReadRepository) ||
-                              descriptor.ServiceType == typeof(IUserFeedbackRepository) ||
-                              descriptor.ServiceType == typeof(IFeatureCategoryRepository) ||
-                              descriptor.ServiceType == typeof(IFeatureCategoryReadRepository) ||
+                descriptor => 
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider) ||
                               descriptor.ServiceType == typeof(ILogger<AnalyzeFeedbackCommandHandler>) ||
@@ -52,10 +45,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
 
             // Add mock implementations
-            UserFeedbackReadRepositoryMock = Substitute.For<IUserFeedbackReadRepository>();
-            UserFeedbackRepositoryMock = Substitute.For<IUserFeedbackRepository>();
-            FeatureCategoryRepositoryMock = Substitute.For<IFeatureCategoryRepository>();
-            FeatureCategoryReadRepositoryMock = Substitute.For<IFeatureCategoryReadRepository>();
             LLMFeedbackAnalyzerMock = Substitute.For<ILlmFeedbackAnalyzer>();
             TimeProviderMock = Substitute.For<ITimeProvider>();
             AnalyzeFeedbackCommandHandlerLoggerMock = Substitute.For<ILogger<AnalyzeFeedbackCommandHandler>>();
@@ -63,10 +52,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             MarkFeedbackAnalysisFailedCommandHandlerLoggerMock = Substitute.For<ILogger<MarkFeedbackAnalysisFailedCommandHandler>>();
             GetAnalyzedFeedbacksQueryHandlerLoggerMock = Substitute.For<ILogger<GetAnalyzedFeedbacksQueryHandler>>();
 
-            services.AddSingleton(UserFeedbackReadRepositoryMock);
-            services.AddSingleton(UserFeedbackRepositoryMock);
-            services.AddSingleton(FeatureCategoryRepositoryMock);
-            services.AddSingleton(FeatureCategoryReadRepositoryMock);
+
             services.AddSingleton(LLMFeedbackAnalyzerMock);
             services.AddSingleton(TimeProviderMock);
             services.AddSingleton(AnalyzeFeedbackCommandHandlerLoggerMock);
@@ -78,10 +64,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     public void ResetMocks()
     {
-        UserFeedbackReadRepositoryMock.ClearReceivedCalls();
-        UserFeedbackRepositoryMock.ClearReceivedCalls();
-        FeatureCategoryRepositoryMock.ClearReceivedCalls();
-        FeatureCategoryReadRepositoryMock.ClearReceivedCalls();
         LLMFeedbackAnalyzerMock.ClearReceivedCalls();
         TimeProviderMock.ClearReceivedCalls();
         TimeProviderMock.UtcNow.Returns(new DateTime(2024, 1, 1, 10, 0, 0, DateTimeKind.Utc));
