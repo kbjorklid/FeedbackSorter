@@ -60,7 +60,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task SubmitFeedback_ValidInput_AnalysisResultsFound()
+    public async Task SubmitFeedback_AnalysisSuccess_AnalyzedResultsFound()
     {
         // Arrange
         SetMockedLlmAnalysisResult(new LlmAnalysisSuccessBuilder()
@@ -105,6 +105,38 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SubmitFeedback_AnalysisFailure_AnalyzedFeedbackNotFound()
+    {
+        // Arrange
+        SetMockedLlmAnalysisResult(LlmAnalysisResult.ForFailure(
+            new Timestamp(_factory.TimeProviderMock),
+            new LlmAnalysisFailureBuilder().Build()
+        ));
+
+        var inputDto = new UserFeedbackInputDto("This feedback should fail analysis.");
+        // Act
+        HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+
+        // Wait for the analysis to complete (or fail)
+        await WaitForReceivedCall(() => _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
+            Arg.Any<FeedbackText>(),
+            Arg.Any<IEnumerable<FeatureCategoryReadModel>>()));
+
+        // Try to get analyzed feedback, it should be empty
+        HttpResponseMessage analyzedResponse = await _client.GetAsync("/feedback/analyzed");
+
+        PagedResult<AnalyzedFeedbackItemDto>? pagedResult =
+            await analyzedResponse.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
+
+        Assert.NotNull(pagedResult);
+        Assert.Empty(pagedResult.Items);
+        Assert.Equal(0, pagedResult.TotalCount);
     }
 
     [Fact]
