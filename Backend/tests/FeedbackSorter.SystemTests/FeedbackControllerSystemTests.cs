@@ -72,6 +72,26 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task GetAnalyzedFeedbacks_Initially_ReturnsEmptyList()
+    {
+        // Arrange
+        // No specific arrangement needed as we expect an empty list initially
+
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analyzed");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        PagedResult<AnalyzedFeedbackItemDto>? pagedResult =
+            await response.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
+
+        Assert.NotNull(pagedResult);
+        Assert.Empty(pagedResult.Items);
+        Assert.Equal(0, pagedResult.TotalCount);
+    }
+
     private void SetMockedLlmAnalysisResult(LlmAnalysisSuccess analysisSuccess)
     {
         var result = LlmAnalysisResult.ForSuccess(

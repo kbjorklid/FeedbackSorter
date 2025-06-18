@@ -3,9 +3,11 @@ using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.MarkAnalysisFailed;
 using FeedbackSorter.Application.Feedback.MarkAnalyzed;
 using FeedbackSorter.Application.LLM;
+using FeedbackSorter.Infrastructure.Persistence;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -26,7 +28,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            // Remove existing infrastructure registrations
+
             var infrastructureServiceDescriptors = services.Where(
                 descriptor =>
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
@@ -69,5 +71,17 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         MarkFeedbackAnalyzedCommandHandlerLoggerMock.ClearReceivedCalls();
         MarkFeedbackAnalysisFailedCommandHandlerLoggerMock.ClearReceivedCalls();
         GetAnalyzedFeedbacksQueryHandlerLoggerMock.ClearReceivedCalls();
+        ClearDatabase();
+    }
+
+    private void ClearDatabase()
+    {
+        using (IServiceScope scope = Services.CreateScope())
+        {
+            IServiceProvider services = scope.ServiceProvider;
+            FeedbackSorterDbContext dbContext = services.GetRequiredService<FeedbackSorterDbContext>();
+            dbContext.Database.EnsureDeleted();
+            dbContext.Database.Migrate();
+        }
     }
 }

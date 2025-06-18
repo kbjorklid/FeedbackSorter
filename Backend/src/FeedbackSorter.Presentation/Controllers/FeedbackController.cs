@@ -7,7 +7,7 @@ using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace FeedbackSorter.Presentation.Feedback;
+namespace FeedbackSorter.Presentation.Controllers;
 
 [ApiController]
 [Route("feedback")]
