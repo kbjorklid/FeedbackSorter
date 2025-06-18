@@ -60,6 +60,41 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
+    public async Task SubmitFeedback_ValidInput_AnalysisResultsFound()
+    {
+        // Arrange
+        SetMockedLlmAnalysisResult(new LlmAnalysisSuccessBuilder()
+            .WithTitle(new FeedbackTitle("The Title"))
+            .WithFeatureCategoryNames("Login", "Logout")
+            .WithFeedbackCategories(FeedbackCategoryType.GeneralFeedback)
+            .WithSentiment(Sentiment.Mixed)
+            .Build());
+
+        // Act
+        HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", new UserFeedbackInputDtoBuilder().Build());
+
+        // Assert
+        await WaitForReceivedCall(() => _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
+            Arg.Any<FeedbackText>(),
+            Arg.Any<IEnumerable<FeatureCategoryReadModel>>()));
+
+        HttpResponseMessage analyzedResponse = await _client.GetAsync("/feedback/analyzed");
+
+        PagedResult<AnalyzedFeedbackItemDto>? pagedResult =
+            await analyzedResponse.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
+
+        Assert.NotNull(pagedResult);
+        Assert.Equal(1, pagedResult.TotalCount);
+        AnalyzedFeedbackItemDto analyzedFeedbackItemDto = Assert.Single(pagedResult.Items);
+        Assert.Equal("The Title", analyzedFeedbackItemDto.Title);
+        Assert.True(analyzedFeedbackItemDto.FeatureCategories.Where(s => s.Name == "Login").Any());
+        Assert.True(analyzedFeedbackItemDto.FeatureCategories.Where(s => s.Name == "Logout").Any());
+        FeedbackCategoryType category = Assert.Single(analyzedFeedbackItemDto.FeedbackCategories);
+        Assert.Equal(FeedbackCategoryType.GeneralFeedback, category);
+        Assert.Equal(Sentiment.Mixed, analyzedFeedbackItemDto.Sentiment);
+    }
+
+    [Fact]
     public async Task SubmitFeedback_InvalidInput_ReturnsClientError()
     {
         // Arrange

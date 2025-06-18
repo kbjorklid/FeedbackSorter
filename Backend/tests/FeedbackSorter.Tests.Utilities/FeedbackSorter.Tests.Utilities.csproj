@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\src\FeedbackSorter.Application\FeedbackSorter.Application.csproj" />
     <ProjectReference Include="..\..\src\FeedbackSorter.Core\FeedbackSorter.Core.csproj" />
     <ProjectReference Include="..\..\src\FeedbackSorter.SharedKernel\FeedbackSorter.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\src\FeedbackSorter.Presentation\FeedbackSorter.Presentation.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

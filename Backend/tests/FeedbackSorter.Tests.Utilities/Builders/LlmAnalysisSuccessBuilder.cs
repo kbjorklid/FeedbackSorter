@@ -28,10 +28,20 @@ public class LlmAnalysisSuccessBuilder
         return this;
     }
 
+    public LlmAnalysisSuccessBuilder WithFeedbackCategories(params FeedbackCategoryType[] feedbackCategories)
+    {
+        return WithFeedbackCategories(feedbackCategories.ToHashSet());
+    }
+
     public LlmAnalysisSuccessBuilder WithFeatureCategoryNames(ISet<string> featureCategoryNames)
     {
         _featureCategoryNames = featureCategoryNames;
         return this;
+    }
+
+    public LlmAnalysisSuccessBuilder WithFeatureCategoryNames(params string[] featureCategoryNames)
+    {
+        return WithFeatureCategoryNames(featureCategoryNames.ToHashSet());
     }
 
     public LlmAnalysisSuccess Build()
