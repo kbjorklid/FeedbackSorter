@@ -102,8 +102,19 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             IServiceProvider services = scope.ServiceProvider;
             FeedbackSorterDbContext dbContext = services.GetRequiredService<FeedbackSorterDbContext>();
-            // Re-create the database schema for each test to ensure a clean state
-            dbContext.Database.EnsureDeleted();
+
+            // This hacky retry logic is here because the 'EnsureDeleted' call may fail due to background processing
+            // (see AnalyzeFeedbackCommandHandler). The background processing itself is hacky, and not production ready.
+            try
+            {
+                dbContext.Database.EnsureDeleted();
+            }
+            catch (Exception)
+            {
+                Thread.Sleep(500);
+                dbContext.Database.EnsureDeleted();
+            }
+
             dbContext.Database.EnsureCreated();
         }
     }

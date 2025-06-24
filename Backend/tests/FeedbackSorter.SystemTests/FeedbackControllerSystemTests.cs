@@ -29,16 +29,14 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     {
         // Arrange
         SetMockedLlmAnalysisResult(new LlmAnalysisSuccessBuilder().Build());
-
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
+
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
 
         // Assert
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-
-        FeedbackSubmissionAcknowledgementDto? acknowledgement =
-            await response.Content.ReadFromJsonAsync<FeedbackSubmissionAcknowledgementDto>();
+        var acknowledgement = await response.Content.ReadFromJsonAsync<FeedbackSubmissionAcknowledgementDto>();
         Assert.NotNull(acknowledgement);
         Assert.Equal("Feedback received and queued for analysis.", acknowledgement.Message);
     }
@@ -48,10 +46,10 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     {
         // Arrange
         SetMockedLlmAnalysisResult(new LlmAnalysisSuccessBuilder().Build());
-
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
+        
         // Act
-        HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
+        await _client.PostAsJsonAsync("/feedback", inputDto);
 
         // Assert
         await WaitForReceivedCall(() => _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
@@ -71,28 +69,27 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .Build());
 
         // Act
-        HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", new UserFeedbackInputDtoBuilder().Build());
+        await _client.PostAsJsonAsync("/feedback", new UserFeedbackInputDtoBuilder().Build());
 
         // Assert
-        await WaitForReceivedCall(() => _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
-            Arg.Any<FeedbackText>(),
-            Arg.Any<IEnumerable<FeatureCategoryReadModel>>()));
+        await WaitUntilAnalysisRequested();
 
         HttpResponseMessage analyzedResponse = await _client.GetAsync("/feedback/analyzed");
 
-        PagedResult<AnalyzedFeedbackItemDto>? pagedResult =
-            await analyzedResponse.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
+        var pagedResult = await analyzedResponse.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
 
         Assert.NotNull(pagedResult);
         Assert.Equal(1, pagedResult.TotalCount);
         AnalyzedFeedbackItemDto analyzedFeedbackItemDto = Assert.Single(pagedResult.Items);
         Assert.Equal("The Title", analyzedFeedbackItemDto.Title);
-        Assert.True(analyzedFeedbackItemDto.FeatureCategories.Where(s => s.Name == "Login").Any());
-        Assert.True(analyzedFeedbackItemDto.FeatureCategories.Where(s => s.Name == "Logout").Any());
+        Assert.Contains(analyzedFeedbackItemDto.FeatureCategories, s => s.Name == "Login");
+        Assert.Contains(analyzedFeedbackItemDto.FeatureCategories, s => s.Name == "Logout");
+        AssertContainsFeatureCategoriesWithNames(analyzedFeedbackItemDto.FeatureCategories, "Login", "Logout");
         FeedbackCategoryType category = Assert.Single(analyzedFeedbackItemDto.FeedbackCategories);
         Assert.Equal(FeedbackCategoryType.GeneralFeedback, category);
         Assert.Equal(Sentiment.Mixed, analyzedFeedbackItemDto.Sentiment);
     }
+
 
     [Fact]
     public async Task SubmitFeedback_InvalidInput_ReturnsClientError()
@@ -115,24 +112,20 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             new Timestamp(_factory.TimeProviderMock),
             new LlmAnalysisFailureBuilder().Build()
         ));
-
         var inputDto = new UserFeedbackInputDto("This feedback should fail analysis.");
+        
         // Act
         HttpResponseMessage response = await _client.PostAsJsonAsync("/feedback", inputDto);
 
         // Assert
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
-        // Wait for the analysis to complete (or fail)
-        await WaitForReceivedCall(() => _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
-            Arg.Any<FeedbackText>(),
-            Arg.Any<IEnumerable<FeatureCategoryReadModel>>()));
-
+        await WaitUntilAnalysisRequested();
+            
         // Try to get analyzed feedback, it should be empty
         HttpResponseMessage analyzedResponse = await _client.GetAsync("/feedback/analyzed");
 
-        PagedResult<AnalyzedFeedbackItemDto>? pagedResult =
-            await analyzedResponse.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
+        var pagedResult = await analyzedResponse.Content.ReadFromJsonAsync<PagedResult<AnalyzedFeedbackItemDto>>();
 
         Assert.NotNull(pagedResult);
         Assert.Empty(pagedResult.Items);
@@ -214,5 +207,23 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
 
         // Timeout, execute check one last time, let it fail if it fails
         receivedCallCheck();
+    }
+    
+    private async Task WaitUntilAnalysisRequested()
+    {
+        await WaitForReceivedCall(() => _factory.LLMFeedbackAnalyzerMock.Received(1).AnalyzeFeedback(
+            Arg.Any<FeedbackText>(),
+            Arg.Any<IEnumerable<FeatureCategoryReadModel>>()));
+    }
+    
+    private static void AssertContainsFeatureCategoriesWithNames(
+        IEnumerable<FeatureCategoryDto> featureCategories,
+        params string[] expectedCategoryNames)
+    {
+        Assert.Equal(expectedCategoryNames.Length, featureCategories.Count());
+        foreach (string expectedName in expectedCategoryNames)
+        {
+            Assert.Contains(featureCategories, s => s.Name == expectedName);
+        }
     }
 }
