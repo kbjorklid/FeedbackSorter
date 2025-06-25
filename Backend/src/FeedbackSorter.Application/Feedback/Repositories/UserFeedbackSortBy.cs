@@ -1,4 +1,4 @@
-namespace FeedbackSorter.Application.Feedback;
+namespace FeedbackSorter.Application.Feedback.Repositories;
 
 public enum UserFeedbackSortBy
 {

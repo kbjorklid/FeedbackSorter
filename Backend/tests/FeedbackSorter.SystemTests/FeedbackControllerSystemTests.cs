@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Presentation.UserFeedback;

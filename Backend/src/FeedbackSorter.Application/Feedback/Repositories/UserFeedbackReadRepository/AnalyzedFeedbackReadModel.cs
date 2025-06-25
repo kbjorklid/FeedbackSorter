@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.Feedback;
 
-namespace FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+namespace FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 
 public record AnalyzedFeedbackReadModel<TFeatureCategoryRepresentation>
 {

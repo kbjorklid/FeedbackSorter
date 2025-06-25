@@ -1,7 +1,9 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback;
-using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.Feedback.Queries;
+using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Repositories;
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Infrastructure.Feedback;
 using FeedbackSorter.SharedKernel;

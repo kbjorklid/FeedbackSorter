@@ -31,8 +31,4 @@
     <ProjectReference Include="..\FeedbackSorter.Tests.Utilities\FeedbackSorter.Tests.Utilities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Builders\" />
-  </ItemGroup>
-
 </Project>

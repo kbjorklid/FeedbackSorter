@@ -1,7 +1,8 @@
+using FeedbackSorter.Application.Feedback.Repositories;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 
-namespace FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+namespace FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 
 public record UserFeedbackFilter
 {

@@ -1,4 +1,5 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory;

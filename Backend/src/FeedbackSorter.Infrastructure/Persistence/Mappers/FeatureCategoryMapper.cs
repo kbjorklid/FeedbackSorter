@@ -1,5 +1,6 @@
 // Path: Backend/src/FeedbackSorter.Infrastructure/Persistence/Mappers/FeatureCategoryMapper.cs
-using FeedbackSorter.Application.FeatureCategories; // Added for FeatureCategoryReadModel
+using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories; // Added for FeatureCategoryReadModel
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using FeedbackSorter.SharedKernel; // For Timestamp
@@ -20,7 +21,6 @@ public static class FeatureCategoryMapper
 
     public static FeatureCategory ToDomainEntity(FeatureCategoryDb dbEntity)
     {
-        // Assumes FeatureCategory constructor can rehydrate from these values
         return new FeatureCategory(
             new FeatureCategoryId(dbEntity.Id),
             new FeatureCategoryName(dbEntity.Name),

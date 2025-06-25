@@ -1,7 +1,9 @@
 using System.Net;
 using FeedbackSorter.Application.FeatureCategories;
-using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.Feedback.SubmitNew;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
+using FeedbackSorter.Application.Feedback.Commands.SubmitNew;
+using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Mvc;

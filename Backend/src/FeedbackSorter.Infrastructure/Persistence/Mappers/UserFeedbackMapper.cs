@@ -1,10 +1,11 @@
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.Infrastructure.Persistence.Mappers;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using FeedbackSorter.SharedKernel;
 
-static class UserFeedbackMapper
+namespace FeedbackSorter.Infrastructure.Persistence.Mappers;
+
+internal static class UserFeedbackMapper
 {
     public static UserFeedbackDb ToDbEntity(UserFeedback domainEntity)
     {
@@ -24,8 +25,8 @@ static class UserFeedbackMapper
             dbEntity.AnalysisResultSentiment = domainEntity.AnalysisResult.Sentiment.ToString();
             dbEntity.AnalysisResultAnalyzedAt = domainEntity.AnalysisResult.AnalyzedAt.Value;
             dbEntity.AnalysisResultFeatureCategories = domainEntity.AnalysisResult.FeatureCategories
-                                                          .Select(FeatureCategoryMapper.ToDbEntity)
-                                                          .ToList();
+                .Select(FeatureCategoryMapper.ToDbEntity)
+                .ToList();
 
             foreach (FeedbackCategoryType categoryType in domainEntity.AnalysisResult.FeedbackCategories)
             {
@@ -47,53 +48,11 @@ static class UserFeedbackMapper
         return dbEntity;
     }
 
-    public static UserFeedback ToDomainEntity(UserFeedbackDb dbEntity, IEnumerable<FeatureCategory>? relatedFeatureCategories = null)
+    public static UserFeedback ToDomainEntity(
+        UserFeedbackDb dbEntity, IEnumerable<FeatureCategory>? relatedFeatureCategories = null)
     {
-        var feedbackCategoryTypesFromDb = new HashSet<FeedbackCategoryType>();
-        if (dbEntity.SelectedFeedbackCategories != null)
-        {
-            foreach (UserFeedbackSelectedCategoryDb selectedCatDb in dbEntity.SelectedFeedbackCategories)
-            {
-                if (Enum.TryParse<FeedbackCategoryType>(selectedCatDb.FeedbackCategoryValue, out FeedbackCategoryType catType))
-                {
-                    feedbackCategoryTypesFromDb.Add(catType);
-                }
-            }
-        }
-
-        FeedbackAnalysisResult? analysisResult = null;
-        if (dbEntity.AnalysisResultTitle != null && dbEntity.AnalysisResultSentiment != null && dbEntity.AnalysisResultAnalyzedAt != null)
-        {
-            var featureCategoriesForDomain = new HashSet<FeatureCategory>();
-            if (relatedFeatureCategories != null)
-            {
-                featureCategoriesForDomain.UnionWith(relatedFeatureCategories);
-            }
-            else if (dbEntity.AnalysisResultFeatureCategories != null)
-            {
-                featureCategoriesForDomain.UnionWith(dbEntity.AnalysisResultFeatureCategories.Select(FeatureCategoryMapper.ToDomainEntity));
-            }
-
-            analysisResult = new FeedbackAnalysisResult(
-                new FeedbackTitle(dbEntity.AnalysisResultTitle),
-                Enum.Parse<Sentiment>(dbEntity.AnalysisResultSentiment),
-                feedbackCategoryTypesFromDb,
-                featureCategoriesForDomain,
-                new Timestamp(dbEntity.AnalysisResultAnalyzedAt.Value)
-            );
-        }
-
-        AnalysisFailureDetails? lastFailureDetails = null;
-        if (dbEntity.LastFailureDetailsReason != null && dbEntity.LastFailureDetailsOccurredAt != null && dbEntity.LastFailureDetailsAttemptNumber != null)
-        {
-            lastFailureDetails = new AnalysisFailureDetails(
-                Enum.Parse<FailureReason>(dbEntity.LastFailureDetailsReason),
-                dbEntity.LastFailureDetailsMessage,
-                new Timestamp(dbEntity.LastFailureDetailsOccurredAt.Value),
-                dbEntity.LastFailureDetailsAttemptNumber.Value
-            );
-        }
-
+        FeedbackAnalysisResult? analysisResult = CreateFeedbackAnalysisResult(dbEntity, relatedFeatureCategories);
+        AnalysisFailureDetails? lastFailureDetails = CreateAnalysisFailureDetails(dbEntity);
         AnalysisStatus analysisStatus = ParseAnalysisStatus(dbEntity.AnalysisStatus);
 
         return new UserFeedback(
@@ -104,6 +63,63 @@ static class UserFeedbackMapper
             dbEntity.RetryCount,
             analysisResult,
             lastFailureDetails);
+    }
+
+
+    private static AnalysisFailureDetails? CreateAnalysisFailureDetails(UserFeedbackDb dbEntity)
+    {
+        
+        if (dbEntity is
+            {
+                LastFailureDetailsReason: not null, 
+                LastFailureDetailsOccurredAt: not null, 
+                LastFailureDetailsAttemptNumber: not null
+            })
+        {
+            return new AnalysisFailureDetails(
+                Enum.Parse<FailureReason>(dbEntity.LastFailureDetailsReason),
+                dbEntity.LastFailureDetailsMessage,
+                new Timestamp(dbEntity.LastFailureDetailsOccurredAt.Value),
+                dbEntity.LastFailureDetailsAttemptNumber.Value
+            );
+        }
+        return null;
+    }
+
+    private static FeedbackAnalysisResult? CreateFeedbackAnalysisResult(UserFeedbackDb dbEntity,
+        IEnumerable<FeatureCategory>? relatedFeatureCategories)
+    {
+        HashSet<FeedbackCategoryType> feedbackCategoryTypesFromDb = GetFeedbackCategoryTypes(dbEntity);
+
+        if (dbEntity.AnalysisResultTitle == null || dbEntity.AnalysisResultSentiment == null ||
+            dbEntity.AnalysisResultAnalyzedAt == null) return null;
+
+        HashSet<FeatureCategory> featureCategoriesForDomain = relatedFeatureCategories != null
+            ? relatedFeatureCategories.ToHashSet()
+            : dbEntity.AnalysisResultFeatureCategories.Select(FeatureCategoryMapper.ToDomainEntity).ToHashSet();
+
+        return new FeedbackAnalysisResult(
+            new FeedbackTitle(dbEntity.AnalysisResultTitle),
+            Enum.Parse<Sentiment>(dbEntity.AnalysisResultSentiment),
+            feedbackCategoryTypesFromDb,
+            featureCategoriesForDomain,
+            new Timestamp(dbEntity.AnalysisResultAnalyzedAt.Value)
+        );
+    }
+    
+    
+    private static HashSet<FeedbackCategoryType> GetFeedbackCategoryTypes(UserFeedbackDb dbEntity)
+    {
+        var feedbackCategoryTypesFromDb = new HashSet<FeedbackCategoryType>();
+        foreach (UserFeedbackSelectedCategoryDb selectedCatDb in dbEntity.SelectedFeedbackCategories)
+        {
+            if (Enum.TryParse(selectedCatDb.FeedbackCategoryValue, out FeedbackCategoryType catType))
+            {
+                feedbackCategoryTypesFromDb.Add(catType);
+            }
+        }
+
+        return feedbackCategoryTypesFromDb;
     }
 
     private static AnalysisStatus ParseAnalysisStatus(string analysisStatusString)

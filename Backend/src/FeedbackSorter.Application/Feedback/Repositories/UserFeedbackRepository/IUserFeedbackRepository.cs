@@ -1,6 +1,7 @@
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
-namespace FeedbackSorter.Application.Feedback;
+
+namespace FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 
 public interface IUserFeedbackRepository
 {

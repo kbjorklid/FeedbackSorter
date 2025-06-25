@@ -1,6 +1,6 @@
 using FeedbackSorter.Core.FeatureCategories;
 
-namespace FeedbackSorter.Application.FeatureCategories;
+namespace FeedbackSorter.Application.FeatureCategories.Repositories;
 
 public record FeatureCategoryReadModel
 {

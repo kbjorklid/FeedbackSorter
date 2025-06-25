@@ -1,10 +1,11 @@
-using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
-namespace FeedbackSorter.Application.Feedback.MarkAnalyzed;
+namespace FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
 
 public class MarkFeedbackAnalyzedCommandHandler(
     IUserFeedbackRepository userFeedbackRepository,
@@ -15,7 +16,7 @@ public class MarkFeedbackAnalyzedCommandHandler(
     private readonly IFeatureCategoryRepository _featureCategoryRepository = featureCategoryRepository;
     private readonly ILogger<MarkFeedbackAnalyzedCommandHandler> _logger = logger;
 
-    public async Task<Result> Handle(MarkFeedbackAnalyzedCommand command)
+    public async Task<Result> Handle(MarkFeedbackSuccessfullyAnalyzedCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
         if (command.LlmAnalysisResult.IsSuccess == false)

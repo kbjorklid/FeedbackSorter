@@ -1,6 +1,6 @@
 using FeedbackSorter.SharedKernel;
 
-namespace FeedbackSorter.Application.Feedback.AnalyzeFeedback;
+namespace FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
 
 public interface IAnalyzeFeedbackCommandHandler
 {

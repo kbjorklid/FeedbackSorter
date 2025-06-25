@@ -1,10 +1,11 @@
-using FeedbackSorter.Application.Feedback.AnalyzeFeedback;
+using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace FeedbackSorter.Application.Feedback.SubmitNew;
+namespace FeedbackSorter.Application.Feedback.Commands.SubmitNew;
 
 public class SubmitFeedbackCommandHandler
 {

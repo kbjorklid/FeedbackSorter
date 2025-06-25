@@ -1,26 +1,18 @@
-using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
-namespace FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+namespace FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 
-public class GetAnalyzedFeedbacksQueryHandler
+public class GetAnalyzedFeedbacksQueryHandler(
+    IUserFeedbackReadRepository userFeedbackReadRepository,
+    IFeatureCategoryReadRepository featureCategoryReadRepository,
+    ILogger<GetAnalyzedFeedbacksQueryHandler> logger)
 {
-    private readonly IUserFeedbackReadRepository _userFeedbackReadRepository;
-    private readonly IFeatureCategoryReadRepository _featureCategoryReadRepository;
-    private readonly ILogger<GetAnalyzedFeedbacksQueryHandler> _logger;
-
-    public GetAnalyzedFeedbacksQueryHandler(
-        IUserFeedbackReadRepository userFeedbackReadRepository,
-        IFeatureCategoryReadRepository featureCategoryReadRepository,
-        ILogger<GetAnalyzedFeedbacksQueryHandler> logger)
-    {
-        _userFeedbackReadRepository = userFeedbackReadRepository;
-        _featureCategoryReadRepository = featureCategoryReadRepository;
-        _logger = logger;
-    }
+    private readonly ILogger<GetAnalyzedFeedbacksQueryHandler> _logger = logger;
 
     public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> HandleAsync(GetAnalyzedFeedbacksQuery query, CancellationToken cancellationToken)
     {
@@ -30,7 +22,7 @@ public class GetAnalyzedFeedbacksQueryHandler
         UserFeedbackFilter filter = CreateUserFeedbackFilter(featureCategories, query);
 
         PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> feedbackResults =
-            await _userFeedbackReadRepository.GetPagedListAsync(filter, query.PageNumber, query.PageSize);
+            await userFeedbackReadRepository.GetPagedListAsync(filter, query.PageNumber, query.PageSize);
 
         return feedbackResults;
     }
@@ -42,7 +34,7 @@ public class GetAnalyzedFeedbacksQueryHandler
             return new HashSet<FeatureCategoryReadModel>();
         }
 
-        ISet<FeatureCategoryReadModel> result = (await _featureCategoryReadRepository.GetFeatureCategoriesByNamesAsync(query.FeatureCategoryNames))
+        ISet<FeatureCategoryReadModel> result = (await featureCategoryReadRepository.GetFeatureCategoriesByNamesAsync(query.FeatureCategoryNames))
             .ToHashSet();
         return result;
     }

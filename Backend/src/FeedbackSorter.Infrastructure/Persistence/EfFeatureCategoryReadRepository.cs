@@ -1,4 +1,5 @@
 using FeedbackSorter.Application.FeatureCategories;
+using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Infrastructure.Persistence.Mappers;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;

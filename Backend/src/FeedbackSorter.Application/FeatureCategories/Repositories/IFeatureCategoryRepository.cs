@@ -2,7 +2,7 @@ using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
 using CoreFeatureCategory = FeedbackSorter.Core.FeatureCategories.FeatureCategory;
 
-namespace FeedbackSorter.Application.FeatureCategories;
+namespace FeedbackSorter.Application.FeatureCategories.Repositories;
 
 public interface IFeatureCategoryRepository
 {

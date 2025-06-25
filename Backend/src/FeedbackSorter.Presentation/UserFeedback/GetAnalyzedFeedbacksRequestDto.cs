@@ -1,5 +1,6 @@
 using FeedbackSorter.Application.Feedback;
-using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Repositories;
 using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 

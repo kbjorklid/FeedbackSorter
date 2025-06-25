@@ -1,4 +1,4 @@
-namespace FeedbackSorter.Application.FeatureCategories;
+namespace FeedbackSorter.Application.FeatureCategories.Repositories;
 
 public interface IFeatureCategoryReadRepository
 {

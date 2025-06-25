@@ -1,8 +1,9 @@
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
-namespace FeedbackSorter.Application.Feedback.MarkAnalysisFailed;
+namespace FeedbackSorter.Application.Feedback.Commands.MarkAnalysisFailed;
 
 public class MarkFeedbackAnalysisFailedCommandHandler(
     IUserFeedbackRepository userFeedbackRepository,

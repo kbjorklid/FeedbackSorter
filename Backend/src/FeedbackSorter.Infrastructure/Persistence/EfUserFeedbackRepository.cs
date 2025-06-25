@@ -1,5 +1,7 @@
 using FeedbackSorter.Application.Feedback;
+using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.Infrastructure.Persistence.Mappers;
 using FeedbackSorter.Infrastructure.Persistence.Models;
 using FeedbackSorter.SharedKernel;
 using Microsoft.EntityFrameworkCore;

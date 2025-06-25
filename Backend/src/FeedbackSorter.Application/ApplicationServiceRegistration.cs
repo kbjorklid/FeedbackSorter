@@ -1,8 +1,8 @@
-using FeedbackSorter.Application.Feedback.AnalyzeFeedback;
-using FeedbackSorter.Application.Feedback.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.Feedback.MarkAnalysisFailed;
-using FeedbackSorter.Application.Feedback.MarkAnalyzed;
-using FeedbackSorter.Application.Feedback.SubmitNew;
+using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
+using FeedbackSorter.Application.Feedback.Commands.MarkAnalysisFailed;
+using FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
+using FeedbackSorter.Application.Feedback.Commands.SubmitNew;
+using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FeedbackSorter.Application;
