@@ -17,8 +17,6 @@ public class AnalyzeFeedbackCommandHandler(
     MarkFeedbackAnalysisFailedCommandHandler markFeedbackAnalysisFailedCommandHandler,
     ILogger<AnalyzeFeedbackCommandHandler> logger) : IAnalyzeFeedbackCommandHandler
 {
-    private readonly ILogger<AnalyzeFeedbackCommandHandler> _logger = logger;
-
     public async Task<Result> Handle(AnalyzeFeedbackCommand command, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);

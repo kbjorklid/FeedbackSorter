@@ -136,9 +136,6 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     [Fact]
     public async Task GetAnalyzedFeedbacks_Initially_ReturnsEmptyList()
     {
-        // Arrange
-        // No specific arrangement needed as we expect an empty list initially
-
         // Act
         HttpResponseMessage response = await _client.GetAsync("/feedback/analyzed");
 
@@ -170,19 +167,6 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
             .Returns(resultTask);
     }
 
-
-    private async Task<bool> WaitForConditionAsync(Func<bool> predicate)
-    {
-        for (int i = 0; i < 100; i++)
-        {
-            if (predicate())
-            {
-                return true;
-            }
-            await Task.Delay(10);
-        }
-        return false;
-    }
 
     private static async Task WaitForReceivedCall(
         Action receivedCallCheck,

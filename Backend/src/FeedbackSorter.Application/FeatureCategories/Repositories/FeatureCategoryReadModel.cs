@@ -4,8 +4,8 @@ namespace FeedbackSorter.Application.FeatureCategories.Repositories;
 
 public record FeatureCategoryReadModel
 {
-    public FeatureCategoryId Id { get; init; }
-    public FeatureCategoryName Name { get; init; }
+    public FeatureCategoryId Id { get; }
+    public FeatureCategoryName Name { get; }
 
     public FeatureCategoryReadModel(FeatureCategoryId id, FeatureCategoryName name)
     {

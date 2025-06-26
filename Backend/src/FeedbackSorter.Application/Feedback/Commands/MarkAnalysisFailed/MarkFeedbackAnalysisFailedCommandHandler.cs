@@ -10,15 +10,11 @@ public class MarkFeedbackAnalysisFailedCommandHandler(
     ITimeProvider timeProvider,
     ILogger<MarkFeedbackAnalysisFailedCommandHandler> logger)
 {
-    private readonly IUserFeedbackRepository _userFeedbackRepository = userFeedbackRepository;
-    private readonly ITimeProvider _timeProvider = timeProvider;
-    private readonly ILogger<MarkFeedbackAnalysisFailedCommandHandler> _logger = logger;
-
     public async Task<Result<UserFeedback>> Handle(MarkFeedbackAnalysisFailedCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        Result<UserFeedback> userFeedbackResult = await _userFeedbackRepository.GetByIdAsync(request.FeedbackId);
+        Result<UserFeedback> userFeedbackResult = await userFeedbackRepository.GetByIdAsync(request.FeedbackId);
 
         if (userFeedbackResult.IsFailure)
         {
@@ -30,13 +26,13 @@ public class MarkFeedbackAnalysisFailedCommandHandler(
         var failureDetails = new AnalysisFailureDetails(
             request.LlmAnalysisResult.Failure!.Reason,
             request.LlmAnalysisResult.Failure.Error,
-            new Timestamp(_timeProvider.UtcNow),
+            new Timestamp(timeProvider.UtcNow),
             userFeedback.RetryCount + 1
         );
 
         userFeedback.MarkAsFailed(failureDetails);
 
-        Result<UserFeedback> updateResult = await _userFeedbackRepository.UpdateAsync(userFeedback);
+        Result<UserFeedback> updateResult = await userFeedbackRepository.UpdateAsync(userFeedback);
         return updateResult;
     }
 }

@@ -1,4 +1,5 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
+using FeedbackSorter.Application.Feedback.Commands.CreateOrGetFeatureCategories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
@@ -9,12 +10,9 @@ namespace FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
 
 public class MarkFeedbackAnalyzedCommandHandler(
     IUserFeedbackRepository userFeedbackRepository,
-    IFeatureCategoryRepository featureCategoryRepository,
+    CreateOrGetFeatureCategoriesCommandHandler createOrGetFeatureCategoriesCommandHandler,
     ILogger<MarkFeedbackAnalyzedCommandHandler> logger)
 {
-    private readonly IUserFeedbackRepository _userFeedbackRepository = userFeedbackRepository;
-    private readonly IFeatureCategoryRepository _featureCategoryRepository = featureCategoryRepository;
-    private readonly ILogger<MarkFeedbackAnalyzedCommandHandler> _logger = logger;
 
     public async Task<Result> Handle(MarkFeedbackSuccessfullyAnalyzedCommand command)
     {
@@ -24,20 +22,20 @@ public class MarkFeedbackAnalyzedCommandHandler(
             throw new InvalidOperationException("Asked to mark feedback as analyzed, but result indicates failure.");
         }
 
-        Result<UserFeedback> feedbackResult = await _userFeedbackRepository.GetByIdAsync(command.UserFeedbackId);
+        Result<UserFeedback> feedbackResult = await userFeedbackRepository.GetByIdAsync(command.UserFeedbackId);
         if (feedbackResult.IsFailure)
         {
             return Result.Failure(feedbackResult.Error);
         }
         UserFeedback userFeedback = feedbackResult.Value;
-
         ISet<string> featureCategoryNames = command.LlmAnalysisResult.Success!.FeatureCategoryNames;
 
-        Result<ISet<FeatureCategory>> featureCategoriesResult = await GetOrCreateFeatureCategoriesAsync(featureCategoryNames);
+        var featureCategoriesCommand = new CreateOrGetFeatureCategoriesCommand(featureCategoryNames);
+        Result<ISet<FeatureCategory>> featureCategoriesResult = 
+            await createOrGetFeatureCategoriesCommandHandler.Execute(featureCategoriesCommand);
+        
         if (featureCategoriesResult.IsFailure)
-        {
             return Result.Failure(featureCategoriesResult.Error);
-        }
 
         LLM.LlmAnalysisSuccess results = command.LlmAnalysisResult.Success!;
         var feedbackAnalysisResult = new FeedbackAnalysisResult(
@@ -49,33 +47,7 @@ public class MarkFeedbackAnalyzedCommandHandler(
         );
 
         userFeedback.MarkAsAnalyzed(feedbackAnalysisResult);
-
-        Result<UserFeedback> saveResult = await _userFeedbackRepository.UpdateAsync(userFeedback);
-
+        Result<UserFeedback> saveResult = await userFeedbackRepository.UpdateAsync(userFeedback);
         return saveResult.IsSuccess ? Result.Success() : Result.Failure(saveResult.Error);
-    }
-
-    private async Task<Result<ISet<FeatureCategory>>> GetOrCreateFeatureCategoriesAsync(ISet<string> featureCategoryNames)
-    {
-        ISet<FeatureCategory> existingFeatureCategories = await _featureCategoryRepository.GetByNamesAsync(featureCategoryNames);
-        var featureCategories = new HashSet<FeatureCategory>(existingFeatureCategories);
-
-        foreach (string featureCategoryName in featureCategoryNames)
-        {
-            if (!existingFeatureCategories.Any(fc => fc.Name.Value == featureCategoryName))
-            {
-                var newFeatureCategory = new FeatureCategory(new FeatureCategoryId(Guid.NewGuid()), new FeatureCategoryName(featureCategoryName), new Timestamp());
-                Result<FeatureCategory> addResult = await _featureCategoryRepository.AddAsync(newFeatureCategory);
-                if (addResult.IsSuccess)
-                {
-                    featureCategories.Add(newFeatureCategory);
-                }
-                else
-                {
-                    return Result<ISet<FeatureCategory>>.Failure($"Failed to add new feature category: {addResult.Error}");
-                }
-            }
-        }
-        return Result<ISet<FeatureCategory>>.Success(featureCategories);
     }
 }

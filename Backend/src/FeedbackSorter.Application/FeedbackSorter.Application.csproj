@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Feedback\Commands\" />
     <Folder Include="Feedback\Queries\" />
   </ItemGroup>
 

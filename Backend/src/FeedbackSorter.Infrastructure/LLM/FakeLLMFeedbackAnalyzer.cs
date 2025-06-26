@@ -18,7 +18,7 @@ public class FakeLLMFeedbackAnalyzer(ILogger<FakeLLMFeedbackAnalyzer> logger) : 
         logger.LogDebug("Entering {MethodName} with feedbackText: {FeedbackText}", nameof(AnalyzeFeedback), feedbackText);
         _callCount++;
 
-        if (_callCount % 2 != 0) // Odd calls are successful
+        if (_callCount % 2 != 0) 
         {
             var bogusTitle = new FeedbackTitle($"Bogus Title {_callCount}");
             Sentiment bogusSentiment = Sentiment.Positive; // Can cycle through sentiments if needed
