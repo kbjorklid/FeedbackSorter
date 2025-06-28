@@ -68,11 +68,11 @@ internal static class UserFeedbackMapper
 
     private static AnalysisFailureDetails? CreateAnalysisFailureDetails(UserFeedbackDb dbEntity)
     {
-        
+
         if (dbEntity is
             {
-                LastFailureDetailsReason: not null, 
-                LastFailureDetailsOccurredAt: not null, 
+                LastFailureDetailsReason: not null,
+                LastFailureDetailsOccurredAt: not null,
                 LastFailureDetailsAttemptNumber: not null
             })
         {
@@ -92,7 +92,8 @@ internal static class UserFeedbackMapper
         HashSet<FeedbackCategoryType> feedbackCategoryTypesFromDb = GetFeedbackCategoryTypes(dbEntity);
 
         if (dbEntity.AnalysisResultTitle == null || dbEntity.AnalysisResultSentiment == null ||
-            dbEntity.AnalysisResultAnalyzedAt == null) return null;
+            dbEntity.AnalysisResultAnalyzedAt == null)
+            return null;
 
         HashSet<FeatureCategory> featureCategoriesForDomain = relatedFeatureCategories != null
             ? relatedFeatureCategories.ToHashSet()
@@ -106,8 +107,8 @@ internal static class UserFeedbackMapper
             new Timestamp(dbEntity.AnalysisResultAnalyzedAt.Value)
         );
     }
-    
-    
+
+
     private static HashSet<FeedbackCategoryType> GetFeedbackCategoryTypes(UserFeedbackDb dbEntity)
     {
         var feedbackCategoryTypesFromDb = new HashSet<FeedbackCategoryType>();

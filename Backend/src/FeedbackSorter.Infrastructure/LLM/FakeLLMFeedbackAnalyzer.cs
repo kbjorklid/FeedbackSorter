@@ -1,4 +1,3 @@
-using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
@@ -18,7 +17,7 @@ public class FakeLLMFeedbackAnalyzer(ILogger<FakeLLMFeedbackAnalyzer> logger) : 
         logger.LogDebug("Entering {MethodName} with feedbackText: {FeedbackText}", nameof(AnalyzeFeedback), feedbackText);
         _callCount++;
 
-        if (_callCount % 2 != 0) 
+        if (_callCount % 2 != 0)
         {
             var bogusTitle = new FeedbackTitle($"Bogus Title {_callCount}");
             Sentiment bogusSentiment = Sentiment.Positive; // Can cycle through sentiments if needed

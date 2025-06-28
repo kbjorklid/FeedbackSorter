@@ -1,5 +1,7 @@
-using FeedbackSorter.Application.Feedback;
+
+using FeedbackSorter.Application.Feedback.Repositories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
+using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Infrastructure.Persistence.Mappers;
 using FeedbackSorter.Infrastructure.Persistence.Models;
@@ -9,27 +11,17 @@ using Microsoft.Extensions.Logging;
 
 namespace FeedbackSorter.Infrastructure.Persistence;
 
-public class EfUserFeedbackRepository : IUserFeedbackRepository
+public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger<EfUserFeedbackRepository> logger)
+    : IUserFeedbackRepository
 {
-    private readonly FeedbackSorterDbContext _dbContext;
-    private readonly ILogger<EfUserFeedbackRepository> _logger;
-
-    public EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger<EfUserFeedbackRepository> logger)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-    }
-
     public async Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id)
     {
-        _logger.LogDebug("Entering {MethodName} with id: {Id}", nameof(GetByIdAsync), id);
 
-        UserFeedbackDb? userFeedbackDb = await _dbContext.UserFeedbacks
+        UserFeedbackDb? userFeedbackDb = await dbContext.UserFeedbacks
             .Include(uf => uf.AnalysisResultFeatureCategories)
             .Include(uf => uf.SelectedFeedbackCategories)
             .FirstOrDefaultAsync(uf => uf.Id == id.Value);
 
-        _logger.LogDebug("11");
         if (userFeedbackDb == null)
         {
             return Result<UserFeedback>.Failure($"UserFeedback with Id {id.Value} not found.");
@@ -41,14 +33,14 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
     public async Task<Result<UserFeedback>> AddAsync(UserFeedback userFeedback)
     {
         UserFeedbackDb userFeedbackDb = UserFeedbackMapper.ToDbEntity(userFeedback);
-        await _dbContext.UserFeedbacks.AddAsync(userFeedbackDb);
-        await _dbContext.SaveChangesAsync();
+        await dbContext.UserFeedbacks.AddAsync(userFeedbackDb);
+        await dbContext.SaveChangesAsync();
         return Result<UserFeedback>.Success(userFeedback);
     }
 
     public async Task<Result<UserFeedback>> UpdateAsync(UserFeedback userFeedback)
     {
-        UserFeedbackDb? existingUserFeedbackDb = await _dbContext.UserFeedbacks
+        UserFeedbackDb? existingUserFeedbackDb = await dbContext.UserFeedbacks
             .Include(uf => uf.AnalysisResultFeatureCategories)
             .Include(uf => uf.SelectedFeedbackCategories)
             .FirstOrDefaultAsync(uf => uf.Id == userFeedback.Id.Value);
@@ -67,14 +59,14 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
             var reconciledFeatureCategories = new List<FeatureCategoryDb>();
             foreach (FeatureCategoryDb fc in existingUserFeedbackDb.AnalysisResultFeatureCategories)
             {
-                FeatureCategoryDb? existingFc = await _dbContext.FeatureCategories.FirstOrDefaultAsync(f => f.Id == fc.Id);
+                FeatureCategoryDb? existingFc = await dbContext.FeatureCategories.FirstOrDefaultAsync(f => f.Id == fc.Id);
                 if (existingFc != null)
                 {
                     reconciledFeatureCategories.Add(existingFc);
                 }
                 else
                 {
-                    _dbContext.FeatureCategories.Add(fc);
+                    dbContext.FeatureCategories.Add(fc);
                     reconciledFeatureCategories.Add(fc);
                 }
             }
@@ -96,7 +88,7 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
                                     .ToList();
         foreach (UserFeedbackSelectedCategoryDb? sfcDb in categoriesToRemove)
         {
-            _dbContext.UserFeedbackSelectedCategories.Remove(sfcDb);
+            dbContext.UserFeedbackSelectedCategories.Remove(sfcDb);
         }
 
         // Add new categories from the domain entity
@@ -112,7 +104,41 @@ public class EfUserFeedbackRepository : IUserFeedbackRepository
             }
         }
 
-        await _dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
         return Result<UserFeedback>.Success(userFeedback);
+    }
+
+    public async Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query)
+    {
+        IQueryable<UserFeedbackDb> queryable = dbContext.UserFeedbacks
+            .Include(uf => uf.AnalysisResultFeatureCategories)
+            .Include(uf => uf.SelectedFeedbackCategories);
+
+        if (query.AnalysisStatuses != null && query.AnalysisStatuses.Any())
+        {
+            ISet<string> analysisStatuses = query.AnalysisStatuses.Select(s => s.ToString()).ToHashSet();
+            queryable = queryable.Where(uf => analysisStatuses.Contains(uf.AnalysisStatus));
+        }
+
+        queryable = query.SortBy switch
+        {
+            UserFeedbackSortBy.SubmittedAt => query.Order == SortOrder.Asc
+                ? queryable.OrderBy(uf => uf.SubmittedAt)
+                : queryable.OrderByDescending(uf => uf.SubmittedAt),
+            UserFeedbackSortBy.Title => query.Order == SortOrder.Asc
+                ? queryable.OrderBy(uf => uf.AnalysisResultTitle)
+                : queryable.OrderByDescending(uf => uf.AnalysisResultTitle),
+            _ => queryable.OrderBy(uf => uf.SubmittedAt)
+        };
+
+        if (query.MaxResults.HasValue)
+        {
+            queryable = queryable.Take(query.MaxResults.Value);
+        }
+
+        List<UserFeedbackDb> userFeedbackDbs = await queryable.ToListAsync();
+        IList<UserFeedback> userFeedbacks = userFeedbackDbs.Select(dbEntity => UserFeedbackMapper.ToDomainEntity(dbEntity)).ToList();
+
+        return userFeedbacks;
     }
 }

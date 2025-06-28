@@ -1,9 +1,11 @@
+using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
 using FeedbackSorter.Application.Feedback.Commands.CreateOrGetFeatureCategories;
 using FeedbackSorter.Application.Feedback.Commands.MarkAnalysisFailed;
 using FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
 using FeedbackSorter.Application.Feedback.Commands.SubmitNew;
 using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Queries.GetNextForAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FeedbackSorter.Application;
@@ -17,8 +19,11 @@ public static class ApplicationServiceRegistration
         services.AddScoped<MarkFeedbackAnalyzedCommandHandler>();
         services.AddScoped<MarkFeedbackAnalysisFailedCommandHandler>();
         services.AddScoped<CreateOrGetFeatureCategoriesCommandHandler>();
-        services.AddScoped<IAnalyzeFeedbackCommandHandler, AnalyzeFeedbackCommandHandler>();
+        services.AddScoped<GetNextFeedbackForAnalysisCommandHandler>();
+        services.AddScoped<AnalyzeFeedbackCommandHandler>();
 
+        services.AddHostedService<BackgroundAnalysisService>();
+        
         return services;
     }
 }

@@ -1,4 +1,3 @@
-using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Core.Feedback;
 namespace FeedbackSorter.Application.LLM;

@@ -1,5 +1,4 @@
 using System.Net;
-using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Commands.SubmitNew;
 using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
@@ -35,14 +34,18 @@ public class FeedbackController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> SubmitFeedback([FromBody] UserFeedbackInputDto input)
     {
+        // 1.
         if (!ModelState.IsValid)
         {
             return ProblemDetailsBadRequest(ModelState);
         }
 
         var command = new SubmitFeedbackCommand(input.Text);
+        
+        // 2. Kutsutaan 'application' -layeria
         Result<Core.Feedback.FeedbackId> result = await _submitFeedbackCommandHandler.HandleAsync(command);
 
+        // 3. Muodostetaan HTTP/Rest vastaus
         if (result.IsSuccess)
         {
             var acknowledgement = new FeedbackSubmissionAcknowledgementDto(

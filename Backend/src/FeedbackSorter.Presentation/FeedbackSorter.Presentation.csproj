@@ -13,12 +13,10 @@
     </PackageReference>
     <ProjectReference Include="..\FeedbackSorter.Application\FeedbackSorter.Application.csproj" />
     <ProjectReference Include="..\FeedbackSorter.SharedKernel\FeedbackSorter.SharedKernel.csproj" />
+    <ProjectReference Include="..\FeedbackSorter.Infrastructure\FeedbackSorter.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FeedbackSorter.Infrastructure\FeedbackSorter.Infrastructure.csproj" />
-  </ItemGroup>
 
 </Project>

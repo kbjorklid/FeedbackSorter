@@ -1,5 +1,4 @@
 // Path: Backend/src/FeedbackSorter.Infrastructure/Persistence/Mappers/FeatureCategoryMapper.cs
-using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.FeatureCategories.Repositories; // Added for FeatureCategoryReadModel
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Infrastructure.Persistence.Models;

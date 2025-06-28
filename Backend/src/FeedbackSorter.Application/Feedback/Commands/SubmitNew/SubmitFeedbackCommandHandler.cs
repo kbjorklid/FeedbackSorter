@@ -31,17 +31,7 @@ public class SubmitFeedbackCommandHandler(
         }
         feedbackId = addResult.Value.Id;
 
-        logger.LogDebug("Successfully added initial UserFeedback with ID: {FeedbackId}. Starting analysis in background.", feedbackId.Value);
-        _ = Task.Run(async () =>
-        {
-            using (IServiceScope scope = serviceScopeFactory.CreateScope())
-            {
-                IAnalyzeFeedbackCommandHandler scopedAnalyzeFeedbackCommandHandler = scope.ServiceProvider.GetRequiredService<IAnalyzeFeedbackCommandHandler>();
-                AnalyzeFeedbackCommand analyzeCommand = new(feedbackId);
-                await scopedAnalyzeFeedbackCommandHandler.Handle(analyzeCommand, CancellationToken.None);
-                logger.LogDebug("Background analysis task for FeedbackId {FeedbackId} completed.", feedbackId.Value);
-            }
-        });
+        logger.LogDebug("Successfully added initial UserFeedback with ID: {FeedbackId}.", feedbackId.Value);
 
         return Result<FeedbackId>.Success(feedbackId);
     }

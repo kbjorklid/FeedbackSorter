@@ -1,4 +1,3 @@
-using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Commands.CreateOrGetFeatureCategories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.FeatureCategories;
@@ -31,9 +30,9 @@ public class MarkFeedbackAnalyzedCommandHandler(
         ISet<string> featureCategoryNames = command.LlmAnalysisResult.Success!.FeatureCategoryNames;
 
         var featureCategoriesCommand = new CreateOrGetFeatureCategoriesCommand(featureCategoryNames);
-        Result<ISet<FeatureCategory>> featureCategoriesResult = 
+        Result<ISet<FeatureCategory>> featureCategoriesResult =
             await createOrGetFeatureCategoriesCommandHandler.Execute(featureCategoriesCommand);
-        
+
         if (featureCategoriesResult.IsFailure)
             return Result.Failure(featureCategoriesResult.Error);
 

@@ -11,15 +11,16 @@ public class CreateOrGetFeatureCategoriesCommandHandler(IFeatureCategoryReposito
         ISet<string> featureCategoryNames = command.FeatureCategoryNames;
         if (featureCategoryNames.Count == 0)
             return Result<ISet<FeatureCategory>>.Success(new HashSet<FeatureCategory>());
-        
-        ISet<FeatureCategory> existingFeatureCategories = 
+
+        ISet<FeatureCategory> existingFeatureCategories =
             await featureCategoryRepository.GetByNamesAsync(featureCategoryNames);
         var featureCategories = new HashSet<FeatureCategory>(existingFeatureCategories);
 
         foreach (string featureCategoryName in featureCategoryNames)
         {
-            if (existingFeatureCategories.Any(fc => fc.Name.Value == featureCategoryName)) continue;
-            
+            if (existingFeatureCategories.Any(fc => fc.Name.Value == featureCategoryName))
+                continue;
+
             var newFeatureCategory = new FeatureCategory(new FeatureCategoryId(Guid.NewGuid()), new FeatureCategoryName(featureCategoryName), new Timestamp());
             Result<FeatureCategory> addResult = await featureCategoryRepository.AddAsync(newFeatureCategory);
             if (addResult.IsSuccess)
