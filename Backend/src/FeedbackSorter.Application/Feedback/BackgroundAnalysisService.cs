@@ -11,7 +11,7 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
     IServiceScopeFactory scopeFactory) : BackgroundService
 {
     private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(10);
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -25,7 +25,7 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
             {
                 logger.LogError(ex, "An unhandled exception occurred during processing.");
             }
-            
+
             await Task.Delay(_pollingInterval, stoppingToken);
         }
     }
@@ -33,15 +33,16 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
     private async Task ProcessNextItemAsync(CancellationToken stoppingToken)
     {
         using IServiceScope scope = scopeFactory.CreateScope();
-        var getNextFeedbackForAnalysisCommandHandler =
+        GetNextFeedbackForAnalysisCommandHandler getNextFeedbackForAnalysisCommandHandler =
             scope.ServiceProvider.GetRequiredService<GetNextFeedbackForAnalysisCommandHandler>();
-        
+
         UserFeedback? task = await getNextFeedbackForAnalysisCommandHandler.Get();
-        if (task == null) return;
-        
-        var analyzeFeedbackCommandHandler =
+        if (task == null)
+            return;
+
+        AnalyzeFeedbackCommandHandler analyzeFeedbackCommandHandler =
             scope.ServiceProvider.GetRequiredService<AnalyzeFeedbackCommandHandler>();
-        
+
         AnalyzeFeedbackCommand analyzeFeedbackCommand = new(task.Id);
         await analyzeFeedbackCommandHandler.Handle(analyzeFeedbackCommand, stoppingToken);
     }

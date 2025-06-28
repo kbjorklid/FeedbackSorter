@@ -22,7 +22,7 @@ public class AnalyzeFeedbackCommandHandler(
         ArgumentNullException.ThrowIfNull(command);
 
         FeedbackId feedbackId = command.FeedbackId;
-        
+
         Result<UserFeedback> feedbackResult = await userFeedbackRepository.GetByIdAsync(feedbackId);
         if (feedbackResult.IsFailure)
             return Result.Failure(feedbackResult.Error);
@@ -33,10 +33,11 @@ public class AnalyzeFeedbackCommandHandler(
             return Result.Failure(
                 $"User Feedback with ID {feedbackId} is not in correct state (state is: {userFeedback.AnalysisStatus}");
         }
-        
+
         userFeedback.StartProcessing();
         Result<UserFeedback> updateResult = await userFeedbackRepository.UpdateAsync(userFeedback);
-        if (updateResult.IsFailure) return Result.Failure(updateResult.Error);
+        if (updateResult.IsFailure)
+            return Result.Failure(updateResult.Error);
 
         LlmAnalysisResult llmAnalysisResult = await AnalyzeFeedbackWithLlm(userFeedback);
 

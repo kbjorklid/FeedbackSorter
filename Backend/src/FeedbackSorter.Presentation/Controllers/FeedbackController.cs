@@ -41,7 +41,7 @@ public class FeedbackController : ControllerBase
         }
 
         var command = new SubmitFeedbackCommand(input.Text);
-        
+
         // 2. Kutsutaan 'application' -layeria
         Result<Core.Feedback.FeedbackId> result = await _submitFeedbackCommandHandler.HandleAsync(command);
 

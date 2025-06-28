@@ -23,7 +23,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<AnalyzeFeedbackCommandHandler>();
 
         services.AddHostedService<BackgroundAnalysisService>();
-        
+
         return services;
     }
 }

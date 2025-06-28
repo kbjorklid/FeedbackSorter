@@ -1,4 +1,3 @@
-using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;

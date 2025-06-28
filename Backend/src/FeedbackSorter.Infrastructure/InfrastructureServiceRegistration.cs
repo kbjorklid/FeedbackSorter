@@ -18,7 +18,9 @@ public static class InfrastructureServiceRegistration
     {
 
         services.AddDbContext<FeedbackSorterDbContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"))); // Get connection string from config
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"),
+                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+            );
 
         services.AddScoped<IUserFeedbackRepository, EfUserFeedbackRepository>();
         services.AddScoped<IUserFeedbackReadRepository, EfUserFeedbackReadRepository>();

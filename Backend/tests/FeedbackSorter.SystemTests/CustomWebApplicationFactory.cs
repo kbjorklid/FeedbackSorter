@@ -80,7 +80,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             // Create the database schema in the in-memory database
             using IServiceScope scope = services.BuildServiceProvider().CreateScope();
             FeedbackSorterDbContext dbContext = scope.ServiceProvider.GetRequiredService<FeedbackSorterDbContext>();
-            dbContext.Database.EnsureCreated();
         });
     }
 
