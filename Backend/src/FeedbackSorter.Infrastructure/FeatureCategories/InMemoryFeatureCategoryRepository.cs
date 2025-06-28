@@ -27,14 +27,10 @@ public class InMemoryFeatureCategoryRepository : IFeatureCategoryRepository, IFe
             : Result<CoreFeatureCategory>.Failure("FeatureCategory not found."));
     }
 
-    public Task<Result<CoreFeatureCategory>> AddAsync(CoreFeatureCategory featureCategory)
+    public Task<FeatureCategory> AddAsync(CoreFeatureCategory featureCategory)
     {
-        if (_featureCategories.Any(fc => fc.Id == featureCategory.Id))
-        {
-            return Task.FromResult(Result<CoreFeatureCategory>.Failure("FeatureCategory with this ID already exists."));
-        }
         _featureCategories.Add(featureCategory);
-        return Task.FromResult(Result<CoreFeatureCategory>.Success(featureCategory));
+        return Task.FromResult(featureCategory);
     }
 
     public Task<Result<CoreFeatureCategory>> UpdateAsync(CoreFeatureCategory featureCategory)

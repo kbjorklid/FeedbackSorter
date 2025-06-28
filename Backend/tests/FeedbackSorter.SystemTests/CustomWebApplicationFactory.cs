@@ -1,7 +1,6 @@
-using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
-using FeedbackSorter.Application.Feedback.Commands.MarkAnalysisFailed;
-using FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
+using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Infrastructure.Persistence;
 using FeedbackSorter.SharedKernel;
@@ -19,10 +18,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     public ILlmFeedbackAnalyzer LLMFeedbackAnalyzerMock { get; private set; } = null!;
     public ITimeProvider TimeProviderMock { get; private set; } = null!;
-    public ILogger<AnalyzeFeedbackCommandHandler> AnalyzeFeedbackCommandHandlerLoggerMock { get; private set; } = null!;
-    public ILogger<MarkFeedbackAnalyzedCommandHandler> MarkFeedbackAnalyzedCommandHandlerLoggerMock { get; private set; } = null!;
-    public ILogger<MarkFeedbackAnalysisFailedCommandHandler> MarkFeedbackAnalysisFailedCommandHandlerLoggerMock { get; private set; } = null!;
-    public ILogger<GetAnalyzedFeedbacksQueryHandler> GetAnalyzedFeedbacksQueryHandlerLoggerMock { get; private set; } = null!;
+    public ILogger<AnalyzeFeedbackUseCase> AnalyzeFeedbackCommandHandlerLoggerMock { get; private set; } = null!;
+    public ILogger<MarkFeedbackAnalyzedUseCase> MarkFeedbackAnalyzedCommandHandlerLoggerMock { get; private set; } = null!;
+    public ILogger<MarkFeedbackAnalysisFailedUseCase> MarkFeedbackAnalysisFailedCommandHandlerLoggerMock { get; private set; } = null!;
+    public ILogger<QueryAnalyzedFeedbacksUseCase> GetAnalyzedFeedbacksQueryHandlerLoggerMock { get; private set; } = null!;
 
     private SqliteConnection? _connection;
 
@@ -52,10 +51,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 descriptor =>
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider) ||
-                              descriptor.ServiceType == typeof(ILogger<AnalyzeFeedbackCommandHandler>) ||
-                              descriptor.ServiceType == typeof(ILogger<MarkFeedbackAnalyzedCommandHandler>) ||
-                              descriptor.ServiceType == typeof(ILogger<MarkFeedbackAnalysisFailedCommandHandler>) ||
-                              descriptor.ServiceType == typeof(ILogger<GetAnalyzedFeedbacksQueryHandler>))
+                              descriptor.ServiceType == typeof(ILogger<AnalyzeFeedbackUseCase>) ||
+                              descriptor.ServiceType == typeof(ILogger<MarkFeedbackAnalyzedUseCase>) ||
+                              descriptor.ServiceType == typeof(ILogger<MarkFeedbackAnalysisFailedUseCase>) ||
+                              descriptor.ServiceType == typeof(ILogger<QueryAnalyzedFeedbacksUseCase>))
                 .ToList();
 
             foreach (ServiceDescriptor? descriptor in infrastructureServiceDescriptors)
@@ -65,10 +64,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             LLMFeedbackAnalyzerMock = Substitute.For<ILlmFeedbackAnalyzer>();
             TimeProviderMock = Substitute.For<ITimeProvider>();
-            AnalyzeFeedbackCommandHandlerLoggerMock = Substitute.For<ILogger<AnalyzeFeedbackCommandHandler>>();
-            MarkFeedbackAnalyzedCommandHandlerLoggerMock = Substitute.For<ILogger<MarkFeedbackAnalyzedCommandHandler>>();
-            MarkFeedbackAnalysisFailedCommandHandlerLoggerMock = Substitute.For<ILogger<MarkFeedbackAnalysisFailedCommandHandler>>();
-            GetAnalyzedFeedbacksQueryHandlerLoggerMock = Substitute.For<ILogger<GetAnalyzedFeedbacksQueryHandler>>();
+            AnalyzeFeedbackCommandHandlerLoggerMock = Substitute.For<ILogger<AnalyzeFeedbackUseCase>>();
+            MarkFeedbackAnalyzedCommandHandlerLoggerMock = Substitute.For<ILogger<MarkFeedbackAnalyzedUseCase>>();
+            MarkFeedbackAnalysisFailedCommandHandlerLoggerMock = Substitute.For<ILogger<MarkFeedbackAnalysisFailedUseCase>>();
+            GetAnalyzedFeedbacksQueryHandlerLoggerMock = Substitute.For<ILogger<QueryAnalyzedFeedbacksUseCase>>();
 
             services.AddSingleton(LLMFeedbackAnalyzerMock);
             services.AddSingleton(TimeProviderMock);

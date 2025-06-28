@@ -1,18 +1,19 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
+using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
-namespace FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+namespace FeedbackSorter.Application.Feedback.Query;
 
-public class GetAnalyzedFeedbacksQueryHandler(
+public class QueryAnalyzedFeedbacksUseCase(
     IUserFeedbackReadRepository userFeedbackReadRepository,
     IFeatureCategoryReadRepository featureCategoryReadRepository,
-    ILogger<GetAnalyzedFeedbacksQueryHandler> logger)
+    ILogger<QueryAnalyzedFeedbacksUseCase> logger)
 {
-    private readonly ILogger<GetAnalyzedFeedbacksQueryHandler> _logger = logger;
+    private readonly ILogger<QueryAnalyzedFeedbacksUseCase> _logger = logger;
 
     public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> HandleAsync(GetAnalyzedFeedbacksQuery query, CancellationToken cancellationToken)
     {

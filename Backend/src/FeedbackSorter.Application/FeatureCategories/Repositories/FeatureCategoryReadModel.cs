@@ -13,8 +13,4 @@ public record FeatureCategoryReadModel
         Id = id;
         Name = name;
     }
-
-    public FeatureCategoryReadModel(FeatureCategory featureCategory) : this(featureCategory.Id, featureCategory.Name)
-    {
-    }
 }

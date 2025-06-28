@@ -1,5 +1,4 @@
-﻿using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
-using FeedbackSorter.Application.Feedback.Queries.GetNextForAnalysis;
+﻿using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Core.Feedback;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +17,6 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
         {
             try
             {
-                // We process one item at a time to ensure they are handled sequentially.
                 await ProcessNextItemAsync(stoppingToken);
             }
             catch (Exception ex)
@@ -33,17 +31,13 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
     private async Task ProcessNextItemAsync(CancellationToken stoppingToken)
     {
         using IServiceScope scope = scopeFactory.CreateScope();
-        GetNextFeedbackForAnalysisCommandHandler getNextFeedbackForAnalysisCommandHandler =
-            scope.ServiceProvider.GetRequiredService<GetNextFeedbackForAnalysisCommandHandler>();
+        GetNextFeedbackForAnalysisUseCase getNextFeedbackForAnalysisUseCase =
+            scope.ServiceProvider.GetRequiredService<GetNextFeedbackForAnalysisUseCase>();
 
-        UserFeedback? task = await getNextFeedbackForAnalysisCommandHandler.Get();
-        if (task == null)
-            return;
+        UserFeedback? userFeedback = await getNextFeedbackForAnalysisUseCase.Get();
+        if (userFeedback == null) return;
 
-        AnalyzeFeedbackCommandHandler analyzeFeedbackCommandHandler =
-            scope.ServiceProvider.GetRequiredService<AnalyzeFeedbackCommandHandler>();
-
-        AnalyzeFeedbackCommand analyzeFeedbackCommand = new(task.Id);
-        await analyzeFeedbackCommandHandler.Handle(analyzeFeedbackCommand, stoppingToken);
+        var analyzeFeedbackUseCase = scope.ServiceProvider.GetRequiredService<AnalyzeFeedbackUseCase>();
+        await analyzeFeedbackUseCase.Execute(userFeedback.Id, stoppingToken);
     }
 }

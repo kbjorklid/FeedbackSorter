@@ -3,9 +3,9 @@ using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Core;
 using FeedbackSorter.Core.Feedback;
 
-namespace FeedbackSorter.Application.Feedback.Queries.GetNextForAnalysis;
+namespace FeedbackSorter.Application.Feedback.Analysis;
 
-public class GetNextFeedbackForAnalysisCommandHandler(IUserFeedbackRepository userFeedbackRepository)
+public class GetNextFeedbackForAnalysisUseCase(IUserFeedbackRepository userFeedbackRepository)
 {
     public async Task<UserFeedback?> Get()
     {

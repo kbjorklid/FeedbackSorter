@@ -41,12 +41,12 @@ public class EfFeatureCategoryRepository : IFeatureCategoryRepository
         return featureCategoryDbs.Select(FeatureCategoryMapper.ToDomainEntity).ToHashSet();
     }
 
-    public async Task<Result<CoreFeatureCategory>> AddAsync(CoreFeatureCategory featureCategory)
+    public async Task<CoreFeatureCategory> AddAsync(CoreFeatureCategory featureCategory)
     {
         FeatureCategoryDb featureCategoryDb = FeatureCategoryMapper.ToDbEntity(featureCategory);
         await _dbContext.FeatureCategories.AddAsync(featureCategoryDb);
         await _dbContext.SaveChangesAsync();
-        return Result<CoreFeatureCategory>.Success(featureCategory);
+        return featureCategory;
     }
 
     public async Task<Result<CoreFeatureCategory>> UpdateAsync(CoreFeatureCategory featureCategory)

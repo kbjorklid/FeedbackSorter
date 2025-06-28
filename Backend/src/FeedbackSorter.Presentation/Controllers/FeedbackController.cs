@@ -1,8 +1,9 @@
 using System.Net;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
-using FeedbackSorter.Application.Feedback.Commands.SubmitNew;
-using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
+using FeedbackSorter.Application.Feedback.Submit;
+using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Mvc;
@@ -12,51 +13,27 @@ namespace FeedbackSorter.Presentation.Controllers;
 
 [ApiController]
 [Route("feedback")]
-public class FeedbackController : ControllerBase
+public class FeedbackController(
+    SubmitFeedbackUseCase submitFeedbackUseCase,
+    QueryAnalyzedFeedbacksUseCase queryAnalyzedFeedbacksUseCase)
+    : ControllerBase
 {
-    private readonly SubmitFeedbackCommandHandler _submitFeedbackCommandHandler;
-    private readonly GetAnalyzedFeedbacksQueryHandler _getAnalyzedFeedbacksQueryHandler;
-    private readonly ITimeProvider _timeProvider;
-
-    public FeedbackController(
-        SubmitFeedbackCommandHandler submitFeedbackCommandHandler,
-        GetAnalyzedFeedbacksQueryHandler getAnalyzedFeedbacksQueryHandler,
-        ITimeProvider timeProvider)
-    {
-        _submitFeedbackCommandHandler = submitFeedbackCommandHandler;
-        _getAnalyzedFeedbacksQueryHandler = getAnalyzedFeedbacksQueryHandler;
-        _timeProvider = timeProvider;
-    }
-
     [HttpPost]
     [ProducesResponseType((int)HttpStatusCode.Accepted, Type = typeof(FeedbackSubmissionAcknowledgementDto))]
     [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> SubmitFeedback([FromBody] UserFeedbackInputDto input)
     {
-        // 1.
-        if (!ModelState.IsValid)
-        {
-            return ProblemDetailsBadRequest(ModelState);
-        }
+        
+        if (!ModelState.IsValid) return ProblemDetailsBadRequest(ModelState);
 
-        var command = new SubmitFeedbackCommand(input.Text);
+        var feedbackText = new FeedbackText(input.Text);
+        FeedbackId result = await submitFeedbackUseCase.HandleAsync(feedbackText);
 
-        // 2. Kutsutaan 'application' -layeria
-        Result<Core.Feedback.FeedbackId> result = await _submitFeedbackCommandHandler.HandleAsync(command);
-
-        // 3. Muodostetaan HTTP/Rest vastaus
-        if (result.IsSuccess)
-        {
-            var acknowledgement = new FeedbackSubmissionAcknowledgementDto(
-                result.Value.Value,
-                "Feedback received and queued for analysis.");
-            return Accepted(acknowledgement);
-        }
-        else
-        {
-            return ProblemDetailsInternalServerError(result.Error);
-        }
+        var acknowledgement = new FeedbackSubmissionAcknowledgementDto(
+            result.Value,
+            "Feedback received and queued for analysis.");
+        return Accepted(acknowledgement);
     }
 
     [HttpGet("analyzed")]
@@ -66,7 +43,7 @@ public class FeedbackController : ControllerBase
     {
         GetAnalyzedFeedbacksQuery query = request.ToQuery();
         PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> result =
-            await _getAnalyzedFeedbacksQueryHandler.HandleAsync(query, HttpContext.RequestAborted);
+            await queryAnalyzedFeedbacksUseCase.HandleAsync(query, HttpContext.RequestAborted);
 
         PagedResult<AnalyzedFeedbackItemDto> response = result.Map(ToAnalyzedFeedbackItemDto);
 

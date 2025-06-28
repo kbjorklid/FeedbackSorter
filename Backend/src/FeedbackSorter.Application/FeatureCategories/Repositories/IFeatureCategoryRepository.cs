@@ -10,6 +10,6 @@ public interface IFeatureCategoryRepository
 
     Task<ISet<CoreFeatureCategory>> GetByNamesAsync(ICollection<string> names);
 
-    Task<Result<CoreFeatureCategory>> AddAsync(CoreFeatureCategory featureCategory);
+    Task<CoreFeatureCategory> AddAsync(CoreFeatureCategory featureCategory);
     Task<Result<CoreFeatureCategory>> UpdateAsync(CoreFeatureCategory featureCategory);
 }

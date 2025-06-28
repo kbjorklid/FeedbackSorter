@@ -6,7 +6,7 @@ namespace FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepositor
 public interface IUserFeedbackRepository
 {
     Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id);
-    Task<Result<UserFeedback>> AddAsync(UserFeedback userFeedback);
+    Task<UserFeedback> AddAsync(UserFeedback userFeedback);
     Task<Result<UserFeedback>> UpdateAsync(UserFeedback userFeedback);
     Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query);
 

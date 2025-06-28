@@ -1,11 +1,8 @@
+using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.Feedback;
-using FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
-using FeedbackSorter.Application.Feedback.Commands.CreateOrGetFeatureCategories;
-using FeedbackSorter.Application.Feedback.Commands.MarkAnalysisFailed;
-using FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
-using FeedbackSorter.Application.Feedback.Commands.SubmitNew;
-using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
-using FeedbackSorter.Application.Feedback.Queries.GetNextForAnalysis;
+using FeedbackSorter.Application.Feedback.Analysis;
+using FeedbackSorter.Application.Feedback.Query;
+using FeedbackSorter.Application.Feedback.Submit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FeedbackSorter.Application;
@@ -14,13 +11,13 @@ public static class ApplicationServiceRegistration
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<GetAnalyzedFeedbacksQueryHandler>();
-        services.AddScoped<SubmitFeedbackCommandHandler>();
-        services.AddScoped<MarkFeedbackAnalyzedCommandHandler>();
-        services.AddScoped<MarkFeedbackAnalysisFailedCommandHandler>();
-        services.AddScoped<CreateOrGetFeatureCategoriesCommandHandler>();
-        services.AddScoped<GetNextFeedbackForAnalysisCommandHandler>();
-        services.AddScoped<AnalyzeFeedbackCommandHandler>();
+        services.AddScoped<QueryAnalyzedFeedbacksUseCase>();
+        services.AddScoped<SubmitFeedbackUseCase>();
+        services.AddScoped<MarkFeedbackAnalyzedUseCase>();
+        services.AddScoped<MarkFeedbackAnalysisFailedUseCase>();
+        services.AddScoped<CreateOrGetFeatureCategoriesUseCase>();
+        services.AddScoped<GetNextFeedbackForAnalysisUseCase>();
+        services.AddScoped<AnalyzeFeedbackUseCase>();
 
         services.AddHostedService<BackgroundAnalysisService>();
 

@@ -56,30 +56,13 @@ public class InMemoryFeatureCategoryRepositoryTests
         CoreFeatureCategory featureCategory = new FeatureCategoryBuilder().Build();
 
         // Act
-        SharedKernel.Result<CoreFeatureCategory> result = await _repository.AddAsync(featureCategory);
+        CoreFeatureCategory result = await _repository.AddAsync(featureCategory);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(featureCategory.Id, result.Value.Id);
+        Assert.Equal(featureCategory.Id, result.Id);
         Assert.Contains(featureCategory, _sharedFeatureCategories); // Use shared list
     }
-
-    [Fact]
-    public async Task AddAsync_ShouldReturnFailure_WhenIdAlreadyExists()
-    {
-        // Arrange
-        _sharedFeatureCategories.Clear(); // Ensure clean state for this test
-        CoreFeatureCategory featureCategory = new FeatureCategoryBuilder().Build();
-        _sharedFeatureCategories.Add(featureCategory); // Use shared list
-
-        // Act
-        SharedKernel.Result<CoreFeatureCategory> result = await _repository.AddAsync(featureCategory);
-
-        // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("FeatureCategory with this ID already exists.", result.Error);
-        Assert.Single(_sharedFeatureCategories); // Use shared list
-    }
+    
 
     [Fact]
     public async Task UpdateAsync_ShouldUpdateFeatureCategory_WhenFound()

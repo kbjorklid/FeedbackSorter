@@ -1,27 +1,22 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
-using FeedbackSorter.Application.Feedback.Commands.MarkAnalysisFailed;
-using FeedbackSorter.Application.Feedback.Commands.MarkAnalyzed;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
-namespace FeedbackSorter.Application.Feedback.Commands.AnalyzeFeedback;
+namespace FeedbackSorter.Application.Feedback.Analysis;
 
-public class AnalyzeFeedbackCommandHandler(
+public class AnalyzeFeedbackUseCase(
     IUserFeedbackRepository userFeedbackRepository,
     IFeatureCategoryReadRepository featureCategoryReadRepository,
     ILlmFeedbackAnalyzer llmFeedbackAnalyzer,
-    MarkFeedbackAnalyzedCommandHandler markFeedbackAnalyzedCommandHandler,
-    MarkFeedbackAnalysisFailedCommandHandler markFeedbackAnalysisFailedCommandHandler,
-    ILogger<AnalyzeFeedbackCommandHandler> logger) : IAnalyzeFeedbackCommandHandler
+    MarkFeedbackAnalyzedUseCase markFeedbackAnalyzedUseCase,
+    MarkFeedbackAnalysisFailedUseCase markFeedbackAnalysisFailedUseCase,
+    ILogger<AnalyzeFeedbackUseCase> logger)
 {
-    public async Task<Result> Handle(AnalyzeFeedbackCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result> Execute(FeedbackId feedbackId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(command);
-
-        FeedbackId feedbackId = command.FeedbackId;
 
         Result<UserFeedback> feedbackResult = await userFeedbackRepository.GetByIdAsync(feedbackId);
         if (feedbackResult.IsFailure)
@@ -36,20 +31,11 @@ public class AnalyzeFeedbackCommandHandler(
 
         userFeedback.StartProcessing();
         Result<UserFeedback> updateResult = await userFeedbackRepository.UpdateAsync(userFeedback);
-        if (updateResult.IsFailure)
-            return Result.Failure(updateResult.Error);
+        if (updateResult.IsFailure) return Result.Failure(updateResult.Error);
 
         LlmAnalysisResult llmAnalysisResult = await AnalyzeFeedbackWithLlm(userFeedback);
-
-        if (llmAnalysisResult.IsSuccess)
-        {
-            MarkFeedbackSuccessfullyAnalyzedCommand markSuccessfullyAnalyzedCommand =
-                new(command.FeedbackId, llmAnalysisResult);
-            return await markFeedbackAnalyzedCommandHandler.Handle(markSuccessfullyAnalyzedCommand);
-        }
-
-        MarkFeedbackAnalysisFailedCommand markFailedCommand = new(command.FeedbackId, llmAnalysisResult);
-        return await markFeedbackAnalysisFailedCommandHandler.Handle(markFailedCommand, cancellationToken);
+        if (llmAnalysisResult.IsSuccess) return await markFeedbackAnalyzedUseCase.Handle(feedbackId, llmAnalysisResult);
+        return await markFeedbackAnalysisFailedUseCase.Handle(feedbackId, llmAnalysisResult, cancellationToken);
     }
 
     private static bool IsInAnalyzableState(UserFeedback userFeedback)

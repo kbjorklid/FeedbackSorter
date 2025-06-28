@@ -30,12 +30,12 @@ public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger
         return Result<UserFeedback>.Success(UserFeedbackMapper.ToDomainEntity(userFeedbackDb));
     }
 
-    public async Task<Result<UserFeedback>> AddAsync(UserFeedback userFeedback)
+    public async Task<UserFeedback> AddAsync(UserFeedback userFeedback)
     {
         UserFeedbackDb userFeedbackDb = UserFeedbackMapper.ToDbEntity(userFeedback);
         await dbContext.UserFeedbacks.AddAsync(userFeedbackDb);
         await dbContext.SaveChangesAsync();
-        return Result<UserFeedback>.Success(userFeedback);
+        return userFeedback;
     }
 
     public async Task<Result<UserFeedback>> UpdateAsync(UserFeedback userFeedback)
