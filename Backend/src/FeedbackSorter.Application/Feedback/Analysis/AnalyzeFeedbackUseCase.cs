@@ -32,10 +32,12 @@ public class AnalyzeFeedbackUseCase(
 
         userFeedback.StartProcessing();
         Result<UserFeedback> updateResult = await userFeedbackRepository.UpdateAsync(userFeedback);
-        if (updateResult.IsFailure) return Result.Failure(updateResult.Error);
+        if (updateResult.IsFailure)
+            return Result.Failure(updateResult.Error);
 
         LlmAnalysisResult llmAnalysisResult = await AnalyzeFeedbackWithLlm(userFeedback);
-        if (llmAnalysisResult.IsSuccess) return await markFeedbackAnalyzedUseCase.Handle(feedbackId, llmAnalysisResult);
+        if (llmAnalysisResult.IsSuccess)
+            return await markFeedbackAnalyzedUseCase.Handle(feedbackId, llmAnalysisResult);
         return await markFeedbackAnalysisFailedUseCase.Handle(feedbackId, llmAnalysisResult, cancellationToken);
     }
 

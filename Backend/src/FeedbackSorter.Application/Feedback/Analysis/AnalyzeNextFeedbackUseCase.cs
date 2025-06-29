@@ -7,11 +7,12 @@ public class AnalyzeNextFeedbackUseCase(
     AnalyzeFeedbackUseCase analyzeFeedbackUseCase)
 {
 
-    public async Task<bool> Execute(CancellationToken stoppingToken)
+    public async Task<bool> Execute(CancellationToken stoppingToken = default)
     {
         UserFeedback? userFeedback = await getNextFeedbackForAnalysisUseCase.Get(stoppingToken);
-        if (userFeedback == null) return false;
+        if (userFeedback == null)
+            return false;
         await analyzeFeedbackUseCase.Execute(userFeedback.Id, stoppingToken);
         return true;
-    } 
+    }
 }

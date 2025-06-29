@@ -16,12 +16,13 @@ public class MarkFeedbackAnalyzedUseCase(
 
     public async Task<Result> Handle(FeedbackId userFeedbackId, LlmAnalysisResult llmAnalysisResult)
     {
-        if (llmAnalysisResult.IsSuccess == false) 
+        if (llmAnalysisResult.IsSuccess == false)
             throw new InvalidOperationException("Asked to mark feedback as analyzed, but result indicates failure.");
 
         Result<UserFeedback> feedbackResult = await userFeedbackRepository.GetByIdAsync(userFeedbackId);
-        if (feedbackResult.IsFailure) return Result.Failure(feedbackResult.Error);
-        
+        if (feedbackResult.IsFailure)
+            return Result.Failure(feedbackResult.Error);
+
         UserFeedback userFeedback = feedbackResult.Value;
         LlmAnalysisSuccess results = llmAnalysisResult.Success!;
         ISet<string> featureCategoryNames = results.FeatureCategoryNames;

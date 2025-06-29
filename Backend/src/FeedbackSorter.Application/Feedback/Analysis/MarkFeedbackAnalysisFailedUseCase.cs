@@ -17,7 +17,7 @@ public class MarkFeedbackAnalysisFailedUseCase(
 
         Result<UserFeedback> userFeedbackResult = await userFeedbackRepository.GetByIdAsync(feedbackId);
 
-        if (userFeedbackResult.IsFailure) 
+        if (userFeedbackResult.IsFailure)
             return Result<UserFeedback>.Failure($"Feedback with ID {feedbackId} not found.");
 
         UserFeedback userFeedback = userFeedbackResult.Value;

@@ -1,6 +1,5 @@
 using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.Analysis;
-using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Infrastructure.Persistence;
@@ -46,7 +45,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 options.UseSqlite(_connection);
             });
 
-            List<ServiceDescriptor> serviceDescriptorsToReplaceWithMocks = services.Where(
+            var serviceDescriptorsToReplaceWithMocks = services.Where(
                 descriptor =>
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider) ||
@@ -61,10 +60,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            ServiceDescriptor backgroundAnalysisServiceDescriptor = 
-                services.Single(descriptor => descriptor.ServiceType == typeof(BackgroundAnalysisService));
+            ServiceDescriptor backgroundAnalysisServiceDescriptor =
+                services.Single(descriptor => descriptor.ImplementationType == typeof(BackgroundAnalysisService));
             services.Remove(backgroundAnalysisServiceDescriptor);
-            
+
             LLMFeedbackAnalyzerMock = Substitute.For<ILlmFeedbackAnalyzer>();
             TimeProviderMock = Substitute.For<ITimeProvider>();
             AnalyzeFeedbackCommandHandlerLoggerMock = Substitute.For<ILogger<AnalyzeFeedbackUseCase>>();

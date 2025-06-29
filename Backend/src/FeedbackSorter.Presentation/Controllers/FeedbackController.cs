@@ -24,8 +24,9 @@ public class FeedbackController(
     [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> SubmitFeedback([FromBody] UserFeedbackInputDto input)
     {
-        
-        if (!ModelState.IsValid) return ProblemDetailsBadRequest(ModelState);
+
+        if (!ModelState.IsValid)
+            return ProblemDetailsBadRequest(ModelState);
 
         var feedbackText = new FeedbackText(input.Text);
         FeedbackId result = await submitFeedbackUseCase.HandleAsync(feedbackText);

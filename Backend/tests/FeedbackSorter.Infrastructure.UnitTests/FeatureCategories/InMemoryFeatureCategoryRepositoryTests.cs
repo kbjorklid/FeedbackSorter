@@ -62,7 +62,7 @@ public class InMemoryFeatureCategoryRepositoryTests
         Assert.Equal(featureCategory.Id, result.Id);
         Assert.Contains(featureCategory, _sharedFeatureCategories); // Use shared list
     }
-    
+
 
     [Fact]
     public async Task UpdateAsync_ShouldUpdateFeatureCategory_WhenFound()

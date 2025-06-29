@@ -20,9 +20,9 @@ public class CreateOrGetFeatureCategoriesUseCase(IFeatureCategoryRepository feat
                 continue;
 
             var newFeatureCategory = new FeatureCategory(
-                new FeatureCategoryId(), 
+                new FeatureCategoryId(),
                 new FeatureCategoryName(featureCategoryName));
-            FeatureCategory addedCategory =  await featureCategoryRepository.AddAsync(newFeatureCategory);
+            FeatureCategory addedCategory = await featureCategoryRepository.AddAsync(newFeatureCategory);
             featureCategories.Add(addedCategory);
         }
         return featureCategories;

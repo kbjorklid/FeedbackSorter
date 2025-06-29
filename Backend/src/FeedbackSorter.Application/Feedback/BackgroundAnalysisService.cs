@@ -1,5 +1,4 @@
 ﻿using FeedbackSorter.Application.Feedback.Analysis;
-using FeedbackSorter.Core.Feedback;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -37,7 +36,8 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
         while (!stoppingToken.IsCancellationRequested)
         {
             bool analyzed = await analyzeUseCase.Execute(stoppingToken);
-            if (!analyzed) break;
+            if (!analyzed)
+                break;
         }
     }
 }
