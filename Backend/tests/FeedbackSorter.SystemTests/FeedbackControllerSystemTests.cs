@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.LLM;
@@ -36,7 +38,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
 
         // Assert
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-        var acknowledgement = await response.Content.ReadFromJsonAsync<FeedbackSubmissionAcknowledgementDto>();
+        var acknowledgement = await response.Content.ReadFromJsonWithServerOptionsAsync<FeedbackSubmissionAcknowledgementDto>();
         Assert.NotNull(acknowledgement);
         Assert.Equal("Feedback received and queued for analysis.", acknowledgement.Message);
     }
@@ -153,7 +155,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         // Arrange
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
         HttpResponseMessage postResponse = await _client.PostAsJsonAsync("/feedback", inputDto);
-        Assert.Equal(HttpStatusCode.Accepted, postResponse.StatusCode); // Guard assert
+        Assert.Equal(HttpStatusCode.Accepted, postResponse.StatusCode);
 
         SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
             .WithFailure( new LlmAnalysisFailureBuilder().Build())
@@ -182,7 +184,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     private async Task SimulateBackgroundFeedbackAnalysis(int maxAnalysisCount = 1000)
     {
         using IServiceScope scope = _factory.Services.CreateScope();
-        var analyzeNextFeedbackUseCase =scope.ServiceProvider.GetRequiredService<AnalyzeNextFeedbackUseCase>();
+        var analyzeNextFeedbackUseCase = scope.ServiceProvider.GetRequiredService<AnalyzeNextFeedbackUseCase>();
 
         int counter = 0;
         for (; counter <= maxAnalysisCount; counter++)
@@ -208,7 +210,7 @@ internal class PagedResultAssertions<T>
     public static async Task<PagedResultAssertions<T>> CreateFromHttpResponse(HttpResponseMessage response)
     {
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        PagedResult<T>? pagedResult = await response.Content.ReadFromJsonAsync<PagedResult<T>>();
+        PagedResult<T>? pagedResult = await response.Content.ReadFromJsonWithServerOptionsAsync<PagedResult<T>>();
         return new PagedResultAssertions<T>(pagedResult);
     }
 
@@ -279,5 +281,21 @@ internal class PagedResultAssertions<T>
         }
 
         return this;
+    }
+}
+
+public static class HttpContentJsonExtensions
+{
+    public static async Task<T?> ReadFromJsonWithServerOptionsAsync<T>(
+        this HttpContent content)
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        // Deserialize using the server's options
+        return await content.ReadFromJsonAsync<T>(options);
     }
 }

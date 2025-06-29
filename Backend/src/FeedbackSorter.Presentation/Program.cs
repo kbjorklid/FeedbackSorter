@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FeedbackSorter.Application;
 using FeedbackSorter.Infrastructure;
 using FeedbackSorter.Presentation.Infrastructure;
@@ -13,7 +14,11 @@ builder.Services.AddSwaggerGen();
 // Add application and infrastructure services
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 WebApplication app = builder.Build();
 
