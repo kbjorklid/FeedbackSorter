@@ -1,5 +1,4 @@
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Tests.Utilities.Builders;
 
@@ -7,7 +6,7 @@ public class UserFeedbackBuilder
 {
     private FeedbackId _id = new FeedbackIdBuilder().Build();
     private FeedbackText _text = new FeedbackTextBuilder().Build();
-    private Timestamp _submittedAt = new TimestampBuilder().Build();
+    private DateTime _submittedAt = DateTime.UtcNow;
     private AnalysisStatus _analysisStatus = AnalysisStatus.WaitingForAnalysis;
     private int _retryCount = 0;
     private FeedbackAnalysisResult? _analysisResult = null;
@@ -25,7 +24,7 @@ public class UserFeedbackBuilder
         return this;
     }
 
-    public UserFeedbackBuilder WithSubmittedAt(Timestamp submittedAt)
+    public UserFeedbackBuilder WithSubmittedAt(DateTime submittedAt)
     {
         _submittedAt = submittedAt;
         return this;
@@ -63,7 +62,7 @@ public class UserFeedbackBuilder
         var userFeedback = new UserFeedback(_id, _text);
 
         // Apply other states if they differ from the default constructor initialization
-        if (_submittedAt.Value != userFeedback.SubmittedAt.Value)
+        if (_submittedAt != userFeedback.SubmittedAt)
         {
             // This is tricky as SubmittedAt is set in constructor and is readonly.
             // For testing purposes, if a specific SubmittedAt is needed, it should be passed to the constructor.

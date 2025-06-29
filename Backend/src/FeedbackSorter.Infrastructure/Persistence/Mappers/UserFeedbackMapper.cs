@@ -1,7 +1,6 @@
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.Infrastructure.Persistence.Models;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Infrastructure.Persistence.Mappers;
 
@@ -13,7 +12,7 @@ internal static class UserFeedbackMapper
         {
             Id = domainEntity.Id.Value,
             Text = domainEntity.Text.Value,
-            SubmittedAt = domainEntity.SubmittedAt.Value,
+            SubmittedAt = domainEntity.SubmittedAt,
             AnalysisStatus = domainEntity.AnalysisStatus.ToString(),
             RetryCount = domainEntity.RetryCount,
             SelectedFeedbackCategories = new List<UserFeedbackSelectedCategoryDb>()
@@ -23,7 +22,7 @@ internal static class UserFeedbackMapper
         {
             dbEntity.AnalysisResultTitle = domainEntity.AnalysisResult.Title.Value;
             dbEntity.AnalysisResultSentiment = domainEntity.AnalysisResult.Sentiment.ToString();
-            dbEntity.AnalysisResultAnalyzedAt = domainEntity.AnalysisResult.AnalyzedAt.Value;
+            dbEntity.AnalysisResultAnalyzedAt = domainEntity.AnalysisResult.AnalyzedAt;
             dbEntity.AnalysisResultFeatureCategories = domainEntity.AnalysisResult.FeatureCategories
                 .Select(FeatureCategoryMapper.ToDbEntity)
                 .ToList();
@@ -41,7 +40,7 @@ internal static class UserFeedbackMapper
         {
             dbEntity.LastFailureDetailsReason = domainEntity.LastFailureDetails.Reason.ToString();
             dbEntity.LastFailureDetailsMessage = domainEntity.LastFailureDetails.Message;
-            dbEntity.LastFailureDetailsOccurredAt = domainEntity.LastFailureDetails.OccurredAt.Value;
+            dbEntity.LastFailureDetailsOccurredAt = domainEntity.LastFailureDetails.OccurredAt;
             dbEntity.LastFailureDetailsAttemptNumber = domainEntity.LastFailureDetails.AttemptNumber;
         }
 
@@ -58,7 +57,7 @@ internal static class UserFeedbackMapper
         return new UserFeedback(
             FeedbackId.FromGuid(dbEntity.Id),
             new FeedbackText(dbEntity.Text),
-            new Timestamp(dbEntity.SubmittedAt),
+            dbEntity.SubmittedAt,
             analysisStatus,
             dbEntity.RetryCount,
             analysisResult,
@@ -79,7 +78,7 @@ internal static class UserFeedbackMapper
             return new AnalysisFailureDetails(
                 Enum.Parse<FailureReason>(dbEntity.LastFailureDetailsReason),
                 dbEntity.LastFailureDetailsMessage,
-                new Timestamp(dbEntity.LastFailureDetailsOccurredAt.Value),
+                dbEntity.LastFailureDetailsOccurredAt.Value,
                 dbEntity.LastFailureDetailsAttemptNumber.Value
             );
         }
@@ -104,7 +103,7 @@ internal static class UserFeedbackMapper
             Enum.Parse<Sentiment>(dbEntity.AnalysisResultSentiment),
             feedbackCategoryTypesFromDb,
             featureCategoriesForDomain,
-            new Timestamp(dbEntity.AnalysisResultAnalyzedAt.Value)
+            dbEntity.AnalysisResultAnalyzedAt.Value
         );
     }
 

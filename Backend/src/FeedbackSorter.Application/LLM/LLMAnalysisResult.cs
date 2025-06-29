@@ -1,5 +1,4 @@
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Application.LLM;
 
@@ -8,21 +7,21 @@ public record LlmAnalysisResult
     public bool IsSuccess { get => Success != null; }
     public LlmAnalysisSuccess? Success { get; init; }
     public LlmAnalysisFailure? Failure { get; init; }
-    public Timestamp AnalyzedAt { get; init; }
+    public DateTime AnalyzedAt { get; init; }
 
-    private LlmAnalysisResult(Timestamp AnalyzedAt, LlmAnalysisSuccess? Success = null, LlmAnalysisFailure? Failure = null)
+    private LlmAnalysisResult(DateTime AnalyzedAt, LlmAnalysisSuccess? Success = null, LlmAnalysisFailure? Failure = null)
     {
         this.Success = Success;
         this.Failure = Failure;
         this.AnalyzedAt = AnalyzedAt;
     }
 
-    public static LlmAnalysisResult ForSuccess(Timestamp analyzedAt, LlmAnalysisSuccess success)
+    public static LlmAnalysisResult ForSuccess(DateTime analyzedAt, LlmAnalysisSuccess success)
     {
         return new LlmAnalysisResult(analyzedAt, success);
     }
 
-    public static LlmAnalysisResult ForFailure(Timestamp analyzedAt, LlmAnalysisFailure failure)
+    public static LlmAnalysisResult ForFailure(DateTime analyzedAt, LlmAnalysisFailure failure)
     {
         return new LlmAnalysisResult(analyzedAt, Failure: failure);
     }

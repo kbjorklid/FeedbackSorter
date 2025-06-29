@@ -1,7 +1,6 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
 namespace FeedbackSorter.Infrastructure.LLM;
@@ -31,7 +30,7 @@ public class FakeLLMFeedbackAnalyzer(ILogger<FakeLLMFeedbackAnalyzer> logger) : 
                 FeedbackCategories = bogusFeedbackCategories,
                 FeatureCategoryNames = bogusFeatureCategoryNames,
             };
-            var result = LlmAnalysisResult.ForSuccess(new Timestamp(DateTime.UtcNow), successResult);
+            var result = LlmAnalysisResult.ForSuccess(DateTime.UtcNow, successResult);
             return Task.FromResult(result);
         }
         else // Even calls are failures
@@ -41,7 +40,7 @@ public class FakeLLMFeedbackAnalyzer(ILogger<FakeLLMFeedbackAnalyzer> logger) : 
                 Error = "Simulated LLM failure: Could not analyze feedback due to an internal error.",
                 Reason = FailureReason.LlmError
             };
-            var result = LlmAnalysisResult.ForFailure(new Timestamp(DateTime.UtcNow), failureResult);
+            var result = LlmAnalysisResult.ForFailure(DateTime.UtcNow, failureResult);
             return Task.FromResult(result);
         }
     }

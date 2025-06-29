@@ -1,4 +1,3 @@
-using FeedbackSorter.SharedKernel;
 using FeedbackSorter.Tests.Utilities.Builders;
 
 namespace FeedbackSorter.Core.UnitTests;
@@ -11,7 +10,7 @@ public class FeatureCategoryTests
         // Arrange
         FeatureCategories.FeatureCategoryId featureCategoryId = new FeatureCategoryIdBuilder().Build();
         FeatureCategories.FeatureCategoryName featureCategoryName = new FeatureCategoryNameBuilder().Build();
-        Timestamp expectedTimestamp = new TimestampBuilder().Build();
+        DateTime expectedTimestamp = DateTime.UtcNow;
 
 
         // Act

@@ -1,5 +1,4 @@
 using FeedbackSorter.Core.FeatureCategories;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Core.Feedback;
 
@@ -11,4 +10,4 @@ public record FeedbackAnalysisResult(
     Sentiment Sentiment,
     ISet<FeedbackCategoryType> FeedbackCategories,
     ISet<FeatureCategory> FeatureCategories,
-    Timestamp AnalyzedAt);
+    DateTime AnalyzedAt);

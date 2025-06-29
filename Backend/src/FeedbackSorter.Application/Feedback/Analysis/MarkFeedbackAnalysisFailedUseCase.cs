@@ -25,7 +25,7 @@ public class MarkFeedbackAnalysisFailedUseCase(
         var failureDetails = new AnalysisFailureDetails(
             llmAnalysisFailure.Reason,
             llmAnalysisFailure.Error,
-            new Timestamp(timeProvider.UtcNow),
+            timeProvider.UtcNow,
             userFeedback.RetryCount + 1
         );
 

@@ -8,7 +8,7 @@ namespace FeedbackSorter.Core.Feedback;
 public class UserFeedback : Entity<FeedbackId>
 {
     public FeedbackText Text { get; }
-    public Timestamp SubmittedAt { get; }
+    public DateTime SubmittedAt { get; }
     public AnalysisStatus AnalysisStatus { get; private set; }
     public int RetryCount { get; private set; }
     public FeedbackAnalysisResult? AnalysisResult { get; private set; }
@@ -17,7 +17,7 @@ public class UserFeedback : Entity<FeedbackId>
     public UserFeedback(FeedbackId id, FeedbackText text) : base(id)
     {
         Text = text;
-        SubmittedAt = new Timestamp(DateTime.UtcNow);
+        SubmittedAt = DateTime.UtcNow;
         AnalysisStatus = AnalysisStatus.WaitingForAnalysis;
         RetryCount = 0;
     }
@@ -25,7 +25,7 @@ public class UserFeedback : Entity<FeedbackId>
     public UserFeedback(
          FeedbackId id,
          FeedbackText text,
-         Timestamp submittedAt,
+         DateTime submittedAt,
          AnalysisStatus analysisStatus,
          int retryCount,
          FeedbackAnalysisResult? analysisResult,

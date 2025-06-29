@@ -1,5 +1,4 @@
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Tests.Utilities.Builders;
 
@@ -7,7 +6,7 @@ public class AnalysisFailureDetailsBuilder
 {
     private FailureReason _reason = FailureReason.Unknown;
     private string? _message = "Default failure message.";
-    private Timestamp _occurredAt = new Timestamp(DateTime.UtcNow);
+    private DateTime _occurredAt = DateTime.UtcNow;
     private int _attemptNumber = 1;
 
     public AnalysisFailureDetailsBuilder WithReason(FailureReason reason)
@@ -22,7 +21,7 @@ public class AnalysisFailureDetailsBuilder
         return this;
     }
 
-    public AnalysisFailureDetailsBuilder WithOccurredAt(Timestamp occurredAt)
+    public AnalysisFailureDetailsBuilder WithOccurredAt(DateTime occurredAt)
     {
         _occurredAt = occurredAt;
         return this;

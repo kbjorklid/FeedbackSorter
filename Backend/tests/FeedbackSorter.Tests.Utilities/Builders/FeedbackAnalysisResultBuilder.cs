@@ -1,6 +1,5 @@
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Tests.Utilities.Builders;
 
@@ -10,7 +9,7 @@ public class FeedbackAnalysisResultBuilder
     private Sentiment _sentiment = Sentiment.Neutral;
     private ISet<FeedbackCategoryType> _feedbackCategories = new HashSet<FeedbackCategoryType> { FeedbackCategoryType.GeneralFeedback };
     private ISet<FeatureCategory> _featureCategoryIds = new HashSet<FeatureCategory> { new FeatureCategoryBuilder().Build() };
-    private Timestamp _analyzedAt = new TimestampBuilder().Build();
+    private DateTime _analyzedAt = DateTime.UtcNow;
 
     public FeedbackAnalysisResultBuilder WithTitle(FeedbackTitle title)
     {
@@ -36,7 +35,7 @@ public class FeedbackAnalysisResultBuilder
         return this;
     }
 
-    public FeedbackAnalysisResultBuilder WithAnalyzedAt(Timestamp analyzedAt)
+    public FeedbackAnalysisResultBuilder WithAnalyzedAt(DateTime analyzedAt)
     {
         _analyzedAt = analyzedAt;
         return this;

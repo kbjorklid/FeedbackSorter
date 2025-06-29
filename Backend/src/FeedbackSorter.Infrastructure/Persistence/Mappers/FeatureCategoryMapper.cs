@@ -2,7 +2,6 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories; // Added for FeatureCategoryReadModel
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Infrastructure.Persistence.Models;
-using FeedbackSorter.SharedKernel; // For Timestamp
 
 namespace FeedbackSorter.Infrastructure.Persistence.Mappers;
 
@@ -14,7 +13,7 @@ public static class FeatureCategoryMapper
         {
             Id = domainEntity.Id.Value,
             Name = domainEntity.Name.Value,
-            CreatedAt = domainEntity.CreatedAt.Value
+            CreatedAt = domainEntity.CreatedAt
         };
     }
 
@@ -23,7 +22,7 @@ public static class FeatureCategoryMapper
         return new FeatureCategory(
             new FeatureCategoryId(dbEntity.Id),
             new FeatureCategoryName(dbEntity.Name),
-            new Timestamp(dbEntity.CreatedAt)
+            dbEntity.CreatedAt
         );
     }
 

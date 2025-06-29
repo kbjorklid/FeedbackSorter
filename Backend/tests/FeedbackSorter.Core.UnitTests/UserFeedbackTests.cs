@@ -19,7 +19,7 @@ public class UserFeedbackTests
         // Assert
         Assert.Equal(feedbackId, userFeedback.Id);
         Assert.Equal(feedbackText, userFeedback.Text);
-        Assert.True(userFeedback.SubmittedAt.Value.Subtract(initialUtcTime).TotalSeconds < 1); // Check within 1 second
+        Assert.True(userFeedback.SubmittedAt.Subtract(initialUtcTime).TotalSeconds < 1); // Check within 1 second
         Assert.Equal(AnalysisStatus.WaitingForAnalysis, userFeedback.AnalysisStatus);
         Assert.Equal(0, userFeedback.RetryCount);
         Assert.Null(userFeedback.AnalysisResult);

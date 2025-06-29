@@ -1,15 +1,14 @@
 using FeedbackSorter.Application.LLM;
-using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Tests.Utilities.Builders;
 
 public class LlmAnalysisResultBuilder
 {
-    private Timestamp _analyzedAt = new TimestampBuilder().Build();
+    private DateTime _analyzedAt = DateTime.UtcNow;
     private LlmAnalysisSuccess? _success = null;
     private LlmAnalysisFailure? _failure = null;
 
-    public LlmAnalysisResultBuilder WithAnalyzedAt(Timestamp analyzedAt)
+    public LlmAnalysisResultBuilder WithAnalyzedAt(DateTime analyzedAt)
     {
         _analyzedAt = analyzedAt;
         return this;
