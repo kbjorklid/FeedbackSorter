@@ -19,6 +19,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<GetNextFeedbackForAnalysisUseCase>();
         services.AddScoped<AnalyzeFeedbackUseCase>();
         services.AddScoped<AnalyzeNextFeedbackUseCase>();
+        services.AddScoped<FlagFeedbackForReanalysisUseCase>();
 
         services.AddHostedService<BackgroundAnalysisService>();
 

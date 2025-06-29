@@ -2,7 +2,6 @@ using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Core;
-using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
@@ -18,9 +17,9 @@ public class QueryAnalyzedFeedbacksUseCase(
     public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> HandleAsync(GetAnalyzedFeedbacksQuery query, CancellationToken cancellationToken)
     {
 
-        ISet<FeatureCategoryReadModel> featureCategories = await GetFeatureCategoriesAsync(query);
+        ISet<FeatureCategoryReadModel>? featureCategories = await GetFeatureCategoriesAsync(query);
 
-        UserFeedbackFilter filter = CreateUserFeedbackFilter(featureCategories, query);
+        AnalyzedFeedbackQueryParams filter = CreateQueryParams(featureCategories, query);
 
         PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> feedbackResults =
             await userFeedbackReadRepository.GetPagedListAsync(filter, query.PageNumber, query.PageSize);
@@ -28,27 +27,24 @@ public class QueryAnalyzedFeedbacksUseCase(
         return feedbackResults;
     }
 
-    private async Task<ISet<FeatureCategoryReadModel>> GetFeatureCategoriesAsync(GetAnalyzedFeedbacksQuery query)
+    private async Task<ISet<FeatureCategoryReadModel>?> GetFeatureCategoriesAsync(GetAnalyzedFeedbacksQuery query)
     {
         if (query.FeatureCategoryNames == null || query.FeatureCategoryNames.Any() == false)
-        {
-            return new HashSet<FeatureCategoryReadModel>();
-        }
-
+            return null;
+    
         ISet<FeatureCategoryReadModel> result = (await featureCategoryReadRepository.GetFeatureCategoriesByNamesAsync(query.FeatureCategoryNames))
             .ToHashSet();
         return result;
     }
 
-    private static UserFeedbackFilter CreateUserFeedbackFilter(ISet<FeatureCategoryReadModel> featureCategories, GetAnalyzedFeedbacksQuery query)
+    private static AnalyzedFeedbackQueryParams CreateQueryParams(ISet<FeatureCategoryReadModel>? featureCategories, GetAnalyzedFeedbacksQuery query)
     {
-        return new UserFeedbackFilter
+        return new AnalyzedFeedbackQueryParams
         {
             FeedbackCategories = query.FeedbackCategories,
-            FeatureCategoryIds = featureCategories.Select(c => c.Id),
+            FeatureCategoryIds = featureCategories == null ? null : featureCategories.Select(c => c.Id),
             SortBy = query.SortBy,
-            SortAscending = query.SortOrder == SortOrder.Asc,
-            AnalysisStatus = AnalysisStatus.Analyzed
+            SortAscending = query.SortOrder == SortOrder.Asc
         };
     }
 }

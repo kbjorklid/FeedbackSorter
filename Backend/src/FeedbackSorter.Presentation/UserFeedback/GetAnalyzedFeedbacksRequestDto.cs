@@ -5,10 +5,8 @@ using FeedbackSorter.Core.Feedback;
 
 namespace FeedbackSorter.Presentation.UserFeedback;
 
-public class GetAnalyzedFeedbacksRequestDto
+public class GetAnalyzedFeedbacksRequestDto : PagedRequestBaseDto
 {
-    public int PageNumber { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
     public UserFeedbackSortBy SortBy { get; set; } = UserFeedbackSortBy.SubmittedAt;
     public SortOrder SortOrder { get; set; } = SortOrder.Desc;
     public IEnumerable<FeedbackCategoryType>? FeedbackCategories { get; set; }

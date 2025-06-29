@@ -6,6 +6,6 @@ namespace FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepos
 
 public interface IUserFeedbackReadRepository
 {
-    Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize);
-    Task<List<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize);
+    Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(AnalyzedFeedbackQueryParams filter, int pageNumber, int pageSize);
+    Task<PagedResult<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(int pageNumber, int pageSize);
 }

@@ -22,9 +22,10 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
         _logger = logger;
     }
 
-    public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(UserFeedbackFilter filter, int pageNumber, int pageSize)
+    public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> GetPagedListAsync(AnalyzedFeedbackQueryParams filter, int pageNumber, int pageSize)
     {
-        _logger.LogDebug("Getting paged list of analyzed feedbacks with filter: {Filter}, pageNumber: {PageNumber}, pageSize: {PageSize}", filter, pageNumber, pageSize);
+        _logger.LogDebug("Getting paged list of analyzed feedbacks with filter: {Filter}, pageNumber: {PageNumber}, pageSize: {PageSize}",
+                filter, pageNumber, pageSize);
 
         IQueryable<UserFeedbackDb> query = _dbContext.UserFeedbacks
             .AsNoTracking()
@@ -78,27 +79,14 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
         return new PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>(readModels, pageNumber, pageSize, totalCount);
     }
 
-    public async Task<List<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(FailedToAnalyzeUserFeedbackFilter filter, int pageNumber, int pageSize)
+    public async Task<PagedResult<FailedToAnalyzeFeedbackReadModel>> GetFailedAnalysisPagedListAsync(int pageNumber, int pageSize)
     {
-        _logger.LogInformation("Getting paged list of failed analysis feedbacks with filter: {Filter}, pageNumber: {PageNumber}, pageSize: {PageSize}", filter, pageNumber, pageSize);
-
         IQueryable<UserFeedbackDb> query = _dbContext.UserFeedbacks
             .AsNoTracking()
             .Where(uf => uf.AnalysisStatus == AnalysisStatus.AnalysisFailed.ToString())
             .AsQueryable();
 
-        // Apply sorting
-        _logger.LogDebug("Applying sort by: {SortBy}, ascending: {SortAscending}", filter.SortBy, filter.SortAscending);
-        query = filter.SortBy switch
-        {
-            UserFeedbackSortBy.Title => filter.SortAscending
-                ? query.OrderBy(uf => uf.AnalysisResultTitle)
-                : query.OrderByDescending(uf => uf.AnalysisResultTitle),
-            UserFeedbackSortBy.SubmittedAt => filter.SortAscending
-                ? query.OrderBy(uf => uf.SubmittedAt)
-                : query.OrderByDescending(uf => uf.SubmittedAt),
-            _ => query.OrderByDescending(uf => uf.SubmittedAt) // Default sort
-        };
+        int totalCount = await query.CountAsync();
 
         List<UserFeedbackDb> items = await query
             .Skip((pageNumber - 1) * pageSize)
@@ -116,6 +104,7 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
         }).ToList();
 
         _logger.LogInformation("Successfully retrieved paged list of failed analysis feedbacks.");
-        return readModels;
+
+        return new PagedResult<FailedToAnalyzeFeedbackReadModel>(readModels, pageNumber, pageSize, totalCount);
     }
 }

@@ -15,7 +15,8 @@ namespace FeedbackSorter.Presentation.Controllers;
 [Route("feedback")]
 public class FeedbackController(
     SubmitFeedbackUseCase submitFeedbackUseCase,
-    QueryAnalyzedFeedbacksUseCase queryAnalyzedFeedbacksUseCase)
+    QueryAnalyzedFeedbacksUseCase queryAnalyzedFeedbacksUseCase,
+    IUserFeedbackReadRepository userFeedbackReadRepository)
     : ControllerBase
 {
     [HttpPost]
@@ -49,6 +50,32 @@ public class FeedbackController(
         PagedResult<AnalyzedFeedbackItemDto> response = result.Map(ToAnalyzedFeedbackItemDto);
 
         return Ok(response);
+    }
+
+    [HttpGet("analysisfailed")]
+    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(PagedResult<FailedToAnalyzeFeedbackDto>))]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> GetFailedToAnalyzeFeedbacks([FromQuery] GetFailedToAnalyzeFeedbacksRequestDto request)
+    {
+        PagedResult<FailedToAnalyzeFeedbackReadModel> result =
+            await userFeedbackReadRepository.GetFailedAnalysisPagedListAsync(request.PageNumber, request.PageSize);
+
+        PagedResult<FailedToAnalyzeFeedbackDto> response = result.Map(ToFailedToAnalyzeFeedbackDto);
+
+        return Ok(response);
+    }
+
+
+    private FailedToAnalyzeFeedbackDto ToFailedToAnalyzeFeedbackDto(FailedToAnalyzeFeedbackReadModel item)
+    {
+        return new FailedToAnalyzeFeedbackDto
+        {
+            Id = item.Id.Value,
+            TitleOrTruncatedText = item.TitleOrTruncatedText,
+            SubmittedAt = item.SubmittedAt,
+            RetryCount = item.RetryCount,
+            FullFeedbackText = item.FullFeedbackText
+        };
     }
 
     private AnalyzedFeedbackItemDto ToAnalyzedFeedbackItemDto(AnalyzedFeedbackReadModel<FeatureCategoryReadModel> item)

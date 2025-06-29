@@ -104,7 +104,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
 
 
     [Fact]
-    public async Task GetAnalyzedFeedbacks_ReturnsTheFeedback_AfterSuccessfulAnalysis_WhenThereIsOnlyUnanalyzedFeedbacks()
+    public async Task GetAnalyzedFeedbacks_ReturnsTheFeedback_AfterSuccessfulAnalysis()
     {
         // Arrange
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
@@ -149,8 +149,7 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task
-        GetAnalyzedFeedbacks_DoesNotReturnFailedToAnalyzeFeedbacks()
+    public async Task GetAnalyzedFeedbacks_DoesNotReturnFailedToAnalyzeFeedbacks()
     {
         // Arrange
         var inputDto = new UserFeedbackInputDto("This is a test feedback.");
@@ -171,6 +170,93 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         PagedResultAssertions<AnalyzedFeedbackItemDto> pagedResultAssertions =
             await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(response);
         pagedResultAssertions.AssertEmpty();
+    }
+
+    [Fact]
+    public async Task GetAnalysisFailedFeedbacks_Initially_ReturnsEmptyList()
+    {
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analysisfailed");
+
+        // Assert
+        PagedResultAssertions<FailedToAnalyzeFeedbackDto> pagedResultAssertions =
+            await PagedResultAssertions<FailedToAnalyzeFeedbackDto>.CreateFromHttpResponse(response);
+        pagedResultAssertions.AssertEmpty();
+    }
+
+    [Fact]
+    public async Task GetAnalysisFailedFeedbacks_ReturnsEmptyList_WhenThereIsOnlyUnanalyzedFeedbacks()
+    {
+        // Arrange
+        var inputDto = new UserFeedbackInputDto("This is a test feedback.");
+        HttpResponseMessage postResponse = await _client.PostAsJsonAsync("/feedback", inputDto);
+        Assert.Equal(HttpStatusCode.Accepted, postResponse.StatusCode); // Guard assert
+
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analysisfailed");
+
+        // Assert
+        PagedResultAssertions<FailedToAnalyzeFeedbackDto> pagedResultAssertions =
+            await PagedResultAssertions<FailedToAnalyzeFeedbackDto>.CreateFromHttpResponse(response);
+        pagedResultAssertions.AssertEmpty();
+    }
+    
+    [Fact]
+    public async Task GetAnalysisFailedFeedbacks_ReturnsEmptyList_WhenThereIsOnlySuccessfullyAnalyzedFeedbacks()
+    {
+        // Arrange
+        var inputDto = new UserFeedbackInputDto("This is a test feedback.");
+        HttpResponseMessage postResponse = await _client.PostAsJsonAsync("/feedback", inputDto);
+        Assert.Equal(HttpStatusCode.Accepted, postResponse.StatusCode); // Guard assert
+        
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess( new LlmAnalysisSuccessBuilder().Build())
+            .Build()
+        );
+        
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analysisfailed");
+
+        // Assert
+        PagedResultAssertions<FailedToAnalyzeFeedbackDto> pagedResultAssertions =
+            await PagedResultAssertions<FailedToAnalyzeFeedbackDto>.CreateFromHttpResponse(response);
+        pagedResultAssertions.AssertEmpty();
+    }
+
+    
+        [Fact]
+    public async Task GetAnalysisFailedFeedbacks_ReturnsTheFeedback_AfterFailedAnalysis()
+    {
+        // Arrange
+        var inputDto = new UserFeedbackInputDto("This is a test feedback.");
+        HttpResponseMessage postResponse = await _client.PostAsJsonAsync("/feedback", inputDto);
+        Assert.Equal(HttpStatusCode.Accepted, postResponse.StatusCode); // Guard assert
+
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithFailure(
+                new LlmAnalysisFailureBuilder()
+                    .WithError("error description")
+                    .WithReason(FailureReason.LlmError)
+                    .Build())
+            .Build()
+        );
+
+        await SimulateBackgroundFeedbackAnalysis();
+        
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analysisfailed");
+
+        // Assert
+        PagedResultAssertions<FailedToAnalyzeFeedbackDto> pagedResultAssertions =
+            await PagedResultAssertions<FailedToAnalyzeFeedbackDto>.CreateFromHttpResponse(response);
+        pagedResultAssertions.AssertTotalCount(1);
+        pagedResultAssertions.AssertItems(e =>
+        {
+            Assert.Equal("This is a test feedback.", e.FullFeedbackText);
+            Assert.Equal(0, e.RetryCount);
+        });
     }
 
     private void SetMockedLlmAnalysisResult(LlmAnalysisResult mockedResult)
