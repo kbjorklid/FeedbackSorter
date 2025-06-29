@@ -17,7 +17,7 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
         {
             try
             {
-                await ProcessNextItemAsync(stoppingToken);
+                await AnalyzeFeedbacks(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -28,16 +28,16 @@ public class BackgroundAnalysisService(ILogger<BackgroundAnalysisService> logger
         }
     }
 
-    private async Task ProcessNextItemAsync(CancellationToken stoppingToken)
+    private async Task AnalyzeFeedbacks(CancellationToken stoppingToken)
     {
         using IServiceScope scope = scopeFactory.CreateScope();
-        GetNextFeedbackForAnalysisUseCase getNextFeedbackForAnalysisUseCase =
-            scope.ServiceProvider.GetRequiredService<GetNextFeedbackForAnalysisUseCase>();
+        AnalyzeNextFeedbackUseCase analyzeUseCase =
+            scope.ServiceProvider.GetRequiredService<AnalyzeNextFeedbackUseCase>();
 
-        UserFeedback? userFeedback = await getNextFeedbackForAnalysisUseCase.Get();
-        if (userFeedback == null) return;
-
-        var analyzeFeedbackUseCase = scope.ServiceProvider.GetRequiredService<AnalyzeFeedbackUseCase>();
-        await analyzeFeedbackUseCase.Execute(userFeedback.Id, stoppingToken);
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            bool analyzed = await analyzeUseCase.Execute(stoppingToken);
+            if (!analyzed) break;
+        }
     }
 }

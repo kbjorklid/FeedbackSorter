@@ -1,3 +1,4 @@
+using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.Query;
@@ -40,14 +41,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextOptionsDescriptor);
             }
 
-            // Add the DbContext service to use the in-memory SQLite database
             services.AddDbContext<FeedbackSorterDbContext>(options =>
             {
                 options.UseSqlite(_connection);
             });
 
-            // --- The rest of your mock setup remains the same ---
-            var infrastructureServiceDescriptors = services.Where(
+            List<ServiceDescriptor> serviceDescriptorsToReplaceWithMocks = services.Where(
                 descriptor =>
                               descriptor.ServiceType == typeof(ILlmFeedbackAnalyzer) ||
                               descriptor.ServiceType == typeof(ITimeProvider) ||
@@ -57,11 +56,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                               descriptor.ServiceType == typeof(ILogger<QueryAnalyzedFeedbacksUseCase>))
                 .ToList();
 
-            foreach (ServiceDescriptor? descriptor in infrastructureServiceDescriptors)
+            foreach (ServiceDescriptor? descriptor in serviceDescriptorsToReplaceWithMocks)
             {
                 services.Remove(descriptor);
             }
 
+            ServiceDescriptor backgroundAnalysisServiceDescriptor = 
+                services.Single(descriptor => descriptor.ServiceType == typeof(BackgroundAnalysisService));
+            services.Remove(backgroundAnalysisServiceDescriptor);
+            
             LLMFeedbackAnalyzerMock = Substitute.For<ILlmFeedbackAnalyzer>();
             TimeProviderMock = Substitute.For<ITimeProvider>();
             AnalyzeFeedbackCommandHandlerLoggerMock = Substitute.For<ILogger<AnalyzeFeedbackUseCase>>();
@@ -78,7 +81,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             // Create the database schema in the in-memory database
             using IServiceScope scope = services.BuildServiceProvider().CreateScope();
-            FeedbackSorterDbContext dbContext = scope.ServiceProvider.GetRequiredService<FeedbackSorterDbContext>();
         });
     }
 

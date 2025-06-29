@@ -108,7 +108,7 @@ public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger
         return Result<UserFeedback>.Success(userFeedback);
     }
 
-    public async Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query)
+    public async Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query, CancellationToken cancellationToken = default)
     {
         IQueryable<UserFeedbackDb> queryable = dbContext.UserFeedbacks
             .Include(uf => uf.AnalysisResultFeatureCategories)
@@ -136,7 +136,7 @@ public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger
             queryable = queryable.Take(query.MaxResults.Value);
         }
 
-        List<UserFeedbackDb> userFeedbackDbs = await queryable.ToListAsync();
+        List<UserFeedbackDb> userFeedbackDbs = await queryable.ToListAsync(cancellationToken: cancellationToken);
         IList<UserFeedback> userFeedbacks = userFeedbackDbs.Select(dbEntity => UserFeedbackMapper.ToDomainEntity(dbEntity)).ToList();
 
         return userFeedbacks;

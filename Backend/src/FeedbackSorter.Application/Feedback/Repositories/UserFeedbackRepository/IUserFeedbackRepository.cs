@@ -8,7 +8,7 @@ public interface IUserFeedbackRepository
     Task<Result<UserFeedback>> GetByIdAsync(FeedbackId id);
     Task<UserFeedback> AddAsync(UserFeedback userFeedback);
     Task<Result<UserFeedback>> UpdateAsync(UserFeedback userFeedback);
-    Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query);
+    Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query, CancellationToken cancellationToken = default);
 
 }
 

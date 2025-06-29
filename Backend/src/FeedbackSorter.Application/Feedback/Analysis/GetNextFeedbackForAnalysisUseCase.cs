@@ -7,7 +7,7 @@ namespace FeedbackSorter.Application.Feedback.Analysis;
 
 public class GetNextFeedbackForAnalysisUseCase(IUserFeedbackRepository userFeedbackRepository)
 {
-    public async Task<UserFeedback?> Get()
+    public async Task<UserFeedback?> Get(CancellationToken stoppingToken = default)
     {
         IList<UserFeedback> results = await userFeedbackRepository.QueryAsync(new UserFeedbackQuery
         {
@@ -15,7 +15,7 @@ public class GetNextFeedbackForAnalysisUseCase(IUserFeedbackRepository userFeedb
             MaxResults = 1,
             SortBy = UserFeedbackSortBy.SubmittedAt,
             Order = SortOrder.Asc
-        });
+        }, stoppingToken);
         return results.FirstOrDefault();
     }
 }

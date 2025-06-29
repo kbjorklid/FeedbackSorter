@@ -26,7 +26,8 @@ public class AnalyzeFeedbackUseCase(
         if (!IsInAnalyzableState(userFeedback))
         {
             return Result.Failure(
-                $"User Feedback with ID {feedbackId} is not in correct state (state is: {userFeedback.AnalysisStatus}");
+                $"User Feedback with ID {feedbackId} is not in correct state " +
+                $"(state is: {userFeedback.AnalysisStatus})");
         }
 
         userFeedback.StartProcessing();
