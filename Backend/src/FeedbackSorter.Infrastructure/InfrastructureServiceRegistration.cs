@@ -28,7 +28,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryReadRepository>();
 
 
-        services.AddSingleton<ILlmFeedbackAnalyzer, FakeLLMFeedbackAnalyzer>();
+        services.AddSingleton<ILlmFeedbackAnalyzer, SemanticKernelLLMAnalyzer>();
         services.AddSingleton<ITimeProvider>(new SystemTimeProvider());
 
 

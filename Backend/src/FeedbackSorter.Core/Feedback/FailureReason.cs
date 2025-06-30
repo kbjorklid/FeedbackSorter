@@ -7,5 +7,6 @@ public enum FailureReason
 {
     LlmError,
     LlmUnableToProcess,
+    LlmOutputFormatInvalid,
     Unknown
 }
