@@ -24,6 +24,7 @@ public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger
 
         if (userFeedbackDb == null)
         {
+            logger.LogWarning("Feedback not found {FeedbackId}", id.Value);
             return Result<UserFeedback>.Failure($"UserFeedback with Id {id.Value} not found.");
         }
 

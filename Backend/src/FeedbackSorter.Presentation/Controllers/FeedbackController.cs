@@ -1,5 +1,6 @@
 using System.Net;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
+using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Application.Feedback.Submit;
@@ -16,7 +17,8 @@ namespace FeedbackSorter.Presentation.Controllers;
 public class FeedbackController(
     SubmitFeedbackUseCase submitFeedbackUseCase,
     QueryAnalyzedFeedbacksUseCase queryAnalyzedFeedbacksUseCase,
-    IUserFeedbackReadRepository userFeedbackReadRepository)
+    IUserFeedbackReadRepository userFeedbackReadRepository,
+    FlagFeedbackForReanalysisUseCase flagFeedbackForReanalysisUseCase)
     : ControllerBase
 {
     [HttpPost]
@@ -63,6 +65,21 @@ public class FeedbackController(
         PagedResult<FailedToAnalyzeFeedbackDto> response = result.Map(ToFailedToAnalyzeFeedbackDto);
 
         return Ok(response);
+    }
+
+    [HttpPost("{id:guid}/re-flag")]
+    [ProducesResponseType((int)HttpStatusCode.Accepted)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> ReFlagFeedbackForAnalysis([FromRoute] Guid id)
+    {
+        FeedbackId feedbackId = FeedbackId.FromGuid(id);
+        bool result = await flagFeedbackForReanalysisUseCase.Execute(feedbackId);
+
+        if (!result)
+            return NotFound();
+
+        return Accepted();
     }
 
 

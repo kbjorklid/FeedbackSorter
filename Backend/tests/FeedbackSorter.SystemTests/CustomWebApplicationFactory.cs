@@ -2,6 +2,7 @@ using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.LLM;
+using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Infrastructure.Persistence;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Hosting;
