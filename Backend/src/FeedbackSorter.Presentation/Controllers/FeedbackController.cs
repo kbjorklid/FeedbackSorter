@@ -88,7 +88,6 @@ public class FeedbackController(
         return new FailedToAnalyzeFeedbackDto
         {
             Id = item.Id.Value,
-            TitleOrTruncatedText = item.TitleOrTruncatedText,
             SubmittedAt = item.SubmittedAt,
             RetryCount = item.RetryCount,
             FullFeedbackText = item.FullFeedbackText

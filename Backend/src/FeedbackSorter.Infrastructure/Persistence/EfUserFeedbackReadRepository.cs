@@ -94,10 +94,9 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
             .ToListAsync();
         _logger.LogDebug("Retrieved {ItemCount} items for page {PageNumber} with page size {PageSize}", items.Count, pageNumber, pageSize);
 
-        var readModels = items.Select(uf => new FailedToAnalyzeFeedbackReadModel
+        List<FailedToAnalyzeFeedbackReadModel> readModels = items.Select(uf => new FailedToAnalyzeFeedbackReadModel
         {
             Id = FeedbackId.FromGuid(uf.Id),
-            TitleOrTruncatedText = uf.AnalysisResultTitle ?? uf.Text.Substring(0, Math.Min(uf.Text.Length, 30)), // Truncate if no title
             SubmittedAt = uf.SubmittedAt,
             RetryCount = uf.RetryCount,
             FullFeedbackText = uf.Text
