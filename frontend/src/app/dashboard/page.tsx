@@ -1,9 +1,17 @@
 import { getAnalyzedFeedback } from "@/lib/feedbackService";
 import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
+import { PaginationControls } from "@/components/PaginationControls";
 import Link from "next/link";
 
-export default async function DashboardPage() {
-  const analyzedData = await getAnalyzedFeedback();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const page =
+    typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
+
+  const analyzedData = await getAnalyzedFeedback(page);
 
   return (
     <main className="container mx-auto p-8">
@@ -18,10 +26,17 @@ export default async function DashboardPage() {
         <h2 className="text-2xl font-semibold mb-4">Analyzed Feedback</h2>
         <div className="p-4 border rounded-lg">
           <AnalyzedFeedbackTable data={analyzedData} />
+          <div className="mt-4">
+            {analyzedData && (
+              <PaginationControls
+                totalPages={analyzedData.totalPages}
+                currentPage={analyzedData.pageNumber}
+              />
+            )}
+          </div>
         </div>
       </section>
 
-      {/* This is where we will add the "Failed to Analyze" table later */}
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-4">Failed to Analyze</h2>
         <div className="p-4 border rounded-lg bg-gray-50">

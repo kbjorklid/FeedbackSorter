@@ -30,9 +30,11 @@ export async function submitFeedback(
   }
 }
 
-export async function getAnalyzedFeedback() {
+export async function getAnalyzedFeedback(page: number = 1) {
   try {
-    const response = await fetch(`${API_BASE_URL}/analyzed`);
+    const response = await fetch(
+      `${API_BASE_URL}/analyzed?PageNumber=${page}&PageSize=5`
+    );
 
     if (!response.ok) {
       console.error(
