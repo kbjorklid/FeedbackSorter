@@ -159,20 +159,7 @@ Illustrative directory structure:
 * **Purpose:** Orchestrates use cases via commands and queries. Defines interfaces (ports) for infrastructure dependencies.
 * **Root Directory**: `/src/FeedbackSorter.Application`
 * **Dependencies:** `FeedbackSorter.Core`, `FeedbackSorter.SharedKernel`.
-Illustrative directory structure:
-```
-/src/FeedbackSorter.Application/<feature_name>/<command_name>/<command_name>Command.cs
-/src/FeedbackSorter.Application/<feature_name>/<command_name>/<command_name>CommandHandler.cs
-/src/FeedbackSorter.Application/<feature_name>/command_2_name>/<command_2_name>Command.cs
-/src/FeedbackSorter.Application/<feature_name>/command_2_name>/<command_2_name>CommandHandler.cs
-/src/FeedbackSorter.Application/<feature_2_name>/<query_name>/<query_name>Query.cs
-/src/FeedbackSorter.Application/<feature_2_name>/<query_name>/<query_name>QueryHandler.cs
-```
-Example:
-```
-/src/FeedbackSorter.Application/UserFeedback/SubmitNew/SubmitNewUserFeedbackCommand.cs
-/src/FeedbackSorter.Application/UserFeedback/SubmitNew/SubmitNewUserFeedbackCommandHandler.cs
-```
+
 
 #### 4. `FeedbackSorter.Infrastructure` (Infrastructure Layer)
 * **Purpose:** Implements external concerns: database access (repositories), external API clients (LLM service), message buses. Implements ports defined in the Application Layer.
@@ -184,23 +171,7 @@ Example:
 * * **Root Directory**: `/src/FeedbackSorter.Presentation`
 * **Dependencies:** `FeedbackSorter.Application`, `FeedbackSorter.SharedKernel`.
 
-Illustrative directory structure:
-```
-/src/FeedbackSorter.Presentation/<feature_name>/(controller and related DTOs)
-/src/FeedbackSorter.Presentation/Program.cs
-```
 
-### Test projects and directories
-
-The following are the necessary test projects:
-## Proposed Test Project Structure
-
-Based on the existing solution projects:
-
-1.  `/tests/FeedbackSorter.Core.UnitTests`
-2.  `/tests/FeedbackSorter.Application.UnitTests`
-3.  `/tests/FeedbackSorter.Infrastructure.UnitTests`
-4.  `/tests/FeedbackSorter.Presentation.UnitTests`
 
 
 ## Layer Responsibilities
@@ -270,8 +241,6 @@ The project implements **CQRS with separate models**:
 
 ## Request Processing Flow
 
-### Command Processing (Modify Operations)
-
 ```mermaid
 classDiagram
  direction TD
@@ -282,11 +251,8 @@ classDiagram
  }
 
  namespace Application {
-   class ExampleCommandHandler {
-     <<Command Handler>>
-   }
-   class ExampleCommand {
-     <<Command>>
+   class ExampleUseCase {
+     <<UseCase>>
    }
    class IExampleRepository {
      <<Port Interface>>
@@ -319,76 +285,28 @@ classDiagram
    }
  }
 
- ExampleController --> ExampleCommandHandler : sends ExampleCommand
- ExampleCommandHandler --> IExampleRepository : uses
- ExampleCommandHandler --> ExampleAggregateRoot : orchestrates
- ExampleCommandHandler --> ExampleDomainService : delegates complex logic
+ ExampleController --> ExampleUseCase
+ ExampleUseCase --> IExampleRepository : uses
+ ExampleUseCase --> ExampleAggregateRoot : orchestrates
+ ExampleUseCase --> ExampleDomainService : delegates complex logic
  IExampleRepository <|-- ExampleRepository : implements
  ExampleAggregateRoot *-- ExampleId : contains
  ExampleAggregateRoot --> ExampleDomainService : may use
- ExampleController --> ExampleCommand : creates
- ExampleCommandHandler --> ExampleCommand : reads
 ```
 
-### Query Processing (Read Operations)
-
-```mermaid
-classDiagram
-  direction TD
-  namespace Presentation {
-    class ExampleController {
-      <<REST Controller>>
-    }
-  }
-
-  namespace Application {
-    class ExampleQueryHandler {
-      <<Query Handler>>
-    }
-    class ExampleQuery {
-      <<Query>>
-    }
-    class IExampleReadRepository {
-      <<Port Interface>>
-      + GetByIdAsync(Id : ExampleId) Task~ExampleReadModel?~
-      + GetAllAsync(filter : ExampleFilter) Task~IEnumerable~ExampleReadModel~~
-    }
-  }
-
-  namespace Infrastructure {
-    class ExampleReadRepository {
-      <<Read Repository>>
-      + GetByIdAsync(Id : ExampleId) Task~ExampleReadModel?~
-      + GetAllAsync(filter : ExampleFilter) Task~IEnumerable~ExampleReadModel~~
-    }
-  }
-
-  namespace Contracts {
-    class ExampleReadModel {
-      <<Read Model>>
-    }
-  }
-
-  ExampleController --> ExampleQueryHandler : sends ExampleQuery
-  ExampleQueryHandler --> IExampleReadRepository : uses
-  IExampleReadRepository <|-- ExampleReadRepository : implements
-  ExampleQueryHandler --> ExampleReadModel : returns
-  ExampleController --> ExampleQuery : creates
-  ExampleQueryHandler --> ExampleQuery : 
-```
 ## Runtime Sequence
 
 ### Command Process Sequence
 ```mermaid
 sequenceDiagram
   participant C as Controller
-  participant CH as CommandHandler
+  participant CH as UseCase
   participant R as Repository
   participant AR as AggregateRoot
   participant DS as DomainService
   participant ED as EventDispatcher
 
-  C->>CH: HandleAsync(Command)
+  C->>CH: HandleAsync(Data)
   CH->>R: FindByIdAsync(Id)
   R-->>CH: Result<AggregateRoot>
   
@@ -410,7 +328,7 @@ sequenceDiagram
 
 ## General
 - This project uses the 'nullable' annotation (example: `string?`) to mark that something may be null.
--  Always validate inputs at public API boundaries (e.g., Application Service command handlers, Entity/VO constructors exposed to Application layer). Within the internal scope of a method where the compiler guarantees non-nullability, further checks may be redundant. Use ArgumentNullException.ThrowIfNull() or similar.
+-  Always validate inputs at public API boundaries (e.g., Application Service use cases, Entity/VO constructors exposed to Application layer). Within the internal scope of a method where the compiler guarantees non-nullability, further checks may be redundant. Use ArgumentNullException.ThrowIfNull() or similar.
 - Do not use primary constructors when data validation at construction time is needed. Use 'old-style' constructors in such cases.
 
 ## Value Objects
