@@ -1,6 +1,7 @@
 using System.Net;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Analysis;
+using FeedbackSorter.Application.Feedback.Delete;
 using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Application.Feedback.Submit;
@@ -19,7 +20,8 @@ public class FeedbackController(
     SubmitFeedbackUseCase submitFeedbackUseCase,
     QueryAnalyzedFeedbacksUseCase queryAnalyzedFeedbacksUseCase,
     IUserFeedbackReadRepository userFeedbackReadRepository,
-    FlagFeedbackForReanalysisUseCase flagFeedbackForReanalysisUseCase)
+    FlagFeedbackForReanalysisUseCase flagFeedbackForReanalysisUseCase,
+    DeleteFeedbackUseCase deleteFeedbackUseCase)
     : ControllerBase
 {
     [HttpPost]
@@ -81,6 +83,21 @@ public class FeedbackController(
             return NotFound();
 
         return Accepted();
+    }
+
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType((int)HttpStatusCode.NoContent)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> DeleteFeedback([FromRoute] Guid id)
+    {
+        var feedbackId = FeedbackId.FromGuid(id);
+        var result = await deleteFeedbackUseCase.Handle(feedbackId, HttpContext.RequestAborted);
+
+        if (!result.Value)
+            return NotFound();
+
+        return NoContent();
     }
 
 

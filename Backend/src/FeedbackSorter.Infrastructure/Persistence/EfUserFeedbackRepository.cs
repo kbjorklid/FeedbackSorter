@@ -142,4 +142,20 @@ public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger
 
         return userFeedbacks;
     }
+
+    public async Task<bool> DeleteAsync(FeedbackId id)
+    {
+        UserFeedbackDb? userFeedbackDb = await dbContext.UserFeedbacks
+            .FirstOrDefaultAsync(uf => uf.Id == id.Value);
+
+        if (userFeedbackDb == null)
+        {
+            logger.LogWarning("Feedback not found for deletion {FeedbackId}", id.Value);
+            return false;
+        }
+
+        dbContext.UserFeedbacks.Remove(userFeedbackDb);
+        await dbContext.SaveChangesAsync();
+        return true;
+    }
 }

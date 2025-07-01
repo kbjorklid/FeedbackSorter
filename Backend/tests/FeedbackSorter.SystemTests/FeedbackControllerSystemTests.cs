@@ -322,6 +322,48 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         failedAssertionsAfterReFlag.AssertEmpty();
     }
 
+    [Fact]
+    public async Task DeleteFeedback_InvalidId_ReturnsNotFound()
+    {
+        // Arrange
+        var feedbackGuid = Guid.NewGuid();
+
+        // Act
+        var response = await _client.DeleteAsync($"/feedback/{feedbackGuid}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteFeedback_AfterSuccessfulAnalysis_RemovesFromAnalyzedList()
+    {
+        // Arrange
+        var feedbackId = await SubmitFeedback("This is a test feedback for deletion after successful analysis.");
+
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder().Build())
+            .Build()
+        );
+
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Guard Assert: Verify it appears in analyzed list
+        var analyzedAssertionsBeforeDelete =
+            await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(await _client.GetAsync("/feedback/analyzed"));
+        analyzedAssertionsBeforeDelete.AssertTotalCount(1);
+
+        // Act
+        var deleteResponse = await _client.DeleteAsync($"/feedback/{feedbackId.Value}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        var analyzedAssertionsAfterDelete =
+            await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(await _client.GetAsync("/feedback/analyzed"));
+        analyzedAssertionsAfterDelete.AssertEmpty();
+    }
+
     private async Task<FeedbackId> SubmitFeedback(string feedback)
     {
         var inputDto = new UserFeedbackInputDto(feedback);

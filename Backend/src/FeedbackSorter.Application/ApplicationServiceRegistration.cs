@@ -2,6 +2,7 @@ using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.Feedback;
 using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.Feedback.Query;
+using FeedbackSorter.Application.Feedback.Delete;
 using FeedbackSorter.Application.Feedback.Submit;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<AnalyzeFeedbackUseCase>();
         services.AddScoped<AnalyzeNextFeedbackUseCase>();
         services.AddScoped<FlagFeedbackForReanalysisUseCase>();
+        services.AddScoped<DeleteFeedbackUseCase>();
 
         services.AddHostedService<BackgroundAnalysisService>();
 
