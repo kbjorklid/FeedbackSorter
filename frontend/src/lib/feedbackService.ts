@@ -63,3 +63,22 @@ export async function getAnalyzedFeedback(page: number = 1) {
     return null;
   }
 }
+
+export async function deleteFeedback(id: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (response.ok) {
+      console.log(`Feedback ${id} deleted successfully from the API.`);
+      return true;
+    } else {
+      console.error('API Error deleting feedback:', response.status, await response.text());
+      return false;
+    }
+  } catch (error) {
+    console.error('Network or other error deleting feedback:', error);
+    return false;
+  }
+}

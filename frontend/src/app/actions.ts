@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { feedbackSchema } from "@/lib/types";
 import { submitFeedback } from "@/lib/feedbackService";
+import { deleteFeedback } from "@/lib/feedbackService"; // Import the new service
 
 type FormState = {
   message: string;
@@ -60,4 +61,14 @@ export async function submitFeedbackAction(
       errors: {},
     };
   }
+}
+
+export async function deleteFeedbackAction(id: string) {
+  const success = await deleteFeedback(id);
+
+  if (success) {
+    revalidatePath("/dashboard");
+  }
+
+  return { success };
 }

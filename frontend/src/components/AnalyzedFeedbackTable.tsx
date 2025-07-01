@@ -1,6 +1,9 @@
 "use client"; // We need to use hooks, so this becomes a Client Component
 
-import { useState } from "react";
+import { useState, useTransition } from 'react'; 
+import { Trash2 } from 'lucide-react'; 
+import { deleteFeedbackAction } from '@/app/actions';
+
 import {
   Table,
   TableBody,
@@ -21,6 +24,7 @@ import type {
   AnalyzedFeedbackPagedResult,
   AnalyzedFeedbackItem,
 } from "@/lib/types";
+import { Button } from './ui/button';
 
 type Props = {
   data: AnalyzedFeedbackPagedResult | null;
@@ -31,6 +35,14 @@ export function AnalyzedFeedbackTable({ data }: Props) {
   const [selectedItem, setSelectedItem] = useState<AnalyzedFeedbackItem | null>(
     null
   );
+
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = (id: string) => {
+    startTransition(() => {
+      deleteFeedbackAction(id);
+    });
+  };
 
   if (!data) {
     return (
@@ -52,6 +64,7 @@ export function AnalyzedFeedbackTable({ data }: Props) {
             <TableHead>Sentiment</TableHead>
             <TableHead>Feedback Categories</TableHead>
             <TableHead>Feature Categories</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -86,6 +99,16 @@ export function AnalyzedFeedbackTable({ data }: Props) {
                     </Badge>
                   ))}
                 </div>
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(item.id)}
+                  disabled={isPending} // Disable button during deletion
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}
