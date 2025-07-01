@@ -1,8 +1,8 @@
 
 using FeedbackSorter.Application.FeatureCategories.Repositories;
-using FeedbackSorter.Presentation.UserFeedback;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using FeedbackSorter.Presentation.FeatureCategory;
 
 namespace FeedbackSorter.Presentation.Controllers;
 
@@ -12,13 +12,20 @@ public class FeatureCategoriesController(IFeatureCategoryReadRepository featureC
     : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<FeatureCategoryDto>))]
+    [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(FeatureCategoryListDto))]
     public async Task<IActionResult> GetFeatureCategories()
     {
         IEnumerable<FeatureCategoryReadModel> featureCategories = await featureCategoryReadRepository.GetAllAsync();
-        IOrderedEnumerable<FeatureCategoryDto> dtos = 
+        FeatureCategoryListDto response = ToResponseDto(featureCategories);
+        return Ok(response);
+    }
+
+    private static FeatureCategoryListDto ToResponseDto(IEnumerable<FeatureCategoryReadModel> featureCategories)
+    {
+        IOrderedEnumerable<FeatureCategoryDto> categories = 
             featureCategories.Select(fc => new FeatureCategoryDto { Id = fc.Id.Value, Name = fc.Name.Value })
                 .OrderBy(dto => dto.Name);
-        return Ok(dtos);
+        var list = new FeatureCategoryListDto { FeatureCategories = categories };
+        return list;
     }
 }

@@ -5,6 +5,7 @@ using FeedbackSorter.Application.Feedback.Query;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Application.Feedback.Submit;
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.Presentation.FeatureCategory;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,5 @@
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.Presentation.FeatureCategory;
 
 namespace FeedbackSorter.Presentation.UserFeedback;
 
@@ -11,10 +12,4 @@ public class AnalyzedFeedbackItemDto
     public IEnumerable<FeedbackCategoryType> FeedbackCategories { get; set; } = [];
     public IEnumerable<FeatureCategoryDto> FeatureCategories { get; set; } = [];
     public Sentiment Sentiment { get; set; }
-}
-
-public class FeatureCategoryDto
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
 }

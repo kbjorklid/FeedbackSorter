@@ -6,6 +6,7 @@ using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Analysis;
 using FeedbackSorter.Application.LLM;
 using FeedbackSorter.Core.Feedback;
+using FeedbackSorter.Presentation.FeatureCategory;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.SharedKernel;
 using FeedbackSorter.Tests.Utilities.Builders;

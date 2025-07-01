@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Core.FeatureCategories;
+using FeedbackSorter.Presentation.FeatureCategory;
 using FeedbackSorter.Presentation.UserFeedback;
 using FeedbackSorter.Tests.Utilities.Builders;
 using Microsoft.Extensions.DependencyInjection;
