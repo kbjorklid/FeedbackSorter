@@ -1,4 +1,5 @@
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using FeedbackSorter.Application.FeatureCategories.Repositories;
@@ -30,9 +31,9 @@ public class FeatureCategoriesControllerSystemTests : IClassFixture<CustomWebApp
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var featureCategories = await response.Content.ReadFromJsonAsync<List<FeatureCategoryDto>>();
+        var featureCategories = await response.Content.ReadFromJsonAsync<FeatureCategoryListDto>();
         Assert.NotNull(featureCategories);
-        Assert.Empty(featureCategories);
+        Assert.Empty(featureCategories.FeatureCategories);
     }
 
     [Fact]
@@ -55,8 +56,9 @@ public class FeatureCategoriesControllerSystemTests : IClassFixture<CustomWebApp
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var featureCategories = await response.Content.ReadFromJsonAsync<List<FeatureCategoryDto>>();
-        Assert.NotNull(featureCategories);
+        var featureCategoriesList = await response.Content.ReadFromJsonAsync<FeatureCategoryListDto>();
+        Assert.NotNull(featureCategoriesList);
+        List<FeatureCategoryDto> featureCategories = featureCategoriesList.FeatureCategories.ToList();
         Assert.Equal(3, featureCategories.Count);
         Assert.Equal("Category A", featureCategories[0].Name);
         Assert.Equal("Category B", featureCategories[1].Name);
