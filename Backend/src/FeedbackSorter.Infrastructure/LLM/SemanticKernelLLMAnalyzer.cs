@@ -136,13 +136,35 @@ public class SemanticKernelLLMAnalyzer : ILlmFeedbackAnalyzer
                                    }
                                    ```
                                    """;
+        
+        const string userFeedbackExample2 = """
+                                           ```
+                                           Every time I try to search for an email older than a month, the app crashes. 
+                                           It's really frustrating as I need to access older receipts for my expense reports.
+                                           Other than that, the performance of the app has been fantastic.
+                                           I really appreciate how lightweight and responsive it feels.
+                                           ```
+                                           """;
+        const string jsonExample2 = """
+                                   ```json
+                                   {
+                                      "Title": "Search for older emails causes crash",
+                                      "Sentiment": "Mixed",
+                                      "FeedbackCategories": ["Bug", "GeneralFeedback"],
+                                      "FeatureCategoryNames": ["Email Search"]
+                                   }
+                                   ```
+                                   """;
+        
         string prompt = $"""
                          You are an AI assistant that analyzes user feedback of a product.
                          Analyze the following user feedback and categorize it based on the provided feature categories.
                          Return the analysis in a JSON format.
 
-                         User Feedback:,
+                         User Feedback:
+                         ```
                          {feedbackText.Value}
+                         ```
 
                          Existing Feature Categories: [{existingCategories}],
 
@@ -155,13 +177,24 @@ public class SemanticKernelLLMAnalyzer : ILlmFeedbackAnalyzer
                            categories based on the provided list of existing feature categories, or create new ones if
                            no suitable categories exist. The Feature category names should be succinct, 1-4 words. 
                          - Do not include any other text or explanation outside the JSON block.
-                         - Allowed values for 'Sentiment' are: "
 
-                         Example:
+                         Example 1:
                          Given this feedback:
                          {userFeedbackExample}
                          The analysis outcome might look something like this:
                          {jsonExample}
+                         
+                         Example 2:
+                         Given this feedback:
+                         {userFeedbackExample2}
+                         The analysis outcome might look something like this:
+                         {jsonExample2}
+                         
+                         If the user feedback cannot be analyzed, for example, it is complete gibberish, return
+                         a string in the following format:
+                         ```
+                         Error: Description of the problem
+                         ```
                          """;
         return prompt;
     }

@@ -22,15 +22,6 @@ function simpleHash(str: string): number {
   return Math.abs(hash);
 }
 
-/**
- * Generates a consistent HSL color based on a string label,
- * and also provides a contrasting text color (black or white).
- *
- * @param label The string label (e.g., "Dark mode").
- * @param saturation The desired saturation for the background color (0-100).
- * @param lightness The desired lightness for the background color (0-100).
- * @returns An object with `backgroundColor` and `textColor`.
- */
 export function getColorForString(label: string): {
   backgroundColor: string;
   textColor: string;
