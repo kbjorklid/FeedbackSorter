@@ -47,7 +47,7 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
 
         if (filter.FeatureCategoryNames != null && filter.FeatureCategoryNames.Any())
         {
-            var feaCategoryNames = filter.FeatureCategoryNames.Select(f => f.ToString()).ToList();
+            var feaCategoryNames = filter.FeatureCategoryNames.Select(f => f.Value).ToList();
             query = query.Where(uf => uf.AnalysisResultFeatureCategories.Any(fc => feaCategoryNames.Contains(fc.Name)));
         }
 

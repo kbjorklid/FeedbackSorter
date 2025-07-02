@@ -21,20 +21,25 @@ export const sentimentSchema = z.enum([
   "Mixed",
 ]);
 
+export const featureCategorySchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+});
+
+export const featureCategoryResultSchema = z.object({
+  featureCategories: z.array(featureCategorySchema),
+});
+
 export const analyzedFeedbackItemSchema = z.object({
   id: z.string().uuid(),
   title: z.string().nullable(),
   text: z.string().nullable(),
   submittedAt: z.string(),
   feedbackCategories: z.array(feedbackCategoryTypeSchema).nullable(),
-  // We can define featureCategories more loosely for now
-  featureCategories: z
-    .array(z.object({ id: z.string().uuid(), name: z.string().nullable() }))
-    .nullable(),
+  featureCategories: z.array(featureCategorySchema).nullable(),
   sentiment: sentimentSchema.nullable(),
 });
 
-// This schema represents a page of analyzed feedback items
 export const analyzedFeedbackPagedResultSchema = z.object({
   items: z.array(analyzedFeedbackItemSchema),
   pageNumber: z.number(),
@@ -50,3 +55,4 @@ export type AnalyzedFeedbackPagedResult = z.infer<
 >;
 export type Sentiment = z.infer<typeof sentimentSchema>;
 export type FeedbackCategory = z.infer<typeof feedbackCategoryTypeSchema>;
+export type FeatureCategory = z.infer<typeof featureCategorySchema>;

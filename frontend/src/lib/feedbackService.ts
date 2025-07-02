@@ -3,15 +3,16 @@ import {
   analyzedFeedbackPagedResultSchema,
   Sentiment,
   FeedbackCategory,
+  featureCategoryResultSchema,
 } from "./types";
 
-const API_BASE_URL = "http://localhost:5225/feedback";
+const API_BASE_URL = "http://localhost:5225";
 
 export async function submitFeedback(
   feedback: FeedbackSubmission
 ): Promise<boolean> {
   try {
-    const response = await fetch(API_BASE_URL, {
+    const response = await fetch(`${API_BASE_URL}/feedback`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,10 +36,41 @@ export async function submitFeedback(
   }
 }
 
+export async function getFeatureCategoryNames() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feature-categories`);
+    if (!response.ok) {
+      console.error(
+        "API Error fetching feature categories:",
+        response.status,
+        await response.text()
+      );
+      return [];
+    }
+
+    const data = await response.json();
+    const validationResult = featureCategoryResultSchema.safeParse(data);
+
+    if (!validationResult.success) {
+      console.error(
+        "Zod validation failed for analyzed feedback:",
+        validationResult.error.flatten()
+      );
+      return [];
+    }
+
+    return validationResult.data.featureCategories.map((f) => f.name);
+  } catch (error) {
+    console.error("Network or other error fetching analyzed feedback:", error);
+    return [];
+  }
+}
+
 export async function getAnalyzedFeedback(
   page: number = 1,
   sentiment?: Sentiment | null,
-  feedbackCategory?: FeedbackCategory | null
+  feedbackCategory?: FeedbackCategory | null,
+  featureCategoryName?: string | null
 ) {
   try {
     const params = new URLSearchParams({
@@ -54,8 +86,12 @@ export async function getAnalyzedFeedback(
       params.append("FeedbackCategory", feedbackCategory);
     }
 
+    if (featureCategoryName) {
+      params.append("FeatureCategoryName", featureCategoryName);
+    }
+
     const response = await fetch(
-      `${API_BASE_URL}/analyzed?${params.toString()}`
+      `${API_BASE_URL}/feedback/analyzed?${params.toString()}`
     );
 
     if (!response.ok) {
@@ -88,7 +124,7 @@ export async function getAnalyzedFeedback(
 
 export async function deleteFeedback(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/feedback/${id}`, {
       method: "DELETE",
     });
 

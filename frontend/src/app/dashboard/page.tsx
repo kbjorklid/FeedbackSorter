@@ -1,4 +1,7 @@
-import { getAnalyzedFeedback } from "@/lib/feedbackService";
+import {
+  getAnalyzedFeedback,
+  getFeatureCategoryNames,
+} from "@/lib/feedbackService";
 import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import Link from "next/link";
@@ -10,16 +13,18 @@ import { feedbackCategoryTypeSchema, sentimentSchema } from "@/lib/types";
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | undefined };
 }) {
   const { page } = await searchParams;
   const { sentiment } = await searchParams;
   const { feedbackCategory } = await searchParams;
+  const { featureCategoryName } = await searchParams;
 
   const analyzedData = await getAnalyzedFeedback(
     getPage(),
     getSentiment(),
-    getFeedbackCategory()
+    getFeedbackCategory(),
+    featureCategoryName
   );
   const sentimentOptions = sentimentSchema.options;
 
@@ -57,6 +62,15 @@ export default async function DashboardPage({
                 queryParamName="feedbackCategory"
                 placeholder="Filter by feedback category..."
                 options={feedbackCategoryTypeOptions}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="feature-category-filter">Feature Category</Label>
+              <SelectFilter
+                id="feature-category-filter"
+                queryParamName="featureCategoryName"
+                placeholder="Filter by feature category..."
+                options={await getFeatureCategoryNames()}
               />
             </div>
           </div>
