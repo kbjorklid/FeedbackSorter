@@ -48,3 +48,4 @@ export type AnalyzedFeedbackItem = z.infer<typeof analyzedFeedbackItemSchema>;
 export type AnalyzedFeedbackPagedResult = z.infer<
   typeof analyzedFeedbackPagedResultSchema
 >;
+export type Sentiment = z.infer<typeof sentimentSchema>;

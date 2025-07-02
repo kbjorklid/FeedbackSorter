@@ -44,7 +44,8 @@ public class QueryAnalyzedFeedbacksUseCase(
             FeedbackCategories = query.FeedbackCategories,
             FeatureCategoryIds = featureCategories == null ? null : featureCategories.Select(c => c.Id),
             SortBy = query.SortBy,
-            SortAscending = query.SortOrder == SortOrder.Asc
+            SortAscending = query.SortOrder == SortOrder.Asc,
+            Sentiment = query.Sentiment,
         };
     }
 }

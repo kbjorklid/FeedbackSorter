@@ -8,6 +8,8 @@ public record AnalyzedFeedbackQueryParams
 {
     public IEnumerable<FeedbackCategoryType>? FeedbackCategories { get; init; }
     public IEnumerable<FeatureCategoryId>? FeatureCategoryIds { get; init; }
+    public Sentiment? Sentiment { get; init; }
     public UserFeedbackSortBy? SortBy { get; init; }
     public bool SortAscending { get; init; } = true;
+    
 }

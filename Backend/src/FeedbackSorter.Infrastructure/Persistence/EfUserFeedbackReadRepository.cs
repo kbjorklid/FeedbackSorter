@@ -35,6 +35,11 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
             .AsQueryable();
 
         // Apply filters
+        if (filter.Sentiment != null)
+        {
+            query = query.Where(uf => uf.AnalysisResultSentiment != null && uf.AnalysisResultSentiment == filter.Sentiment.ToString());
+        }
+        
         if (filter.FeedbackCategories != null && filter.FeedbackCategories.Any())
         {
             query = query.Where(uf => uf.SelectedFeedbackCategories.Any(sfc => filter.FeedbackCategories.Contains(Enum.Parse<FeedbackCategoryType>(sfc.FeedbackCategoryValue))));

@@ -2,6 +2,9 @@ import { getAnalyzedFeedback } from "@/lib/feedbackService";
 import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import Link from "next/link";
+import type { Sentiment } from "@/lib/types";
+import { SentimentFilter } from "@/components/SentimentFilter";
+import { Label } from "@radix-ui/react-label";
 
 export default async function DashboardPage({
   searchParams,
@@ -9,8 +12,9 @@ export default async function DashboardPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const { page } = await searchParams;
+  const { sentiment } = await searchParams;
 
-  const analyzedData = await getAnalyzedFeedback(getPage());
+  const analyzedData = await getAnalyzedFeedback(getPage(), getSentiment());
 
   return (
     <main className="container mx-auto p-8">
@@ -22,7 +26,16 @@ export default async function DashboardPage({
       </div>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-4">Analyzed Feedback</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Analyzed Feedback</h2>
+
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="sentiment-filter">Sentiment</Label>
+              <SentimentFilter />
+            </div>
+          </div>
+        </div>
         <div className="p-4 border rounded-lg">
           <AnalyzedFeedbackTable data={analyzedData} />
           <div className="mt-4">
@@ -47,5 +60,9 @@ export default async function DashboardPage({
 
   function getPage() {
     return typeof page === "string" ? Number(page) : 1;
+  }
+
+  function getSentiment(): Sentiment | null {
+    return typeof sentiment === "string" ? (sentiment as Sentiment) : null;
   }
 }

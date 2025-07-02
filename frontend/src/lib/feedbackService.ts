@@ -1,4 +1,4 @@
-import { FeedbackSubmission, analyzedFeedbackPagedResultSchema } from "./types";
+import { FeedbackSubmission, analyzedFeedbackPagedResultSchema, Sentiment } from "./types";
 
 const API_BASE_URL = "http://localhost:5225/feedback";
 
@@ -30,10 +30,21 @@ export async function submitFeedback(
   }
 }
 
-export async function getAnalyzedFeedback(page: number = 1) {
+export async function getAnalyzedFeedback(
+  page: number = 1,
+  sentiment?: Sentiment | null) {
   try {
+    const params = new URLSearchParams({
+      PageNumber: page.toString(),
+      PageSize: '10',
+    });
+
+    if (sentiment) {
+      params.append('Sentiment', sentiment);
+    }
+
     const response = await fetch(
-      `${API_BASE_URL}/analyzed?PageNumber=${page}&PageSize=5`
+      `${API_BASE_URL}/analyzed?${params.toString()}`
     );
 
     if (!response.ok) {

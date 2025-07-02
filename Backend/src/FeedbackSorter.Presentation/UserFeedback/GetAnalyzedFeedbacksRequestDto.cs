@@ -9,8 +9,10 @@ public class GetAnalyzedFeedbacksRequestDto : PagedRequestBaseDto
 {
     public UserFeedbackSortBy SortBy { get; set; } = UserFeedbackSortBy.SubmittedAt;
     public SortOrder SortOrder { get; set; } = SortOrder.Desc;
-    public IEnumerable<FeedbackCategoryType>? FeedbackCategories { get; set; }
-    public IEnumerable<string>? FeatureCategoryNames { get; set; }
+    public FeedbackCategoryType? FeedbackCategory { get; set; }
+    public string? FeatureCategoryName { get; set; }
+    
+    public Sentiment? Sentiment { get; set; }
 
     public GetAnalyzedFeedbacksQuery ToQuery()
     {
@@ -19,8 +21,9 @@ public class GetAnalyzedFeedbacksRequestDto : PagedRequestBaseDto
             PageSize,
             SortBy,
             SortOrder,
-            FeedbackCategories,
-            FeatureCategoryNames
+            FeedbackCategory == null ? null : [FeedbackCategory.Value],
+            FeatureCategoryName == null ? null : [FeatureCategoryName],
+            Sentiment
         );
     }
 }
