@@ -42,7 +42,8 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
         
         if (filter.FeedbackCategories != null && filter.FeedbackCategories.Any())
         {
-            query = query.Where(uf => uf.SelectedFeedbackCategories.Any(sfc => filter.FeedbackCategories.Contains(Enum.Parse<FeedbackCategoryType>(sfc.FeedbackCategoryValue))));
+            List<string> catStrings = filter.FeedbackCategories.Select(f => f.ToString()).ToList();
+            query = query.Where(uf => uf.SelectedFeedbackCategories.Any(sfc => catStrings.Contains(sfc.FeedbackCategoryValue)));
         }
 
         if (filter.FeatureCategoryIds != null && filter.FeatureCategoryIds.Any())

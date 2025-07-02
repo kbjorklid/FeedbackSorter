@@ -1,4 +1,9 @@
-import { FeedbackSubmission, analyzedFeedbackPagedResultSchema, Sentiment } from "./types";
+import {
+  FeedbackSubmission,
+  analyzedFeedbackPagedResultSchema,
+  Sentiment,
+  FeedbackCategory,
+} from "./types";
 
 const API_BASE_URL = "http://localhost:5225/feedback";
 
@@ -32,15 +37,21 @@ export async function submitFeedback(
 
 export async function getAnalyzedFeedback(
   page: number = 1,
-  sentiment?: Sentiment | null) {
+  sentiment?: Sentiment | null,
+  feedbackCategory?: FeedbackCategory | null
+) {
   try {
     const params = new URLSearchParams({
       PageNumber: page.toString(),
-      PageSize: '10',
+      PageSize: "10",
     });
 
     if (sentiment) {
-      params.append('Sentiment', sentiment);
+      params.append("Sentiment", sentiment);
+    }
+
+    if (feedbackCategory) {
+      params.append("FeedbackCategory", feedbackCategory);
     }
 
     const response = await fetch(
@@ -78,18 +89,22 @@ export async function getAnalyzedFeedback(
 export async function deleteFeedback(id: string): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     if (response.ok) {
       console.log(`Feedback ${id} deleted successfully from the API.`);
       return true;
     } else {
-      console.error('API Error deleting feedback:', response.status, await response.text());
+      console.error(
+        "API Error deleting feedback:",
+        response.status,
+        await response.text()
+      );
       return false;
     }
   } catch (error) {
-    console.error('Network or other error deleting feedback:', error);
+    console.error("Network or other error deleting feedback:", error);
     return false;
   }
 }

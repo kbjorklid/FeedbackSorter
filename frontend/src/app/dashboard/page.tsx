@@ -2,10 +2,10 @@ import { getAnalyzedFeedback } from "@/lib/feedbackService";
 import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import Link from "next/link";
-import type { Sentiment } from "@/lib/types";
+import type { FeedbackCategory, Sentiment } from "@/lib/types";
 import { SelectFilter } from "@/components/SelectFilter";
 import { Label } from "@radix-ui/react-label";
-import { sentimentSchema } from "@/lib/types";
+import { feedbackCategoryTypeSchema, sentimentSchema } from "@/lib/types";
 
 export default async function DashboardPage({
   searchParams,
@@ -14,9 +14,16 @@ export default async function DashboardPage({
 }) {
   const { page } = await searchParams;
   const { sentiment } = await searchParams;
+  const { feedbackCategory } = await searchParams;
 
-  const analyzedData = await getAnalyzedFeedback(getPage(), getSentiment());
+  const analyzedData = await getAnalyzedFeedback(
+    getPage(),
+    getSentiment(),
+    getFeedbackCategory()
+  );
   const sentimentOptions = sentimentSchema.options;
+
+  const feedbackCategoryTypeOptions = feedbackCategoryTypeSchema.options;
 
   return (
     <main className="container mx-auto p-8">
@@ -39,6 +46,17 @@ export default async function DashboardPage({
                 queryParamName="sentiment"
                 placeholder="Filter by sentiment..."
                 options={sentimentOptions}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="feedback-category-filter">
+                Feedback Category
+              </Label>
+              <SelectFilter
+                id="feedback-category-filter"
+                queryParamName="feedbackCategory"
+                placeholder="Filter by feedback category..."
+                options={feedbackCategoryTypeOptions}
               />
             </div>
           </div>
@@ -71,5 +89,11 @@ export default async function DashboardPage({
 
   function getSentiment(): Sentiment | null {
     return typeof sentiment === "string" ? (sentiment as Sentiment) : null;
+  }
+
+  function getFeedbackCategory(): FeedbackCategory | null {
+    return typeof feedbackCategory === "string"
+      ? (feedbackCategory as FeedbackCategory)
+      : null;
   }
 }
