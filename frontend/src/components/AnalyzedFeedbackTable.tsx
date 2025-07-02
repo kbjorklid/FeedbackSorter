@@ -1,8 +1,8 @@
 "use client"; // We need to use hooks, so this becomes a Client Component
 
-import { useState, useTransition } from 'react'; 
-import { Trash2 } from 'lucide-react'; 
-import { deleteFeedbackAction } from '@/app/actions';
+import { useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
+import { deleteFeedbackAction } from "@/app/actions";
 
 import {
   Table,
@@ -19,12 +19,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import type {
   AnalyzedFeedbackPagedResult,
   AnalyzedFeedbackItem,
 } from "@/lib/types";
-import { Button } from './ui/button';
+import { Button } from "./ui/button";
+import { SentimentBadge } from "./SentimentBadge";
+import { FeedbackCategoryBadge } from "./FeedbackCategoryBadge";
+import { FeatureCategoryBadge } from "./FeatureCategoryBadge";
 
 type Props = {
   data: AnalyzedFeedbackPagedResult | null;
@@ -81,22 +83,23 @@ export function AnalyzedFeedbackTable({ data }: Props) {
                   {item.title}
                 </button>
               </TableCell>
-              <TableCell>{item.sentiment}</TableCell>
+              <TableCell>
+                <SentimentBadge sentiment={item.sentiment} />
+              </TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {item.feedbackCategories?.map((category) => (
-                    <Badge key={category} variant="secondary">
-                      {category}
-                    </Badge>
+                    <FeedbackCategoryBadge key={category} category={category} />
                   ))}
                 </div>
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {item.featureCategories?.map((category) => (
-                    <Badge key={category.id} variant="outline">
-                      {category.name}
-                    </Badge>
+                    <FeatureCategoryBadge
+                      key={category.id}
+                      category={category.name}
+                    />
                   ))}
                 </div>
               </TableCell>
@@ -139,15 +142,15 @@ export function AnalyzedFeedbackTable({ data }: Props) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="font-semibold mb-2">Sentiment</h3>
-                <p>{selectedItem?.sentiment}</p>
+                <p>
+                  <SentimentBadge sentiment={selectedItem?.sentiment ?? null} />
+                </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Feedback Categories</h3>
                 <div className="flex flex-wrap gap-1">
                   {selectedItem?.feedbackCategories?.map((category) => (
-                    <Badge key={category} variant="secondary">
-                      {category}
-                    </Badge>
+                    <FeedbackCategoryBadge key={category} category={category} />
                   ))}
                 </div>
               </div>
@@ -156,9 +159,10 @@ export function AnalyzedFeedbackTable({ data }: Props) {
               <h3 className="font-semibold mb-2">Feature Categories</h3>
               <div className="flex flex-wrap gap-1">
                 {selectedItem?.featureCategories?.map((category) => (
-                  <Badge key={category.id} variant="outline">
-                    {category.name}
-                  </Badge>
+                  <FeatureCategoryBadge
+                    key={category.id}
+                    category={category.name}
+                  />
                 ))}
               </div>
             </div>
