@@ -8,10 +8,9 @@ export default async function DashboardPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const page =
-    typeof searchParams.page === "string" ? Number(searchParams.page) : 1;
+  const { page } = await searchParams;
 
-  const analyzedData = await getAnalyzedFeedback(page);
+  const analyzedData = await getAnalyzedFeedback(getPage());
 
   return (
     <main className="container mx-auto p-8">
@@ -45,4 +44,8 @@ export default async function DashboardPage({
       </section>
     </main>
   );
+
+  function getPage() {
+    return typeof page === "string" ? Number(page) : 1;
+  }
 }
