@@ -4,6 +4,7 @@ import {
   Sentiment,
   FeedbackCategory,
   featureCategoryResultSchema,
+  failedToAnalyzeFeedbackPagedResultSchema,
 } from "./types";
 
 const API_BASE_URL = "http://localhost:5225";
@@ -63,6 +64,46 @@ export async function getFeatureCategoryNames() {
   } catch (error) {
     console.error("Network or other error fetching analyzed feedback:", error);
     return [];
+  }
+}
+
+export async function getFailedToAnalyzeFeedback(page: number = 1) {
+  try {
+    const params = new URLSearchParams({
+      PageNumber: page.toString(),
+      PageSize: "10",
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/feedback/analysisfailed?${params.toString()}`
+    );
+
+    if (!response.ok) {
+      console.error(
+        "API Error fetching failed to analyze feedbacks:",
+        response.status,
+        await response.text()
+      );
+      return null;
+    }
+
+    const data = await response.json();
+
+    const validationResult =
+      failedToAnalyzeFeedbackPagedResultSchema.safeParse(data);
+
+    if (!validationResult.success) {
+      console.error(
+        "Zod validation failed for failed to analyze feedbacks:",
+        validationResult.error.flatten()
+      );
+      return null;
+    }
+
+    return validationResult.data;
+  } catch (error) {
+    console.error("Network or other error fetching analyzed feedback:", error);
+    return null;
   }
 }
 
@@ -141,6 +182,29 @@ export async function deleteFeedback(id: string): Promise<boolean> {
     }
   } catch (error) {
     console.error("Network or other error deleting feedback:", error);
+    return false;
+  }
+}
+
+export async function flagForReAnalysis(id: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feedback/${id}/re-flag`, {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      console.log(`Feedback ${id} re-flagged for analysis`);
+      return true;
+    } else {
+      console.error(
+        "API Error re-flagging feedback for analysis:",
+        response.status,
+        await response.text()
+      );
+      return false;
+    }
+  } catch (error) {
+    console.error("Network or other error re-flagging feedback:", error);
     return false;
   }
 }

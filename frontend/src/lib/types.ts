@@ -48,11 +48,32 @@ export const analyzedFeedbackPagedResultSchema = z.object({
   totalCount: z.number(),
 });
 
-// And let's infer the TypeScript types
+export const failedToAnalyzeFeedbackItemSchema = z.object({
+  id: z.string().uuid(),
+  submittedAt: z.string(),
+  retryCount: z.number(),
+  fullFeedbackText: z.string().nullable(),
+});
+
+export const failedToAnalyzeFeedbackPagedResultSchema = z.object({
+  items: z.array(failedToAnalyzeFeedbackItemSchema),
+  pageNumber: z.number(),
+  pageSize: z.number(),
+  totalPages: z.number(),
+  totalCount: z.number(),
+});
+
 export type AnalyzedFeedbackItem = z.infer<typeof analyzedFeedbackItemSchema>;
 export type AnalyzedFeedbackPagedResult = z.infer<
   typeof analyzedFeedbackPagedResultSchema
 >;
+export type FailedToAnalyzeFeedbackItem = z.infer<
+  typeof failedToAnalyzeFeedbackItemSchema
+>;
+export type FailedToAnalyzeFeedbackPagedResult = z.infer<
+  typeof failedToAnalyzeFeedbackPagedResultSchema
+>;
+
 export type Sentiment = z.infer<typeof sentimentSchema>;
 export type FeedbackCategory = z.infer<typeof feedbackCategoryTypeSchema>;
 export type FeatureCategory = z.infer<typeof featureCategorySchema>;

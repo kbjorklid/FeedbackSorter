@@ -1,5 +1,6 @@
 import {
   getAnalyzedFeedback,
+  getFailedToAnalyzeFeedback,
   getFeatureCategoryNames,
 } from "@/lib/feedbackService";
 import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
@@ -9,6 +10,7 @@ import type { FeedbackCategory, Sentiment } from "@/lib/types";
 import { SelectFilter } from "@/components/SelectFilter";
 import { Label } from "@radix-ui/react-label";
 import { feedbackCategoryTypeSchema, sentimentSchema } from "@/lib/types";
+import { FailedToAnalyzeFeedbackTable } from "@/components/FailedToAnalyzeFeedbackTable";
 
 export default async function DashboardPage({
   searchParams,
@@ -16,6 +18,7 @@ export default async function DashboardPage({
   searchParams: { [key: string]: string | undefined };
 }) {
   const { page } = await searchParams;
+  const { failedPage } = await searchParams;
   const { sentiment } = await searchParams;
   const { feedbackCategory } = await searchParams;
   const { featureCategoryName } = await searchParams;
@@ -26,6 +29,9 @@ export default async function DashboardPage({
     getFeedbackCategory(),
     featureCategoryName
   );
+
+  const failedToAnalyzeData = await getFailedToAnalyzeFeedback(getFailedPage());
+
   const sentimentOptions = sentimentSchema.options;
 
   const feedbackCategoryTypeOptions = feedbackCategoryTypeSchema.options;
@@ -89,9 +95,19 @@ export default async function DashboardPage({
       </section>
 
       <section className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Failed to Analyze</h2>
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <p className="text-gray-500">This section will be built next.</p>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold mb-4">Failed to Analyze</h2>
+        </div>
+        <div className="p-4 border rounded-lg">
+          <FailedToAnalyzeFeedbackTable data={failedToAnalyzeData} />
+          <div className="mt-4">
+            {failedToAnalyzeData && (
+              <PaginationControls
+                totalPages={failedToAnalyzeData.totalPages}
+                currentPage={failedToAnalyzeData.pageNumber}
+              />
+            )}
+          </div>
         </div>
       </section>
     </main>
@@ -99,6 +115,10 @@ export default async function DashboardPage({
 
   function getPage() {
     return typeof page === "string" ? Number(page) : 1;
+  }
+
+  function getFailedPage() {
+    return typeof failedPage === "string" ? Number(failedPage) : 1;
   }
 
   function getSentiment(): Sentiment | null {

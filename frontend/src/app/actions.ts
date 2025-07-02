@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { feedbackSchema } from "@/lib/types";
-import { submitFeedback } from "@/lib/feedbackService";
+import { flagForReAnalysis, submitFeedback } from "@/lib/feedbackService";
 import { deleteFeedback } from "@/lib/feedbackService"; // Import the new service
 
 type FormState = {
@@ -70,5 +70,14 @@ export async function deleteFeedbackAction(id: string) {
     revalidatePath("/dashboard");
   }
 
+  return { success };
+}
+
+export async function flagForReAnalysisAction(id: string) {
+  const success = await flagForReAnalysis(id);
+
+  if (success) {
+    revalidatePath("/dashboard");
+  }
   return { success };
 }
