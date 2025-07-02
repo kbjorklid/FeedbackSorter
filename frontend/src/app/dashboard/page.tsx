@@ -3,8 +3,9 @@ import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import Link from "next/link";
 import type { Sentiment } from "@/lib/types";
-import { SentimentFilter } from "@/components/SentimentFilter";
+import { SelectFilter } from "@/components/SelectFilter";
 import { Label } from "@radix-ui/react-label";
+import { sentimentSchema } from "@/lib/types";
 
 export default async function DashboardPage({
   searchParams,
@@ -15,6 +16,7 @@ export default async function DashboardPage({
   const { sentiment } = await searchParams;
 
   const analyzedData = await getAnalyzedFeedback(getPage(), getSentiment());
+  const sentimentOptions = sentimentSchema.options;
 
   return (
     <main className="container mx-auto p-8">
@@ -32,7 +34,12 @@ export default async function DashboardPage({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Label htmlFor="sentiment-filter">Sentiment</Label>
-              <SentimentFilter />
+              <SelectFilter
+                id="sentiment-filter"
+                queryParamName="sentiment"
+                placeholder="Filter by sentiment..."
+                options={sentimentOptions}
+              />
             </div>
           </div>
         </div>
