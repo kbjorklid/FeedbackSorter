@@ -1,7 +1,8 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
-using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
+using FeedbackSorter.Application.Feedback.Repositories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Core;
+using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.SharedKernel;
 using Microsoft.Extensions.Logging;
 
@@ -16,10 +17,7 @@ public class QueryAnalyzedFeedbacksUseCase(
 
     public async Task<PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>>> HandleAsync(GetAnalyzedFeedbacksQuery query, CancellationToken cancellationToken)
     {
-
-        ISet<FeatureCategoryReadModel>? featureCategories = await GetFeatureCategoriesAsync(query);
-
-        AnalyzedFeedbackQueryParams filter = CreateQueryParams(featureCategories, query);
+        AnalyzedFeedbackQueryParams filter = CreateQueryParams(query);
 
         PagedResult<AnalyzedFeedbackReadModel<FeatureCategoryReadModel>> feedbackResults =
             await userFeedbackReadRepository.GetPagedListAsync(filter, query.PageNumber, query.PageSize);
@@ -37,12 +35,12 @@ public class QueryAnalyzedFeedbacksUseCase(
         return result;
     }
 
-    private static AnalyzedFeedbackQueryParams CreateQueryParams(ISet<FeatureCategoryReadModel>? featureCategories, GetAnalyzedFeedbacksQuery query)
+    private static AnalyzedFeedbackQueryParams CreateQueryParams(GetAnalyzedFeedbacksQuery query)
     {
         return new AnalyzedFeedbackQueryParams
         {
             FeedbackCategories = query.FeedbackCategories,
-            FeatureCategoryIds = featureCategories == null ? null : featureCategories.Select(c => c.Id),
+            FeatureCategoryNames = query.FeatureCategoryNames == null ? null : query.FeatureCategoryNames.Select(c => new FeatureCategoryName(c)),
             SortBy = query.SortBy,
             SortAscending = query.SortOrder == SortOrder.Asc,
             Sentiment = query.Sentiment,

@@ -1,5 +1,4 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
-using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using FeedbackSorter.Application.Feedback.Repositories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Core.Feedback;
@@ -46,9 +45,10 @@ public class EfUserFeedbackReadRepository : IUserFeedbackReadRepository
             query = query.Where(uf => uf.SelectedFeedbackCategories.Any(sfc => catStrings.Contains(sfc.FeedbackCategoryValue)));
         }
 
-        if (filter.FeatureCategoryIds != null && filter.FeatureCategoryIds.Any())
+        if (filter.FeatureCategoryNames != null && filter.FeatureCategoryNames.Any())
         {
-            query = query.Where(uf => uf.AnalysisResultFeatureCategories.Any(fc => filter.FeatureCategoryIds.Select(fci => fci.Value).Contains(fc.Id)));
+            var feaCategoryNames = filter.FeatureCategoryNames.Select(f => f.ToString()).ToList();
+            query = query.Where(uf => uf.AnalysisResultFeatureCategories.Any(fc => feaCategoryNames.Contains(fc.Name)));
         }
 
         query = filter.SortBy switch

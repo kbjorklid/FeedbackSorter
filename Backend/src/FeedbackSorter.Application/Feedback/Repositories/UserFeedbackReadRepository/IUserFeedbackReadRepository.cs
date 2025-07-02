@@ -1,5 +1,4 @@
 using FeedbackSorter.Application.FeatureCategories.Repositories;
-using FeedbackSorter.Application.Feedback.Queries.GetAnalyzedFeedbacks;
 using FeedbackSorter.SharedKernel;
 
 namespace FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
