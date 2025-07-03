@@ -44,6 +44,9 @@ public class FeedbackSorterDbContext : DbContext
                   .WithOne(sfc => sfc.UserFeedback)
                   .HasForeignKey(sfc => sfc.UserFeedbackDbId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            userFeedbackEntity.Property(e => e.RowVersion)
+                .IsRowVersion();
         });
 
         modelBuilder.Entity<UserFeedbackSelectedCategoryDb>(selectedCategoryEntity =>

@@ -105,8 +105,16 @@ public class EfUserFeedbackRepository(FeedbackSorterDbContext dbContext, ILogger
             }
         }
 
-        await dbContext.SaveChangesAsync();
-        return Result<UserFeedback>.Success(userFeedback);
+        try
+        {
+            await dbContext.SaveChangesAsync();
+            return Result<UserFeedback>.Success(userFeedback);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Concurrency conflict occurred while updating feedback {FeedbackId}", userFeedback.Id.Value);
+            return Result<UserFeedback>.Failure($"Failed to update feedback with Id {userFeedback.Id.Value} due to concurrent modification. Please retry.");
+        }
     }
 
     public async Task<IList<UserFeedback>> QueryAsync(UserFeedbackQuery query, CancellationToken cancellationToken = default)

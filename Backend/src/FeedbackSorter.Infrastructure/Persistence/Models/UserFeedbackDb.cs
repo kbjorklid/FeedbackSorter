@@ -19,6 +19,8 @@ public class UserFeedbackDb
 
     public ICollection<UserFeedbackSelectedCategoryDb> SelectedFeedbackCategories { get; set; } = new List<UserFeedbackSelectedCategoryDb>();
 
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+
     public void OverwriteDataFrom(UserFeedbackDb source)
     {
         // Do not overwrite Id

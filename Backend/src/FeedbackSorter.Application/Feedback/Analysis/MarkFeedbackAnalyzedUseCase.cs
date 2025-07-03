@@ -40,6 +40,12 @@ public class MarkFeedbackAnalyzedUseCase(
 
         userFeedback.MarkAsAnalyzed(feedbackAnalysisResult);
         Result<UserFeedback> saveResult = await userFeedbackRepository.UpdateAsync(userFeedback);
+        
+        if (saveResult.IsFailure)
+        {
+            logger.LogWarning("Failed to save analyzed feedback {FeedbackId}: {Error}", userFeedbackId.Value, saveResult.Error);
+        }
+        
         return saveResult.IsSuccess ? Result.Success() : Result.Failure(saveResult.Error);
     }
 }
