@@ -25,12 +25,8 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IUserFeedbackReadRepository, EfUserFeedbackReadRepository>();
         services.AddScoped<IFeatureCategoryRepository, EfFeatureCategoryRepository>();
         services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryReadRepository>();
-
-
-        services.AddSingleton<ILlmFeedbackAnalyzer, SemanticKernelLLMAnalyzer>();
+        services.AddSingleton<ILlmFeedbackAnalyzer, SemanticKernelLlmAnalyzer>();
         services.AddSingleton<ITimeProvider>(new SystemTimeProvider());
-
-
         return services;
     }
 }

@@ -4,14 +4,16 @@ using FeedbackSorter.Core.Feedback;
 using Microsoft.SemanticKernel;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FeedbackSorter.Infrastructure.LLM;
 
-public class SemanticKernelLLMAnalyzer : ILlmFeedbackAnalyzer
+public class SemanticKernelLlmAnalyzer : ILlmFeedbackAnalyzer
 {
     private readonly Kernel _kernel;
+    private readonly ILogger<SemanticKernelLlmAnalyzer> _logger;
 
-    public SemanticKernelLLMAnalyzer(IConfiguration configuration)
+    public SemanticKernelLlmAnalyzer(IConfiguration configuration, ILogger<SemanticKernelLlmAnalyzer> logger)
     {
         string? apiKey = configuration["LLM:ApiKey"];
         string? endpointUrl = configuration["LLM:EndpointUrl"];
@@ -26,12 +28,14 @@ public class SemanticKernelLLMAnalyzer : ILlmFeedbackAnalyzer
             apiKey: apiKey,
             endpoint: new Uri(endpointUrl));
         _kernel = kernelBuilder.Build();
+        _logger = logger;
     }
     
     public async Task<LlmAnalysisResult> AnalyzeFeedback(FeedbackText feedbackText,
         IEnumerable<FeatureCategoryReadModel> existingFeatureCategories)
     {
         string prompt = BuildPrompt(feedbackText, existingFeatureCategories);
+        _logger.LogDebug("Prompt for LLM:\n{Prompt}", prompt);
         
         try
         {
@@ -58,9 +62,10 @@ public class SemanticKernelLLMAnalyzer : ILlmFeedbackAnalyzer
         }
     }
 
-    private static LlmAnalysisResult HandleLlmResult(FunctionResult result)
+    private LlmAnalysisResult HandleLlmResult(FunctionResult result)
     {
         string? jsonResponse = result.GetValue<string>();
+        _logger.LogDebug("Response from LLM:\n{Response}", jsonResponse);
 
         if (jsonResponse == null)
         {
@@ -116,7 +121,7 @@ public class SemanticKernelLLMAnalyzer : ILlmFeedbackAnalyzer
 
     private static string BuildPrompt(FeedbackText feedbackText, IEnumerable<FeatureCategoryReadModel> existingFeatureCategories)
     {
-        string existingCategories = string.Join(", ", existingFeatureCategories.Select(c => $"\"{c.Name}\""));
+        string existingCategories = string.Join(", ", existingFeatureCategories.Select(c => $"\"{c.Name.Value}\""));
 
         const string userFeedbackExample = """
                                            ```
