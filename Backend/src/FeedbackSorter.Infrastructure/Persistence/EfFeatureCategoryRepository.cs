@@ -33,9 +33,11 @@ public class EfFeatureCategoryRepository : IFeatureCategoryRepository
 
     public async Task<ISet<CoreFeatureCategory>> GetByNamesAsync(ICollection<string> names)
     {
+        List<string> lowerCaseNames = names.Select(name => name.ToLowerInvariant()).ToList();
+        
         List<FeatureCategoryDb> featureCategoryDbs = await _dbContext.FeatureCategories
             .AsNoTracking()
-            .Where(fc => names.Contains(fc.Name))
+            .Where(fc => lowerCaseNames.Contains(fc.Name.ToLower()))
             .ToListAsync();
 
         return featureCategoryDbs.Select(FeatureCategoryMapper.ToDomainEntity).ToHashSet();

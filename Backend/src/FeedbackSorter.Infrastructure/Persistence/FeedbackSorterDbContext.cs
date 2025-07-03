@@ -60,6 +60,7 @@ public class FeedbackSorterDbContext : DbContext
             featureCategoryEntity.HasKey(e => e.Id);
             featureCategoryEntity.Property(e => e.Name).HasMaxLength(255).IsRequired();
             featureCategoryEntity.Property(e => e.CreatedAt).IsRequired();
+            featureCategoryEntity.HasIndex(e => e.Name).IsUnique();
         });
     }
 }

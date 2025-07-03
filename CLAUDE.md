@@ -121,6 +121,11 @@ Backend/src/
 - Use meaningful defaults in builders (e.g., `PersonNameBuilder` with "John Doe")
 - System tests should cover full request/response cycles
 - Mock external dependencies (LLM, time provider) in tests
+- Where appropriate, prefer writing system tests (tests that use a database and call the system through REST api) over unit tests.
+  System tests are located in the .\Backend\tests\FeedbackSorter.SystemTests\FeedbackSorter.SystemTests.csproj project.
+  There is a test class called `FeedbackControllerSystemTests` which can be expanded. Or if wanted, other similar test
+  classes should be created
+- In tests, always mock `ILlmFeedbackAnalyzer` if you expect its methods to be called.
 
 ### Entity Framework Patterns
 - Use explicit configuration in `OnModelCreating()` for entity relationships

@@ -1014,6 +1014,145 @@ public class FeedbackControllerSystemTests : IClassFixture<CustomWebApplicationF
         assertions5.AssertEmpty();
     }
 
+    [Fact]
+    public async Task AnalyzeFeedback_WithCaseInsensitiveFeatureCategoryNames_CreatesOnlyUniqueCategories()
+    {
+        // Arrange - Submit feedback with case variations of the same feature category
+        await SubmitFeedback("Feedback about authentication system");
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder()
+                .WithFeatureCategoryNames("Authentication", "authentication", "AUTHENTICATION")
+                .WithTitle(new FeedbackTitle("Auth Feedback"))
+                .Build())
+            .Build());
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analyzed");
+
+        // Assert
+        PagedResultAssertions<AnalyzedFeedbackItemDto> assertions =
+            await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(response);
+        assertions.AssertTotalCount(1);
+        assertions.AssertItems(item => {
+            // Should only have 1 unique feature category despite case variations
+            Assert.Single(item.FeatureCategories);
+            Assert.Contains(item.FeatureCategories, fc => fc.Name.Equals("Authentication", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
+    [Fact]
+    public async Task AnalyzeFeedback_WithExistingFeatureCategoryInDifferentCase_ReusesExisting()
+    {
+        // Arrange - First feedback creates "Authentication" category
+        await SubmitFeedback("First feedback about authentication");
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder()
+                .WithFeatureCategoryNames("Authentication")
+                .WithTitle(new FeedbackTitle("First Auth Feedback"))
+                .Build())
+            .Build());
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Second feedback uses different case but should reuse existing category
+        await SubmitFeedback("Second feedback about authentication");
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder()
+                .WithFeatureCategoryNames("AUTHENTICATION")
+                .WithTitle(new FeedbackTitle("Second Auth Feedback"))
+                .Build())
+            .Build());
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Act - Get all analyzed feedback
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analyzed");
+
+        // Assert
+        PagedResultAssertions<AnalyzedFeedbackItemDto> assertions =
+            await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(response);
+        assertions.AssertTotalCount(2);
+        
+        // Both should reference the same feature category (case-insensitive)
+        assertions.AssertItems(
+            item => {
+                Assert.Single(item.FeatureCategories);
+                Assert.Contains(item.FeatureCategories, fc => fc.Name.Equals("Authentication"));
+            },
+            item => {
+                Assert.Single(item.FeatureCategories);
+                Assert.Contains(item.FeatureCategories, fc => fc.Name.Equals("Authentication"));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task AnalyzeFeedback_FilterByFeatureCategoryName_WorksCaseInsensitive()
+    {
+        // Arrange - Create feedback with "Authentication" feature category
+        await SubmitFeedback("Feedback about authentication");
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder()
+                .WithFeatureCategoryNames("Authentication")
+                .WithTitle(new FeedbackTitle("Auth Feedback"))
+                .Build())
+            .Build());
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Create unrelated feedback
+        await SubmitFeedback("Feedback about user interface");
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder()
+                .WithFeatureCategoryNames("User Interface")
+                .WithTitle(new FeedbackTitle("UI Feedback"))
+                .Build())
+            .Build());
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Act - Filter using different case
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analyzed?FeatureCategoryName=authentication");
+
+        // Assert - Should find the "Authentication" category despite case difference
+        PagedResultAssertions<AnalyzedFeedbackItemDto> assertions =
+            await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(response);
+        assertions.AssertTotalCount(1);
+        assertions.AssertItems(item => {
+            Assert.Equal("Feedback about authentication", item.Text);
+            Assert.Contains(item.FeatureCategories, fc => fc.Name == "Authentication");
+        });
+    }
+
+    [Fact] 
+    public async Task AnalyzeFeedback_MixedCaseFeatureCategoryNames_NormalizesProperly()
+    {
+        // Arrange - Submit feedback with mixed case feature categories
+        await SubmitFeedback("Feedback covering multiple features");
+        SetMockedLlmAnalysisResult(new LlmAnalysisResultBuilder()
+            .WithSuccess(new LlmAnalysisSuccessBuilder()
+                .WithFeatureCategoryNames("Login Form", "login form", "PASSWORD Reset", "password reset", "User Profile")
+                .WithTitle(new FeedbackTitle("Multi-Feature Feedback"))
+                .Build())
+            .Build());
+        await SimulateBackgroundFeedbackAnalysis();
+
+        // Act
+        HttpResponseMessage response = await _client.GetAsync("/feedback/analyzed");
+
+        // Assert
+        PagedResultAssertions<AnalyzedFeedbackItemDto> assertions =
+            await PagedResultAssertions<AnalyzedFeedbackItemDto>.CreateFromHttpResponse(response);
+        assertions.AssertTotalCount(1);
+        assertions.AssertItems(item => {
+            // Should only have 3 unique feature categories (Login Form, PASSWORD Reset, User Profile)
+            Assert.Equal(3, item.FeatureCategories.Count());
+            
+            // Verify the categories exist (case-insensitive check)
+            var categoryNames = item.FeatureCategories.Select(fc => fc.Name).ToList();
+            Assert.Contains(categoryNames, name => name.Equals("Login Form", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(categoryNames, name => name.Equals("PASSWORD Reset", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(categoryNames, name => name.Equals("User Profile", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
     private async Task SimulateBackgroundFeedbackAnalysis(int maxAnalysisCount = 1000)
     {
         using IServiceScope scope = _factory.Services.CreateScope();

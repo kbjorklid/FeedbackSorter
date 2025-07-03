@@ -10,13 +10,19 @@ public class CreateOrGetFeatureCategoriesUseCase(IFeatureCategoryRepository feat
         if (featureCategoryNames.Count == 0)
             return new HashSet<FeatureCategory>();
 
+        // Normalize names to handle case-insensitive duplicates in input
+        var normalizedNames = featureCategoryNames
+            .GroupBy(name => name.ToLowerInvariant())
+            .Select(group => group.First()) // Take first occurrence of each case-insensitive group
+            .ToHashSet();
+
         ISet<FeatureCategory> existingFeatureCategories =
-            await featureCategoryRepository.GetByNamesAsync(featureCategoryNames);
+            await featureCategoryRepository.GetByNamesAsync(normalizedNames);
         var featureCategories = new HashSet<FeatureCategory>(existingFeatureCategories);
 
-        foreach (string featureCategoryName in featureCategoryNames)
+        foreach (string featureCategoryName in normalizedNames)
         {
-            if (existingFeatureCategories.Any(fc => fc.Name.Value == featureCategoryName))
+            if (existingFeatureCategories.Any(fc => fc.Name.Value.Equals(featureCategoryName, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
             var newFeatureCategory = new FeatureCategory(
