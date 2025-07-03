@@ -1,0 +1,1 @@
+dotnet run --project .\Backend\src\FeedbackSorter.Presentation\FeedbackSorter.Presentation.csproj
