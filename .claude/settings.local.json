@@ -3,7 +3,10 @@
     "allow": [
       "Bash(dotnet test:*)",
       "Bash(rg:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(dotnet build)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

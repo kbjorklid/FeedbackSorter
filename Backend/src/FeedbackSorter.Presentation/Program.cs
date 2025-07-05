@@ -1,8 +1,11 @@
 using System.Text.Json.Serialization;
 using FeedbackSorter.Application;
+using FeedbackSorter.Application.Notifications;
 using FeedbackSorter.Infrastructure;
 using FeedbackSorter.Presentation.Infrastructure;
 using FeedbackSorter.Presentation.Middleware;
+using FeedbackSorter.Presentation.Hubs;
+using FeedbackSorter.Presentation.Notifications;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IFeedbackHubContext, FeedbackHubContextWrapper>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost",
@@ -27,7 +33,8 @@ builder.Services.AddCors(options =>
         {
             policyBuilder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
 });
 
@@ -45,6 +52,7 @@ app.UseCors("AllowLocalhost");
 app.UseMiddleware<DomainValidationExceptionMiddleware>();
 
 app.MapControllers();
+app.MapHub<FeedbackHub>("/feedbackHub");
 
 if (app.Environment.IsDevelopment())
 {
