@@ -26,6 +26,8 @@ import { Button } from "./ui/button";
 
 type Props = {
   data: FailedToAnalyzeFeedbackPagedResult | null;
+  onDeleteSuccess?: () => void;
+  onReanalyzeSuccess?: () => void;
 };
 
 function normalizeAndTruncate(text: string | null | undefined): string {
@@ -39,21 +41,23 @@ function normalizeAndTruncate(text: string | null | undefined): string {
   return normalizedText;
 }
 
-export function FailedToAnalyzeFeedbackTable({ data }: Props) {
+export function FailedToAnalyzeFeedbackTable({ data, onDeleteSuccess, onReanalyzeSuccess }: Props) {
   const [selectedItem, setSelectedItem] =
     useState<FailedToAnalyzeFeedbackItem | null>(null);
 
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = (id: string) => {
-    startTransition(() => {
-      deleteFeedbackAction(id);
+    startTransition(async () => {
+      await deleteFeedbackAction(id);
+      onDeleteSuccess?.();
     });
   };
 
   const handleReanalyze = (id: string) => {
-    startTransition(() => {
-      flagForReAnalysisAction(id);
+    startTransition(async () => {
+      await flagForReAnalysisAction(id);
+      onReanalyzeSuccess?.();
     });
   };
 

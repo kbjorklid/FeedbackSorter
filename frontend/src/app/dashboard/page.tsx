@@ -203,7 +203,7 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-semibold mb-4">Failed to Analyze</h2>
         </div>
         <div className="p-4 border rounded-lg">
-          <FailedToAnalyzeFeedbackTable data={failedToAnalyzeData} />
+          <FailedToAnalyzeFeedbackTable data={failedToAnalyzeData} onDeleteSuccess={loadData} onReanalyzeSuccess={loadData} />
           <div className="mt-4">
             {failedToAnalyzeData && (
               <PaginationControls
