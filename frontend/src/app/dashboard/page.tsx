@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   getAnalyzedFeedback,
   getFailedToAnalyzeFeedback,
@@ -6,40 +10,140 @@ import {
 import { AnalyzedFeedbackTable } from "@/components/AnalyzedFeedbackTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import Link from "next/link";
-import type { FeedbackCategory, Sentiment } from "@/lib/types";
+import type { 
+  FeedbackCategory, 
+  Sentiment, 
+  AnalyzedFeedbackPagedResult,
+  FailedToAnalyzeFeedbackPagedResult 
+} from "@/lib/types";
 import { SelectFilter } from "@/components/SelectFilter";
 import { Label } from "@radix-ui/react-label";
 import { feedbackCategoryTypeSchema, sentimentSchema } from "@/lib/types";
 import { FailedToAnalyzeFeedbackTable } from "@/components/FailedToAnalyzeFeedbackTable";
+import { signalRService } from "@/lib/signalRService";
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
-}) {
-  const { page } = await searchParams;
-  const { failedPage } = await searchParams;
-  const { sentiment } = await searchParams;
-  const { feedbackCategory } = await searchParams;
-  const { featureCategoryName } = await searchParams;
+export default function DashboardPage() {
+  const searchParams = useSearchParams();
+  const [analyzedData, setAnalyzedData] = useState<AnalyzedFeedbackPagedResult | null>(null);
+  const [failedToAnalyzeData, setFailedToAnalyzeData] = useState<FailedToAnalyzeFeedbackPagedResult | null>(null);
+  const [featureCategoryNames, setFeatureCategoryNames] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [signalRConnected, setSignalRConnected] = useState(false);
 
-  const analyzedData = await getAnalyzedFeedback(
-    getPage(),
-    getSentiment(),
-    getFeedbackCategory(),
-    featureCategoryName
-  );
-
-  const failedToAnalyzeData = await getFailedToAnalyzeFeedback(getFailedPage());
+  // Get current filter parameters
+  const page = getPage();
+  const failedPage = getFailedPage();
+  const sentiment = getSentiment();
+  const feedbackCategory = getFeedbackCategory();
+  const featureCategoryName = searchParams.get("featureCategoryName");
 
   const sentimentOptions = sentimentSchema.options;
-
   const feedbackCategoryTypeOptions = feedbackCategoryTypeSchema.options;
+
+  // Load initial data
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [analyzedResult, failedResult, featureCategories] = await Promise.all([
+        getAnalyzedFeedback(page, sentiment, feedbackCategory, featureCategoryName),
+        getFailedToAnalyzeFeedback(failedPage),
+        getFeatureCategoryNames()
+      ]);
+
+      setAnalyzedData(analyzedResult);
+      setFailedToAnalyzeData(failedResult);
+      setFeatureCategoryNames(featureCategories);
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [page, failedPage, sentiment, feedbackCategory, featureCategoryName]);
+
+  // Handle SignalR notifications
+  const handleFeedbackAnalyzed = useCallback(async (feedbackId: string) => {
+    console.log("Feedback analyzed:", feedbackId);
+    // Reload data to show updated state
+    await loadData();
+  }, [loadData]);
+
+  const handleFeedbackAnalysisFailed = useCallback(async (feedbackId: string) => {
+    console.log("Feedback analysis failed:", feedbackId);
+    // Reload data to show updated state
+    await loadData();
+  }, [loadData]);
+
+  // Connect to SignalR
+  useEffect(() => {
+    let isMounted = true;
+
+    const connectSignalR = async () => {
+      try {
+        // Set up event handlers before connecting
+        signalRService.onFeedbackAnalyzed(handleFeedbackAnalyzed);
+        signalRService.onFeedbackAnalysisFailed(handleFeedbackAnalysisFailed);
+        
+        await signalRService.connect();
+        
+        if (isMounted && signalRService.isConnected) {
+          setSignalRConnected(true);
+        }
+      } catch (error) {
+        console.error("Failed to connect to SignalR:", error);
+        if (isMounted) {
+          setSignalRConnected(false);
+        }
+      }
+    };
+
+    // Monitor connection state
+    const checkConnection = () => {
+      if (isMounted) {
+        setSignalRConnected(signalRService.isConnected);
+      }
+    };
+
+    connectSignalR();
+    
+    // Check connection state periodically
+    const interval = setInterval(checkConnection, 1000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      signalRService.offFeedbackAnalyzed(handleFeedbackAnalyzed);
+      signalRService.offFeedbackAnalysisFailed(handleFeedbackAnalysisFailed);
+      signalRService.disconnect();
+    };
+  }, [handleFeedbackAnalyzed, handleFeedbackAnalysisFailed]);
+
+  // Load data when filters change
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  if (isLoading) {
+    return (
+      <main className="container mx-auto p-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading dashboard...</div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Feedback Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Feedback Dashboard</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <div className={`w-2 h-2 rounded-full ${signalRConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-sm text-gray-600">
+              {signalRConnected ? 'Real-time updates active' : 'Real-time updates disconnected'}
+            </span>
+          </div>
+        </div>
         <Link href="/" className="text-blue-500 hover:underline">
           &larr; Back to Form
         </Link>
@@ -76,7 +180,7 @@ export default async function DashboardPage({
                 id="feature-category-filter"
                 queryParamName="featureCategoryName"
                 placeholder="Filter by feature category..."
-                options={await getFeatureCategoryNames()}
+                options={featureCategoryNames}
               />
             </div>
           </div>
@@ -113,21 +217,23 @@ export default async function DashboardPage({
     </main>
   );
 
-  function getPage() {
-    return typeof page === "string" ? Number(page) : 1;
+  function getPage(): number {
+    const pageParam = searchParams.get("page");
+    return pageParam ? Number(pageParam) : 1;
   }
 
-  function getFailedPage() {
-    return typeof failedPage === "string" ? Number(failedPage) : 1;
+  function getFailedPage(): number {
+    const failedPageParam = searchParams.get("failedPage");
+    return failedPageParam ? Number(failedPageParam) : 1;
   }
 
   function getSentiment(): Sentiment | null {
-    return typeof sentiment === "string" ? (sentiment as Sentiment) : null;
+    const sentimentParam = searchParams.get("sentiment");
+    return sentimentParam ? (sentimentParam as Sentiment) : null;
   }
 
   function getFeedbackCategory(): FeedbackCategory | null {
-    return typeof feedbackCategory === "string"
-      ? (feedbackCategory as FeedbackCategory)
-      : null;
+    const feedbackCategoryParam = searchParams.get("feedbackCategory");
+    return feedbackCategoryParam ? (feedbackCategoryParam as FeedbackCategory) : null;
   }
 }

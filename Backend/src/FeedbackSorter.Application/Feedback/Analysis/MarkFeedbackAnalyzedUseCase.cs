@@ -1,6 +1,7 @@
 using FeedbackSorter.Application.FeatureCategories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Application.LLM;
+using FeedbackSorter.Application.Notifications;
 using FeedbackSorter.Core.FeatureCategories;
 using FeedbackSorter.Core.Feedback;
 using FeedbackSorter.SharedKernel;
@@ -11,6 +12,7 @@ namespace FeedbackSorter.Application.Feedback.Analysis;
 public class MarkFeedbackAnalyzedUseCase(
     IUserFeedbackRepository userFeedbackRepository,
     CreateOrGetFeatureCategoriesUseCase createOrGetFeatureCategoriesUseCase,
+    IFeedbackNotificationService notificationService,
     ILogger<MarkFeedbackAnalyzedUseCase> logger)
 {
 
@@ -44,8 +46,11 @@ public class MarkFeedbackAnalyzedUseCase(
         if (saveResult.IsFailure)
         {
             logger.LogWarning("Failed to save analyzed feedback {FeedbackId}: {Error}", userFeedbackId.Value, saveResult.Error);
+            return Result.Failure(saveResult.Error);
         }
         
-        return saveResult.IsSuccess ? Result.Success() : Result.Failure(saveResult.Error);
+        await notificationService.NotifyFeedbackAnalyzed(userFeedbackId);
+        
+        return Result.Success();
     }
 }

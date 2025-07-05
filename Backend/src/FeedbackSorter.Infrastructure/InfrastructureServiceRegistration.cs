@@ -2,7 +2,9 @@ using FeedbackSorter.Application.FeatureCategories.Repositories;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackReadRepository;
 using FeedbackSorter.Application.Feedback.Repositories.UserFeedbackRepository;
 using FeedbackSorter.Application.LLM;
+using FeedbackSorter.Application.Notifications;
 using FeedbackSorter.Infrastructure.LLM;
+using FeedbackSorter.Infrastructure.Notifications;
 using FeedbackSorter.Infrastructure.Persistence;
 using FeedbackSorter.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +29,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IFeatureCategoryReadRepository, EfFeatureCategoryReadRepository>();
         services.AddSingleton<ILlmFeedbackAnalyzer, SemanticKernelLlmAnalyzer>();
         services.AddSingleton<ITimeProvider>(new SystemTimeProvider());
+        services.AddScoped<IFeedbackNotificationService, SignalRFeedbackNotificationService>();
         return services;
     }
 }
