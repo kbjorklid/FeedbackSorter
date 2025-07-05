@@ -30,9 +30,10 @@ import { FeatureCategoryBadge } from "./FeatureCategoryBadge";
 
 type Props = {
   data: AnalyzedFeedbackPagedResult | null;
+  onDeleteSuccess?: () => void;
 };
 
-export function AnalyzedFeedbackTable({ data }: Props) {
+export function AnalyzedFeedbackTable({ data, onDeleteSuccess }: Props) {
   // State to hold the currently selected item for the modal
   const [selectedItem, setSelectedItem] = useState<AnalyzedFeedbackItem | null>(
     null
@@ -41,8 +42,11 @@ export function AnalyzedFeedbackTable({ data }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = (id: string) => {
-    startTransition(() => {
-      deleteFeedbackAction(id);
+    startTransition(async () => {
+      const result = await deleteFeedbackAction(id);
+      if (result.success && onDeleteSuccess) {
+        onDeleteSuccess();
+      }
     });
   };
 

@@ -186,7 +186,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="p-4 border rounded-lg">
-          <AnalyzedFeedbackTable data={analyzedData} />
+          <AnalyzedFeedbackTable data={analyzedData} onDeleteSuccess={loadData} />
           <div className="mt-4">
             {analyzedData && (
               <PaginationControls
